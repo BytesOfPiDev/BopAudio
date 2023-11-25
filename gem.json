@@ -1,0 +1,29 @@
+{
+    "gem_name": "SteamAudio",
+    "version": "1.0.0",
+    "display_name": "O3DE Steam Audio",
+    "license": "TBD",
+    "license_url": "",
+    "origin": "Andre Mitchell",
+    "origin_url": "",
+    "type": "Code",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "SteamAudio"
+    ],
+    "platforms": [
+        "Windows",
+        "Linux"
+    ],
+    "icon_path": "",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "SteamAudio"
+}
