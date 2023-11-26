@@ -16,4 +16,9 @@ namespace SteamAudio
 
     // Interface TypeIds
     inline constexpr const char* SteamAudioRequestsTypeId = "{88AF1717-AB02-49F8-94BE-1BB605E3DD06}";
+
+    inline constexpr char const* SteamAudioComponentTypeId = "{A9472815-877D-4280-A54E-CBC73C72E48F}";
+    inline constexpr char const* EditorSteamAudioComponentTypeId = SteamAudioComponentTypeId;
+
+    inline constexpr auto const* AudioAssetTypeId = "{5C848E46-5F84-466F-BB74-4EFB9917422D}";
 } // namespace SteamAudio

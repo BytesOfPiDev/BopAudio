@@ -14,8 +14,10 @@ include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # Check to see if building the Gem Modules are supported for the current platform
 if(NOT PAL_TRAIT_STEAMAUDIO_SUPPORTED)
-    return()
+  return()
 endif()
+
+include(${gem_path}/3rdParty/FindSteamAudio.cmake)
 
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
@@ -30,6 +32,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
+           3rdParty::SteamAudio
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -50,6 +53,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            ${gem_name}.API
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -89,8 +93,8 @@ o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS
 
 # If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
-    ly_add_target(
+  # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
+  ly_add_target(
         NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
@@ -104,10 +108,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
     )
 
-    # The ${gem_name}.Editor.Private.Object target is an internal target
-    # which is only to be used by this gems CMakeLists.txt and any subdirectories
-    # Other gems should not use this target
-    ly_add_target(
+  # The ${gem_name}.Editor.Private.Object target is an internal target
+  # which is only to be used by this gems CMakeLists.txt and any subdirectories
+  # Other gems should not use this target
+  ly_add_target(
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTOMOC
@@ -124,9 +128,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.API
     )
 
-    ly_add_target(
+  ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
@@ -144,19 +149,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Editor.Private.Object
     )
 
-    # By default, we will specify that the above target ${gem_name} would be used by
-    # Tool and Builder type targets when this gem is enabled.  If you don't want it
-    # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
-    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+  # By default, we will specify that the above target ${gem_name} would be used by
+  # Tool and Builder type targets when this gem is enabled.  If you don't want it
+  # active in Tools or Builders by default, delete one of both of the following lines:
+  ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+  ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
-    # For the Tools and Builders variants of ${gem_name} Gem, an alias to the ${gem_name}.Editor API target will be made
-    ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
-    ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+  # For the Tools and Builders variants of ${gem_name} Gem, an alias to the ${gem_name}.Editor API target will be made
+  ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+  ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
-    # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
-    # for the Tools and Builders gem variants
-    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
+  # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+  # for the Tools and Builders gem variants
+  o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 
 endif()
 
@@ -165,10 +170,10 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
-    if(PAL_TRAIT_STEAMAUDIO_TEST_SUPPORTED)
-        # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
-        ly_add_target(
+  # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
+  if(PAL_TRAIT_STEAMAUDIO_TEST_SUPPORTED)
+    # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
+    ly_add_target(
             NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
@@ -185,19 +190,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::${gem_name}.Private.Object
         )
 
-        # Add ${gem_name}.Tests to googletest
-        ly_add_googletest(
+    # Add ${gem_name}.Tests to googletest
+    ly_add_googletest(
             NAME Gem::${gem_name}.Tests
         )
-    endif()
+  endif()
 
-    # If we are a host platform we want to add tools test like editor tests here
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        # We are a host platform, see if Editor tests are supported on this platform
-        if(PAL_TRAIT_STEAMAUDIO_EDITOR_TEST_SUPPORTED)
-            # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
-            # private ${gem_name}.Editor.Private.Object target
-            ly_add_target(
+  # If we are a host platform we want to add tools test like editor tests here
+  if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    # We are a host platform, see if Editor tests are supported on this platform
+    if(PAL_TRAIT_STEAMAUDIO_EDITOR_TEST_SUPPORTED)
+      # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
+      # private ${gem_name}.Editor.Private.Object target
+      ly_add_target(
                 NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
@@ -213,10 +218,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                         Gem::${gem_name}.Editor.Private.Object
             )
 
-            # Add ${gem_name}.Editor.Tests to googletest
-            ly_add_googletest(
+      # Add ${gem_name}.Editor.Tests to googletest
+      ly_add_googletest(
                 NAME Gem::${gem_name}.Editor.Tests
             )
-        endif()
     endif()
+  endif()
 endif()

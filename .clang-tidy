@@ -1,0 +1,16 @@
+---
+Checks: 'modernize-*, cppcoreguidelines-*, bugprone-*, clang-analyzer-*, performance-*'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle: none
+User: logan
+CheckOptions:
+  - key: llvm-else-after-return.WarnOnConditionVariables
+    value: 'false'
+  - key: modernize-loop-convert.MinConfidence
+    value: reasonable
+  - key: cppcoreguidelines-avoid-non-const-global-variables
+    value: 'false'
+...
+
