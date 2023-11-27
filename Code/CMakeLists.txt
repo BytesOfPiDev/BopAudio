@@ -33,6 +33,7 @@ ly_add_target(
         INTERFACE
            AZ::AzCore
            3rdParty::SteamAudio
+           Gem::AudioSystem.API
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -106,6 +107,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             INTERFACE
                 AZ::AzToolsFramework
+                Gem::AudioSystem.Editor.API
     )
 
   # The ${gem_name}.Editor.Private.Object target is an internal target
@@ -128,7 +130,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
-                ${gem_name}.API
+                Gem::AudioSystem.Editor.API
+                AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
+                3rdParty::SteamAudio
+                Gem::AudioSystem.API
     )
 
   ly_add_target(

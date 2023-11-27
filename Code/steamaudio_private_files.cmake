@@ -1,6 +1,6 @@
 
 set(FILES
-    Include/SteamAudio/SoundAsset.h
+    Include/SteamAudio/AudioAsset.h
 
     Source/SteamAudioModuleInterface.cpp
     Source/SteamAudioModuleInterface.h
@@ -9,7 +9,14 @@ set(FILES
 
     Source/Clients/SteamAudioComponent.cpp
     Source/Clients/SteamAudioComponent.h
-    Source/Clients/SoundAsset.cpp
+    Source/Clients/AudioAsset.cpp
     Source/Clients/AudioAssetHandler.cpp
     Source/Clients/AudioAssetHandler.h
+
+    Source/Engine/ATLEntities_SteamAudio.h
+    Source/Engine/AudioSystemImpl_SteamAudio.cpp
+    Source/Engine/AudioSystemImpl_SteamAudio.h
+    Source/Engine/Common_SteamAudio.h
+    Source/Engine/ConfigurationSettings.cpp
+    Source/Engine/ConfigurationSettings.h
 )

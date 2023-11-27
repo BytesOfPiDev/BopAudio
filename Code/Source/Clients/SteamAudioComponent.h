@@ -4,7 +4,7 @@
 #include "AzCore/RTTI/ReflectContext.h"
 #include "AzCore/base.h"
 
-#include "SteamAudio/SoundAsset.h"
+#include "SteamAudio/AudioAsset.h"
 #include "SteamAudio/SteamAudioComponentBus.h"
 #include "SteamAudio/SteamAudioTypeIds.h"
 

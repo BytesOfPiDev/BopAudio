@@ -4,7 +4,7 @@
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/Utils.h"
 
-#include "SteamAudio/SoundAsset.h"
+#include "SteamAudio/AudioAsset.h"
 #include "SteamAudio/SteamAudioTypeIds.h"
 
 namespace SteamAudio

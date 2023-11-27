@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/SteamAudio">
         <file alias="toolbar_icon.svg">toolbar_icon.svg</file>
+        <file alias="trigger_icon.svg">trigger_icon.svg</file>
     </qresource>
 </RCC>

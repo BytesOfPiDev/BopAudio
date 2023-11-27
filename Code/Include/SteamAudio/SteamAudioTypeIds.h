@@ -20,5 +20,5 @@ namespace SteamAudio
     inline constexpr char const* SteamAudioComponentTypeId = "{A9472815-877D-4280-A54E-CBC73C72E48F}";
     inline constexpr char const* EditorSteamAudioComponentTypeId = SteamAudioComponentTypeId;
 
-    inline constexpr auto const* AudioAssetTypeId = "{5C848E46-5F84-466F-BB74-4EFB9917422D}";
+    inline constexpr auto const* AudioAssetTypeId = "{3F61B639-9B06-4C89-A8B7-9113EFFE2C07}";
 } // namespace SteamAudio

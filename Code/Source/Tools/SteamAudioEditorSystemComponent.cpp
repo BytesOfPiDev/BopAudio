@@ -1,24 +1,26 @@
-
-#include <AzCore/Serialization/SerializeContext.h>
-
-#include <AzToolsFramework/API/ViewPaneOptions.h>
-
-#include "SteamAudioWidget.h"
 #include "SteamAudioEditorSystemComponent.h"
 
-#include <SteamAudio/SteamAudioTypeIds.h>
+#include "AzCore/PlatformIncl.h"
+#include "AzCore/Serialization/SerializeContext.h"
+#include "AzToolsFramework/API/ViewPaneOptions.h"
+
+#include "SteamAudio/SteamAudioTypeIds.h"
+#include "SteamAudioWidget.h"
+#include "Tools/AudioSystemEditor_SteamAudio.h"
 
 namespace SteamAudio
 {
-    AZ_COMPONENT_IMPL(SteamAudioEditorSystemComponent, "SteamAudioEditorSystemComponent",
-        SteamAudioEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL( // NOLINT
+        SteamAudioEditorSystemComponent,
+        "SteamAudioEditorSystemComponent",
+        SteamAudioEditorSystemComponentTypeId,
+        BaseSystemComponent);
 
     void SteamAudioEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SteamAudioEditorSystemComponent, SteamAudioSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<SteamAudioEditorSystemComponent, SteamAudioSystemComponent>()->Version(0);
         }
     }
 
@@ -45,6 +47,8 @@ namespace SteamAudio
 
     void SteamAudioEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
         BaseSystemComponent::GetDependentServices(dependent);
     }
 
@@ -52,11 +56,13 @@ namespace SteamAudio
     {
         SteamAudioSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
     }
 
     void SteamAudioEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
         SteamAudioSystemComponent::Deactivate();
     }
 
@@ -69,6 +75,21 @@ namespace SteamAudio
 
         // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
         AzToolsFramework::RegisterViewPane<SteamAudioWidget>("SteamAudio", "Examples", options);
+    }
+
+    void SteamAudioEditorSystemComponent::InitializeEditorImplPlugin()
+    {
+        m_editorImplPlugin = AZStd::make_unique<AudioSystemEditor_SteamAudio>();
+    }
+
+    void SteamAudioEditorSystemComponent::ReleaseEditorImplPlugin()
+    {
+        m_editorImplPlugin.reset();
+    }
+
+    auto SteamAudioEditorSystemComponent::GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor*
+    {
+        return m_editorImplPlugin.get();
     }
 
 } // namespace SteamAudio

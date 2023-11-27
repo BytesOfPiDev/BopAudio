@@ -1,4 +1,4 @@
-#include "SteamAudio/SoundAsset.h"
+#include "SteamAudio/AudioAsset.h"
 
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Memory/SystemAllocator.h"
