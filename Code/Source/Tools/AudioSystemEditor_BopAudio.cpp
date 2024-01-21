@@ -1,16 +1,17 @@
+#include "Tools/AudioSystemEditor_BopAudio.h"
+
+#include "ACETypes.h"
+#include "AzCore/StringFunc/StringFunc.h"
+#include "AzCore/Utils/Utils.h"
+#include "AzCore/std/smart_ptr/make_shared.h"
 #include "AzCore/std/string/conversions.h"
 #include "IAudioConnection.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
-#include <AzCore/StringFunc/StringFunc.h>
-#include <Tools/AudioSystemEditor_BopAudio.h>
 
-#include <ACETypes.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <Engine/Common_BopAudio.h>
-#include <Tools/AudioSystemControl_BopAudio.h>
+#include "Engine/Common_BopAudio.h"
+#include "Tools/AudioSystemControl_BopAudio.h"
 
 namespace BopAudio
 {

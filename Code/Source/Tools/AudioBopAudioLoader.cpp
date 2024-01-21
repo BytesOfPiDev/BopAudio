@@ -18,7 +18,6 @@ namespace BopAudio
         static constexpr auto EventsFolder = "Events";
 
         // Xml Tags
-        // static constexpr auto GameParameterTag = "GameParameter";
         static constexpr auto EventTag = "Event";
         static constexpr auto NameAttribute = "Name";
         static constexpr auto AuxBusTag = "AuxBus";
