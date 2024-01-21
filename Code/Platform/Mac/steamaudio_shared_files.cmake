@@ -1,8 +1,8 @@
 
 # Platform specific files for Mac
-# i.e. ../Source/Mac/SteamAudioMac.cpp
-#      ../Source/Mac/SteamAudioMac.h
-#      ../Include/Mac/SteamAudioMac.h
+# i.e. ../Source/Mac/BopAudioMac.cpp
+#      ../Source/Mac/BopAudioMac.h
+#      ../Include/Mac/BopAudioMac.h
 
 set(FILES
 )

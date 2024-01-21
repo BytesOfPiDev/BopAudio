@@ -1,5 +1,5 @@
 {
-    "gem_name": "SteamAudio",
+    "gem_name": "BopAudio",
     "version": "1.0.0",
     "display_name": "O3DE Steam Audio",
     "license": "TBD",
@@ -12,7 +12,7 @@
         "Gem"
     ],
     "user_tags": [
-        "SteamAudio"
+        "BopAudio"
     ],
     "platforms": [
         "Windows",
@@ -25,5 +25,5 @@
     "repo_uri": "",
     "compatible_engines": [],
     "engine_api_dependencies": [],
-    "restricted": "SteamAudio"
+    "restricted": "BopAudio"
 }

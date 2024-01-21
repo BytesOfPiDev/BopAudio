@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AzCore/std/string/string_view.h"
-namespace SteamAudio
+namespace BopAudio
 {
     static constexpr const auto DefaultLibrariesPath = "sounds/steamaudio/";
     static constexpr const auto ExternalSourcesPath = "external";
@@ -19,4 +19,4 @@ namespace SteamAudio
         auto Load(AZStd::string_view configFile) -> bool;
     };
 
-} // namespace SteamAudio
+} // namespace BopAudio

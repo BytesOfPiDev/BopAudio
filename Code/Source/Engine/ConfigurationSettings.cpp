@@ -1,6 +1,6 @@
 #include "Engine/ConfigurationSettings.h"
 
-namespace SteamAudio
+namespace BopAudio
 {
 
     static AZStd::string_view s_configuredBanksPath = DefaultLibrariesPath; // NOLINT
@@ -19,4 +19,4 @@ namespace SteamAudio
     {
         return false;
     }
-} // namespace SteamAudio
+} // namespace BopAudio

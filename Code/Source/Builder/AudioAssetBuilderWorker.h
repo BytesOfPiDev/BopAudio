@@ -10,7 +10,7 @@
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 
-namespace SteamAudio
+namespace BopAudio
 {
     class AudioAssetBuilder : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
@@ -27,4 +27,4 @@ namespace SteamAudio
         }
     };
 
-} // namespace SteamAudio
+} // namespace BopAudio

@@ -1,12 +1,12 @@
-#include "SteamAudio/AudioAsset.h"
+#include "BopAudio/AudioAsset.h"
 
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "SteamAudio/SteamAudioTypeIds.h"
+#include "BopAudio/BopAudioTypeIds.h"
 
-namespace SteamAudio
+namespace BopAudio
 {
     AZ_RTTI_NO_TYPE_INFO_IMPL(AudioAsset);
     AZ_TYPE_INFO_WITH_NAME_IMPL(AudioAsset, "AudioAsset", AudioAssetTypeId);
@@ -24,9 +24,9 @@ namespace SteamAudio
             {
                 editContext->Class<AudioAsset>("Audio Asset", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "SteamAudio")
+                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }
-} // namespace SteamAudio
+} // namespace BopAudio

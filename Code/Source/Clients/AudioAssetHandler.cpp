@@ -4,28 +4,28 @@
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/Utils.h"
 
-#include "SteamAudio/AudioAsset.h"
-#include "SteamAudio/SteamAudioTypeIds.h"
+#include "BopAudio/AudioAsset.h"
+#include "BopAudio/BopAudioTypeIds.h"
 
-namespace SteamAudio
+namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SteamAudioAssetHandler, AZ::SystemAllocator); // NOLINT
+    AZ_CLASS_ALLOCATOR_IMPL(BopAudioAssetHandler, AZ::SystemAllocator); // NOLINT
 
-    SteamAudioAssetHandler::SteamAudioAssetHandler()
+    BopAudioAssetHandler::BopAudioAssetHandler()
     {
         Register();
     }
 
-    SteamAudioAssetHandler::~SteamAudioAssetHandler()
+    BopAudioAssetHandler::~BopAudioAssetHandler()
     {
         Unregister();
     }
 
-    void SteamAudioAssetHandler::Register()
+    void BopAudioAssetHandler::Register()
     {
         if (!AZ::Data::AssetManager::IsReady())
         {
-            AZ_Error("SteamAudioAssetHandler", false, "The Asset Manager isn't ready. It is required in order to handle assets.");
+            AZ_Error("BopAudioAssetHandler", false, "The Asset Manager isn't ready. It is required in order to handle assets.");
             return;
         }
 
@@ -33,7 +33,7 @@ namespace SteamAudio
         AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioAsset>::Uuid());
     }
 
-    void SteamAudioAssetHandler::Unregister()
+    void BopAudioAssetHandler::Unregister()
     {
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
 
@@ -45,7 +45,7 @@ namespace SteamAudio
         AZ::Data::AssetManager::Instance().UnregisterHandler(this);
     }
 
-    auto SteamAudioAssetHandler::CreateAsset(AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
+    auto BopAudioAssetHandler::CreateAsset(AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
         if (aztypeid_cmp(type, AZ::AzTypeInfo<AudioAsset>::Uuid()))
         {
@@ -56,7 +56,7 @@ namespace SteamAudio
         return {};
     }
 
-    auto SteamAudioAssetHandler::LoadAssetData(
+    auto BopAudioAssetHandler::LoadAssetData(
         AZ::Data::Asset<AZ::Data::AssetData> const& asset,
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult
@@ -72,49 +72,49 @@ namespace SteamAudio
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }
 
-    void SteamAudioAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
+    void BopAudioAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
         delete ptr; // NOLINT
     }
 
-    void SteamAudioAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    void BopAudioAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
         assetTypes.push_back(AZ::AzTypeInfo<AudioAsset>::Uuid());
     }
 
-    auto SteamAudioAssetHandler::GetAssetType() const -> AZ::Data::AssetType
+    auto BopAudioAssetHandler::GetAssetType() const -> AZ::Data::AssetType
     {
         return AZ::AzTypeInfo<AudioAsset>::Uuid();
     }
 
-    void SteamAudioAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
+    void BopAudioAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         return extensions.push_back(AudioAsset::FileExtension);
     }
 
-    auto SteamAudioAssetHandler::GetAssetTypeDisplayName() const -> const char*
+    auto BopAudioAssetHandler::GetAssetTypeDisplayName() const -> const char*
     {
         return "Steam Audio Asset";
     }
 
-    auto SteamAudioAssetHandler::GetBrowserIcon() const -> char const*
+    auto BopAudioAssetHandler::GetBrowserIcon() const -> char const*
     {
         return {};
     }
 
-    auto SteamAudioAssetHandler::GetGroup() const -> const char*
+    auto BopAudioAssetHandler::GetGroup() const -> const char*
     {
         return AudioAsset::AssetGroup;
     }
 
-    auto SteamAudioAssetHandler::GetComponentTypeId() const -> AZ::Uuid
+    auto BopAudioAssetHandler::GetComponentTypeId() const -> AZ::Uuid
     {
-        return AZ::Uuid(SteamAudioComponentTypeId);
+        return AZ::Uuid(BopAudioComponentTypeId);
     }
 
-    auto SteamAudioAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool
+    auto BopAudioAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool
     {
         return false;
     }
 
-} // namespace SteamAudio
+} // namespace BopAudio

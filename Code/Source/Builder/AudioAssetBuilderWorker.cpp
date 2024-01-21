@@ -14,9 +14,9 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/AudioAssetBuilderWorker.h>
-#include <SteamAudio/AudioAsset.h>
+#include <BopAudio/AudioAsset.h>
 
-namespace SteamAudio
+namespace BopAudio
 {
     void AudioAssetBuilder::CreateJobs(
         const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
@@ -27,4 +27,4 @@ namespace SteamAudio
         [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
     }
-} // namespace SteamAudio
+} // namespace BopAudio

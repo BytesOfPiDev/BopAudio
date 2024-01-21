@@ -3,18 +3,18 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
 
-namespace SteamAudio
+namespace BopAudio
 {
-    class SteamAudioAssetHandler
+    class BopAudioAssetHandler
         : public AZ::Data::AssetHandler
         , public AZ::AssetTypeInfoBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(SteamAudioAssetHandler); // NOLINT
+        AZ_DISABLE_COPY_MOVE(BopAudioAssetHandler); // NOLINT
 
-        SteamAudioAssetHandler();
-        ~SteamAudioAssetHandler() override;
+        BopAudioAssetHandler();
+        ~BopAudioAssetHandler() override;
 
         void Register();
         void Unregister();
@@ -35,4 +35,4 @@ namespace SteamAudio
         [[nodiscard]] auto GetComponentTypeId() const -> AZ::Uuid override;
         [[nodiscard]] auto CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool override;
     };
-} // namespace SteamAudio
+} // namespace BopAudio
