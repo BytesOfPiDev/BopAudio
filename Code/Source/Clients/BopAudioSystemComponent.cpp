@@ -1,15 +1,14 @@
 #include "BopAudioSystemComponent.h"
 
+#include <AzFramework/Platform/PlatformDefaults.h>
+
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
-#include "AzFramework/Platform/PlatformDefaults.h"
 
-#include "Clients/AudioAssetHandler.h"
-#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
-#include "phonon.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 
 namespace BopAudio
 {
@@ -72,14 +71,6 @@ namespace BopAudio
         BopAudioRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         Audio::Gem::EngineRequestBus::Handler::BusConnect();
-
-        /*
-              AZ::Data::AssetCatalogRequestBus::Broadcast(
-                  &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AudioAsset>::Uuid());
-        */
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, AudioAsset::FileExtension);
-
-        m_assetHandlers.emplace_back(aznew BopAudioAssetHandler()); // NOLINT
     }
 
     void BopAudioSystemComponent::Deactivate()

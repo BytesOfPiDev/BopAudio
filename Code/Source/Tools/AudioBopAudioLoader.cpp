@@ -1,15 +1,13 @@
-#include "Engine/Common_BopAudio.h"
+#include "AudioFileUtils.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/IO/Path/Path_fwd.h"
 #include "Engine/ConfigurationSettings.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
-#include <AzCore/IO/FileIO.h>
-#include <Tools/AudioSystemEditor_BopAudio.h>
 
-#include <AudioFileUtils.h>
-#include <AzCore/IO/Path/Path_fwd.h>
-#include <IAudioSystem.h>
-#include <Tools/AudioBopAudioLoader.h>
+#include "Tools/AudioBopAudioLoader.h"
+#include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
@@ -33,10 +31,10 @@ namespace BopAudio
     void AudioBopAudioLoader::Load(AudioSystemEditor_BopAudio* audioSystemImpl)
     {
         m_audioSystemImpl = audioSystemImpl;
-        AZ::IO::FixedMaxPath steamAudioProjectFullPath{ m_audioSystemImpl->GetDataPath() };
+        AZ::IO::FixedMaxPath audioProjectFullPath{ m_audioSystemImpl->GetDataPath() };
 
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ steamAudioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ steamAudioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
         LoadSoundBanks(GetLibrariesRootPath(), "", false);
     }
 
@@ -76,8 +74,7 @@ namespace BopAudio
         }
 
         ExtractControlsFromXML(xmlNode, BopAudioControlType::Trigger, BopAudioStrings::EventTag, BopAudioStrings::NameAttribute);
-        ExtractControlsFromXML(
-            xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
+        ExtractControlsFromXML(xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
         ExtractControlsFromXML(xmlNode, BopAudioControlType::AuxBus, BopAudioStrings::AuxBusTag, BopAudioStrings::NameAttribute);
 
         AZStd::string_view xmlTag(xmlNode->name());

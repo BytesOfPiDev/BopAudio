@@ -264,8 +264,7 @@ namespace BopAudio
                         {
                             childControl = CreateControl(AudioControls::SControlDef(
                                 childName,
-                                type == BopAudioControlType::SwitchGroup ? BopAudioControlType::Switch
-                                                                           : BopAudioControlType::GameState,
+                                type == BopAudioControlType::SwitchGroup ? BopAudioControlType::Switch : BopAudioControlType::GameState,
                                 false,
                                 control));
                         }
@@ -360,7 +359,7 @@ namespace BopAudio
     auto AudioSystemEditor_BopAudio::GetDataPath() const -> AZ::IO::FixedMaxPath
     {
         auto projectPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectPath() };
-        return (projectPath / "sounds" / "steamaudio_project");
+        return (projectPath / "sounds" / "bopaudio_project");
     }
 
     void AudioSystemEditor_BopAudio::ConnectionRemoved(AudioControls::IAudioSystemControl* control)

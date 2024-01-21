@@ -3,18 +3,17 @@
 #include "Engine/ATLEntities_BopAudio.h"
 
 #include "AzCore/Console/ILogger.h"
-#include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/base.h"
 #include "Engine/ConfigurationSettings.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 
-#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "BopAudio/AudioAsset.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 
 namespace BopAudio
 {
-    char const* const AudioSystemImpl_BopAudio::BopAudioImplSubPath = "steamaudio/";
+    char const* const AudioSystemImpl_BopAudio::BopAudioImplSubPath = "bopaudio/";
 
     AudioSystemImpl_BopAudio::AudioSystemImpl_BopAudio(AZStd::string_view assetsPlatformName)
     {
@@ -37,24 +36,24 @@ namespace BopAudio
 
     void AudioSystemImpl_BopAudio::SetPaths()
     {
-        // "sounds/steamaudio/"
+        // "sounds/bopaudio/"
         AZStd::string libraryPath = DefaultLibrariesPath;
 
-        // "sounds/steamaudio/steamaudio_config.json"
-        AZStd::string configFile = libraryPath + ConfigFile;
+        // "sounds/bopaudio/bopaudio_config.json"
+        auto const configFilename = libraryPath + ConfigFile; //! TODO: Compile-time evaluate
 
-        if (AZ::IO::FileIOBase::GetInstance() && AZ::IO::FileIOBase::GetInstance()->Exists(configFile.c_str()))
+        if (AZ::IO::FileIOBase::GetInstance() && AZ::IO::FileIOBase::GetInstance()->Exists(configFilename.c_str()))
         {
             ConfigurationSettings configSettings{};
-            if (configSettings.Load(configFile))
+            if (configSettings.Load(configFilename))
             {
                 AZStd::string platformPath{};
                 // HACK: Manually setting to linux. I'll implement the platform detection once that works.
                 //
-                // "sounds/steamaudio/linux"
+                // "sounds/bopaudio/linux"
                 AZ::StringFunc::AssetDatabasePath::Join(libraryPath.c_str(), "linux", platformPath);
                 AZStd::string initLibraryPath{};
-                // "sounds/steamaudio/linux/init.salib"
+                // "sounds/bopaudio/linux/init.balib"
                 AZ::StringFunc::AssetDatabasePath::Join(platformPath.c_str(), InitLibrary, initLibraryPath);
                 if (AZ::IO::FileIOBase::GetInstance()->Exists(initLibraryPath.c_str()))
                 {
@@ -62,13 +61,13 @@ namespace BopAudio
                     {
                         platformPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
                     }
-                    libraryPath = AZStd::move(platformPath);
+                    libraryPath = platformPath;
                 }
             }
         }
         else
         {
-            AZLOG_ERROR("Failed to find Steam Audio configuration file: \"%s\".", configFile.c_str()); // NOLINT
+            AZLOG_ERROR("Failed to find Steam Audio configuration file: \"%s\".", configFilename.c_str()); // NOLINT
         }
 
         m_soundLibraryFolder = libraryPath;
@@ -109,45 +108,17 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        m_contextSettings.version = STEAMAUDIO_VERSION;
-
-        iplContextCreate(&m_contextSettings, &m_context);
-
-        if (!m_context)
-        {
-            AZLOG_ERROR("Failed to create Steam Audio Context!"); // NOLINT
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        m_hrtfSettings.type = IPL_HRTFTYPE_DEFAULT;
-
-        static constexpr auto DefaultSamplingRate = 44100;
-        static constexpr auto DefaultFrameSize = 1024;
-
-        m_audioSettings.samplingRate = DefaultSamplingRate;
-        m_audioSettings.frameSize = DefaultFrameSize;
-
-        iplHRTFCreate(m_context, &m_audioSettings, &m_hrtfSettings, &m_hrtf);
-
-        if (!m_hrtf)
-        {
-            AZLOG_ERROR("Failed to create Steam Audio HRTF!"); // NOLINT
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AudioAsset>::Uuid());
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, AudioAsset::FileExtension);
 
-        AZLOG_INFO("Steam Audio System Implementation initialized."); // NOLINT
+        AZLOG_INFO("Bop Audio System Implementation initialized."); // NOLINT
         return Audio::EAudioRequestStatus::Success;
     }
 
     auto AudioSystemImpl_BopAudio::ShutDown() -> Audio::EAudioRequestStatus
     {
         m_assetHandlers.clear();
-        iplHRTFRelease(&m_hrtf);
-        iplContextRelease(&m_context);
 
         AZLOG_INFO("Steam Audio shutdown."); // NOLINT
         return Audio::EAudioRequestStatus::Success;
@@ -202,7 +173,7 @@ namespace BopAudio
     }
 
     auto AudioSystemImpl_BopAudio::PrepareTriggerSync(
-        Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLTriggerImplData* const triggerData)
+        Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLTriggerImplData* const /*triggerData*/)
         -> Audio::EAudioRequestStatus
     {
         AZLOG(ASI_miniaudio, "PrepareTriggerSync.\n");
@@ -249,8 +220,8 @@ namespace BopAudio
         return {};
     }
 
-    auto AudioSystemImpl_BopAudio::StopEvent(
-        Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLEventData* const eventData) -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_BopAudio::StopEvent(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLEventData* const eventData)
+        -> Audio::EAudioRequestStatus
     {
         AZLOG(ASI_miniaudio, "StopEvent.\n");
         AZ_UNUSED(audioObjectData, eventData);
@@ -339,8 +310,7 @@ namespace BopAudio
         return {};
     }
 
-    auto AudioSystemImpl_BopAudio::UnregisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry)
-        -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_BopAudio::UnregisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus
     {
         AZ_UNUSED(audioFileEntry);
         return {};

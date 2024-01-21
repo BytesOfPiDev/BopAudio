@@ -6,7 +6,6 @@
 #include "Engine/ATLEntities_BopAudio.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
-#include "phonon.h"
 
 namespace BopAudio
 {
@@ -135,12 +134,6 @@ namespace BopAudio
         static char const* const BopAudioImplSubPath;
         AZStd::string m_assetsPlatform;
         // ma_engine m_engine;
-
-        IPLContextSettings m_contextSettings{};
-        IPLContext m_context{ nullptr };
-        IPLHRTFSettings m_hrtfSettings{};
-        IPLAudioSettings m_audioSettings{};
-        IPLHRTF m_hrtf = nullptr;
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
 

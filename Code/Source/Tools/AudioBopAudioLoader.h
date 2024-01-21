@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ACETypes.h"
 #include "AzCore/XML/rapidxml.h"
 
 #include "Tools/AudioSystemControl_BopAudio.h"

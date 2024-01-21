@@ -14,7 +14,7 @@ namespace BopAudio
         AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_TYPE_INFO_WITH_NAME_DECL(AudioAsset); // NOLINT
 
-        static constexpr auto FileExtension = "steamaudio";
+        static constexpr auto FileExtension = "bafile";
         static constexpr auto AssetGroup = "Sound";
         static constexpr auto AssetSubId = 1u;
 
