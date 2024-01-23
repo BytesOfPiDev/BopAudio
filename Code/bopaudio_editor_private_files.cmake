@@ -18,4 +18,8 @@ set(FILES
     Source/Builder/AudioAssetBuilderComponent.h
     Source/Builder/AudioAssetBuilderWorker.cpp
     Source/Builder/AudioAssetBuilderWorker.h
+    Source/Builder/BopAudioControlBuilderComponent.cpp
+    Source/Builder/BopAudioControlBuilderComponent.h
+    Source/Builder/BopAudioControlBuilderWorker.cpp
+    Source/Builder/BopAudioControlBuilderWorker.h
 )

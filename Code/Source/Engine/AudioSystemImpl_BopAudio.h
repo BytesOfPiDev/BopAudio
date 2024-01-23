@@ -8,9 +8,12 @@
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 
+extern "C" {
+#include <miniaudio.h>
+}
+
 namespace BopAudio
 {
-
     class AudioSystemImpl_BopAudio : public Audio::AudioSystemImplementation
     {
     public:
@@ -38,49 +41,49 @@ namespace BopAudio
 
         auto StopAllSounds() -> Audio::EAudioRequestStatus override;
 
-        auto RegisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData, const char* const objectName)
+        auto RegisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
             -> Audio::EAudioRequestStatus override;
         auto UnregisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
         auto ResetAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
         auto UpdateAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
 
-        auto PrepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLTriggerImplData* const triggerData)
+        auto PrepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLTriggerImplData const* const triggerData)
             -> Audio::EAudioRequestStatus override;
-        auto UnprepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLTriggerImplData* const triggerData)
+        auto UnprepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLTriggerImplData const* const triggerData)
             -> Audio::EAudioRequestStatus override;
         auto PrepareTriggerAsync(
             Audio::IATLAudioObjectData* const audioObjectData,
-            const Audio::IATLTriggerImplData* const triggerData,
+            Audio::IATLTriggerImplData const* const triggerData,
             Audio::IATLEventData* const eventData) -> Audio::EAudioRequestStatus override;
         auto UnprepareTriggerAsync(
             Audio::IATLAudioObjectData* const audioObjectData,
-            const Audio::IATLTriggerImplData* const triggerData,
+            Audio::IATLTriggerImplData const* const triggerData,
             Audio::IATLEventData* const eventData) -> Audio::EAudioRequestStatus override;
         auto ActivateTrigger(
             Audio::IATLAudioObjectData* const audioObjectData,
-            const Audio::IATLTriggerImplData* const triggerData,
+            Audio::IATLTriggerImplData const* const triggerData,
             Audio::IATLEventData* const eventData,
-            const Audio::SATLSourceData* const pSourceData) -> Audio::EAudioRequestStatus override;
-        auto StopEvent(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLEventData* const eventData)
+            Audio::SATLSourceData const* const pSourceData) -> Audio::EAudioRequestStatus override;
+        auto StopEvent(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLEventData const* const eventData)
             -> Audio::EAudioRequestStatus override;
         auto StopAllEvents(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
-        auto SetPosition(Audio::IATLAudioObjectData* const audioObjectData, const Audio::SATLWorldPosition& worldPosition)
+        auto SetPosition(Audio::IATLAudioObjectData* const audioObjectData, Audio::SATLWorldPosition const& worldPosition)
             -> Audio::EAudioRequestStatus override;
-        auto SetMultiplePositions(Audio::IATLAudioObjectData* const audioObjectData, const Audio::MultiPositionParams& multiPositionParams)
+        auto SetMultiplePositions(Audio::IATLAudioObjectData* const audioObjectData, Audio::MultiPositionParams const& multiPositionParams)
             -> Audio::EAudioRequestStatus override;
         auto SetEnvironment(
             Audio::IATLAudioObjectData* const audioObjectData,
-            const Audio::IATLEnvironmentImplData* const environmentData,
-            const float amount) -> Audio::EAudioRequestStatus override;
-        auto SetRtpc(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLRtpcImplData* const rtpcData, const float value)
+            Audio::IATLEnvironmentImplData const* const environmentData,
+            float const amount) -> Audio::EAudioRequestStatus override;
+        auto SetRtpc(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLRtpcImplData const* const rtpcData, float const value)
             -> Audio::EAudioRequestStatus override;
-        auto SetSwitchState(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLSwitchStateImplData* const switchStateData)
+        auto SetSwitchState(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLSwitchStateImplData const* const switchStateData)
             -> Audio::EAudioRequestStatus override;
-        auto SetObstructionOcclusion(Audio::IATLAudioObjectData* const audioObjectData, const float obstruction, const float occlusion)
+        auto SetObstructionOcclusion(Audio::IATLAudioObjectData* const audioObjectData, float const obstruction, float const occlusion)
             -> Audio::EAudioRequestStatus override;
-        auto SetListenerPosition(Audio::IATLListenerData* const listenerData, const Audio::SATLWorldPosition& newPosition)
+        auto SetListenerPosition(Audio::IATLListenerData* const listenerData, Audio::SATLWorldPosition const& newPosition)
             -> Audio::EAudioRequestStatus override;
-        auto ResetRtpc(Audio::IATLAudioObjectData* const audioObjectData, const Audio::IATLRtpcImplData* const rtpcData)
+        auto ResetRtpc(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLRtpcImplData const* const rtpcData)
             -> Audio::EAudioRequestStatus override;
 
         auto RegisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus override;
@@ -89,7 +92,7 @@ namespace BopAudio
         auto ParseAudioFileEntry(const AZ::rapidxml::xml_node<char>* audioFileEntryNode, Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
             -> Audio::EAudioRequestStatus override;
         void DeleteAudioFileEntryData(Audio::IATLAudioFileEntryData* const oldAudioFileEntryData) override;
-        auto GetAudioFileLocation(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> const char* const override;
+        auto GetAudioFileLocation(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> char const* const override;
 
         auto NewAudioTriggerImplData(const AZ::rapidxml::xml_node<char>* audioTriggerNode) -> Audio::IATLTriggerImplData* override;
         void DeleteAudioTriggerImplData(Audio::IATLTriggerImplData* const oldTriggerImplData) override;
@@ -105,27 +108,27 @@ namespace BopAudio
             -> Audio::IATLEnvironmentImplData* override;
         void DeleteAudioEnvironmentImplData(Audio::IATLEnvironmentImplData* const oldEnvironmentImplData) override;
 
-        auto NewGlobalAudioObjectData(const Audio::TAudioObjectID objectId) -> Audio::IATLAudioObjectData* override;
-        auto NewAudioObjectData(const Audio::TAudioObjectID objectId) -> Audio::IATLAudioObjectData* override;
+        auto NewGlobalAudioObjectData(Audio::TAudioObjectID const objectId) -> Audio::IATLAudioObjectData* override;
+        auto NewAudioObjectData(Audio::TAudioObjectID const objectId) -> Audio::IATLAudioObjectData* override;
         void DeleteAudioObjectData(Audio::IATLAudioObjectData* const oldObjectData) override;
 
-        auto NewDefaultAudioListenerObjectData(const Audio::TATLIDType objectId) -> SATLListenerData_BopAudio* override;
-        auto NewAudioListenerObjectData(const Audio::TATLIDType objectId) -> SATLListenerData_BopAudio* override;
+        auto NewDefaultAudioListenerObjectData(Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio* override;
+        auto NewAudioListenerObjectData(Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio* override;
         void DeleteAudioListenerObjectData(Audio::IATLListenerData* const oldListenerData) override;
 
-        auto NewAudioEventData(const Audio::TAudioEventID eventId) -> SATLEventData_BopAudio* override;
+        auto NewAudioEventData(Audio::TAudioEventID const eventId) -> SATLEventData_BopAudio* override;
         void DeleteAudioEventData(Audio::IATLEventData* const oldEventData) override;
         void ResetAudioEventData(Audio::IATLEventData* const eventData) override;
 
-        [[nodiscard]] auto GetImplSubPath() const -> const char* const override;
-        void SetLanguage(const char* const language) override;
+        [[nodiscard]] auto GetImplSubPath() const -> char const* const override;
+        void SetLanguage(char const* const language) override;
 
-        // Functions below are only used when WWISE_RELEASE is not defined
-        [[nodiscard]] auto GetImplementationNameString() const -> const char* const override;
+        // Functions below are only used when RELEASE is not defined
+        [[nodiscard]] auto GetImplementationNameString() const -> char const* const override;
         void GetMemoryInfo(Audio::SAudioImplMemoryInfo& memoryInfo) const override;
         auto GetMemoryPoolInfo() -> AZStd::vector<Audio::AudioImplMemoryPoolInfo> override;
 
-        auto CreateAudioSource(const Audio::SAudioInputConfig& sourceConfig) -> bool override;
+        auto CreateAudioSource(Audio::SAudioInputConfig const& sourceConfig) -> bool override;
         void DestroyAudioSource(Audio::TAudioSourceId sourceId) override;
 
         void SetPanningMode(Audio::PanningMode mode) override;
@@ -137,10 +140,15 @@ namespace BopAudio
         AZStd::string m_assetsPlatform;
         AZStd::string m_language{};
 
+        ma_engine* m_engine;
+
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
         AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
+        // AZStd::vector<SATLAudioObjectData_BopAudio*> m_audioObjects{};
+        AZStd::map<AZ::Crc32, ma_sound> m_sounds;
+        AZStd::map<BA_UniqueId, AZStd::string> m_registeredObjects;
 
         AZStd::string m_soundLibraryFolder{};
         AZStd::string m_localizedSoundLibraryFolder{};

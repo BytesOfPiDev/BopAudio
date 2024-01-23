@@ -15,15 +15,23 @@
 
 namespace BopAudio
 {
-    auto TagToType(const AZStd::string_view tag) -> AudioControls::TImplControlType
+    auto TagToType(AZStd::string_view const tag) -> AudioControls::TImplControlType
     {
-        if (tag == XmlTags::EventTag)
+        if (tag == XmlTags::TriggerTag)
         {
             return BopAudioControlType::Trigger;
         }
         else if (tag == XmlTags::RtpcTag)
         {
             return BopAudioControlType::Rtpc;
+        }
+        else if (tag == XmlTags::AuxBusTag)
+        {
+            return BopAudioControlType::AuxBus;
+        }
+        else if (tag == XmlTags::BopFileTag)
+        {
+            return BopAudioControlType::SoundLibrary;
         }
         else if (tag == XmlTags::SwitchTag)
         {
@@ -37,21 +45,29 @@ namespace BopAudio
         return BopAudioControlType::Invalid;
     }
 
-    auto TypeToTag([[maybe_unused]] const AudioControls::TImplControlType type) -> AZStd::string_view
+    auto TypeToTag([[maybe_unused]] AudioControls::TImplControlType const type) -> AZStd::string_view
     {
         switch (type)
         {
         case BopAudioControlType::Trigger:
-            return XmlTags::EventTag;
+            return XmlTags::TriggerTag;
         case BopAudioControlType::Rtpc:
             return XmlTags::RtpcTag;
         case BopAudioControlType::Switch:
-            return XmlTags::SwitchTag;
+            return XmlTags::ValueTag;
+        case BopAudioControlType::AuxBus:
+            return XmlTags::AuxBusTag;
+        case BopAudioControlType::SoundLibrary:
+            return XmlTags::BopFileTag;
         case BopAudioControlType::GameState:
+            return XmlTags::ValueTag;
+        case BopAudioControlType::SwitchGroup:
+            return XmlTags::SwitchTag;
+        case BopAudioControlType::GameStateGroup:
             return XmlTags::GameStateTag;
         };
 
-        return "Invalid";
+        return "";
     }
 
     AudioSystemEditor_BopAudio::AudioSystemEditor_BopAudio() = default;
@@ -77,10 +93,11 @@ namespace BopAudio
         UpdateConnectedStatus();
     }
 
-    auto AudioSystemEditor_BopAudio::CreateControl(const AudioControls::SControlDef& controlDefinition)
+    auto AudioSystemEditor_BopAudio::CreateControl(AudioControls::SControlDef const& controlDefinition)
         -> AudioControls::IAudioSystemControl*
     {
         AZStd::string fullName = controlDefinition.m_name;
+
         AudioControls::IAudioSystemControl* parent = controlDefinition.m_parentControl;
         if (parent)
         {
@@ -147,13 +164,16 @@ namespace BopAudio
         {
         case BopAudioControlType::Trigger:
             return AudioControls::eACET_TRIGGER;
-        case BopAudioControlType::Rtpc:
-            return AudioControls::eACET_RTPC;
-        case BopAudioControlType::Switch:
-        case BopAudioControlType::GameState:
-            return AudioControls::eACET_SWITCH;
-        case BopAudioControlType::Environment:
-            return AudioControls::eACET_ENVIRONMENT;
+            /*
+                case BopAudioControlType::Rtpc:
+                    return AudioControls::eACET_RTPC;
+                case BopAudioControlType::Switch:
+                    [[fallthrough]];
+                case BopAudioControlType::GameState:
+                    return AudioControls::eACET_SWITCH;
+                case BopAudioControlType::Environment:
+                    return AudioControls::eACET_ENVIRONMENT;
+              */
         case BopAudioControlType::SoundLibrary:
             return AudioControls::eACET_PRELOAD;
         }
@@ -331,13 +351,134 @@ namespace BopAudio
     }
 
     auto AudioSystemEditor_BopAudio::CreateXMLNodeFromConnection(
-        const AudioControls::TConnectionPtr connection, const AudioControls::EACEControlType atlControlType)
+        AudioControls::TConnectionPtr const connection, AudioControls::EACEControlType const atlControlType)
         -> AZ::rapidxml::xml_node<char>*
     {
-        return {};
+        AudioControls::IAudioSystemControl const* control = GetControl(connection->GetID());
+        if (control)
+        {
+            AudioControls::XmlAllocator& xmlAllocator(AudioControls::s_xmlAllocator);
+
+            switch (control->GetType())
+            {
+            case BopAudioControlType::Switch:
+                [[fallthrough]];
+            case BopAudioControlType::SwitchGroup:
+                [[fallthrough]];
+            case BopAudioControlType::GameState:
+                [[fallthrough]];
+            case BopAudioControlType::GameStateGroup:
+                {
+                    AudioControls::IAudioSystemControl const* parent = control->GetParent();
+                    if (parent)
+                    {
+                        AZStd::string_view parentType = TypeToTag(parent->GetType());
+                        auto switchNode =
+                            xmlAllocator.allocate_node(AZ::rapidxml::node_element, xmlAllocator.allocate_string(parentType.data()));
+
+                        auto switchNameAttr = xmlAllocator.allocate_attribute(
+                            BopAudio::XmlTags::NameAttribute, xmlAllocator.allocate_string(parent->GetName().c_str()));
+
+                        auto stateNode = xmlAllocator.allocate_node(AZ::rapidxml::node_element, BopAudio::XmlTags::ValueAttribute);
+
+                        auto stateNameAttr = xmlAllocator.allocate_attribute(
+                            BopAudio::XmlTags::NameAttribute, xmlAllocator.allocate_string(control->GetName().c_str()));
+
+                        switchNode->append_attribute(switchNameAttr);
+                        stateNode->append_attribute(stateNameAttr);
+                        switchNode->append_node(stateNode);
+                        return switchNode;
+                    }
+                    break;
+                }
+
+            case BopAudioControlType::Rtpc:
+                {
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element, xmlAllocator.allocate_string(TypeToTag(control->GetType()).data()));
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        BopAudio::XmlTags::NameAttribute, xmlAllocator.allocate_string(control->GetName().c_str()));
+
+                    connectionNode->append_attribute(nameAttr);
+
+                    if (atlControlType == AudioControls::eACET_RTPC)
+                    {
+                        AZStd::shared_ptr<RtpcConnection const> rtpcConnection =
+                            AZStd::static_pointer_cast<RtpcConnection const>(connection);
+                        if (rtpcConnection->m_mult != 1.f)
+                        {
+                            auto multAttr = xmlAllocator.allocate_attribute(
+                                BopAudio::XmlTags::MultiplierAttribute,
+                                xmlAllocator.allocate_string(AZStd::to_string(rtpcConnection->m_mult).c_str()));
+
+                            connectionNode->append_attribute(multAttr);
+                        }
+
+                        if (rtpcConnection->m_shift != 0.f)
+                        {
+                            auto shiftAttr = xmlAllocator.allocate_attribute(
+                                BopAudio::XmlTags::ShiftAttribute,
+                                xmlAllocator.allocate_string(AZStd::to_string(rtpcConnection->m_shift).c_str()));
+
+                            connectionNode->append_attribute(shiftAttr);
+                        }
+                    }
+                    else if (atlControlType == AudioControls::eACET_SWITCH_STATE)
+                    {
+                        AZStd::shared_ptr<StateToRtpcConnection const> stateConnection =
+                            AZStd::static_pointer_cast<StateToRtpcConnection const>(connection);
+
+                        auto valueAttr = xmlAllocator.allocate_attribute(
+                            BopAudio::XmlTags::ValueAttribute,
+                            xmlAllocator.allocate_string(AZStd::to_string(stateConnection->m_value).c_str()));
+
+                        connectionNode->append_attribute(valueAttr);
+                    }
+
+                    return connectionNode;
+                }
+
+            case BopAudioControlType::Trigger:
+                [[fallthrough]];
+            case BopAudioControlType::AuxBus:
+                {
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element, xmlAllocator.allocate_string(TypeToTag(control->GetType()).data()));
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        BopAudio::XmlTags::NameAttribute, xmlAllocator.allocate_string(control->GetName().c_str()));
+
+                    connectionNode->append_attribute(nameAttr);
+                    return connectionNode;
+                }
+
+            case BopAudioControlType::SoundLibrary:
+                {
+                    auto connectionNode = xmlAllocator.allocate_node(
+                        AZ::rapidxml::node_element, xmlAllocator.allocate_string(TypeToTag(control->GetType()).data()));
+
+                    auto nameAttr = xmlAllocator.allocate_attribute(
+                        BopAudio::XmlTags::NameAttribute, xmlAllocator.allocate_string(control->GetName().c_str()));
+
+                    connectionNode->append_attribute(nameAttr);
+
+                    if (control->IsLocalized())
+                    {
+                        auto locAttr =
+                            xmlAllocator.allocate_attribute(BopAudio::XmlTags::LocalizedAttribute, xmlAllocator.allocate_string("true"));
+
+                        connectionNode->append_attribute(locAttr);
+                    }
+
+                    return connectionNode;
+                }
+            }
+        }
+        return nullptr;
     }
 
-    auto AudioSystemEditor_BopAudio::GetTypeIcon(AudioControls::TImplControlType type) const -> const AZStd::string_view
+    auto AudioSystemEditor_BopAudio::GetTypeIcon(AudioControls::TImplControlType type) const -> AZStd::string_view const
     {
         switch (type)
         {
@@ -348,7 +489,7 @@ namespace BopAudio
         };
     }
 
-    auto AudioSystemEditor_BopAudio::GetTypeIconSelected(AudioControls::TImplControlType type) const -> const AZStd::string_view
+    auto AudioSystemEditor_BopAudio::GetTypeIconSelected(AudioControls::TImplControlType type) const -> AZStd::string_view const
     {
         return {};
     }
@@ -365,6 +506,13 @@ namespace BopAudio
 
     void AudioSystemEditor_BopAudio::ConnectionRemoved(AudioControls::IAudioSystemControl* control)
     {
+        int connectionCount = m_connectionsByID[control->GetId()] - 1;
+        if (connectionCount <= 0)
+        {
+            connectionCount = 0;
+            control->SetConnected(false);
+        }
+        m_connectionsByID[control->GetId()] = connectionCount;
     }
 
     auto AudioSystemEditor_BopAudio::GetControlByName(
@@ -383,12 +531,24 @@ namespace BopAudio
         return GetControl(GetID(name));
     }
 
-    auto AudioSystemEditor_BopAudio::GetID(const AZStd::string_view name) const -> AudioControls::CID
+    auto AudioSystemEditor_BopAudio::GetID(AZStd::string_view const name) const -> AudioControls::CID
     {
         return Audio::AudioStringToID<AudioControls::CID>(name.data());
     }
 
     void AudioSystemEditor_BopAudio::UpdateConnectedStatus()
     {
+        for (auto const& idCountPair : m_connectionsByID)
+        {
+            if (idCountPair.second > 0)
+            {
+                AudioControls::IAudioSystemControl* control = GetControl(idCountPair.first);
+                if (control)
+                {
+                    control->SetConnected(true);
+                }
+            }
+        }
     }
+
 } // namespace BopAudio

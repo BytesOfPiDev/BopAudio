@@ -37,7 +37,7 @@ namespace BopAudio
         LoadSoundBanks(GetLibrariesRootPath(), "", false);
     }
 
-    void AudioBopAudioLoader::LoadControlsInFolder(const AZStd::string_view folderPath)
+    void AudioBopAudioLoader::LoadControlsInFolder(AZStd::string_view const folderPath)
     {
         auto foundFiles = Audio::FindFilesInPath(folderPath, "*");
 
@@ -76,13 +76,13 @@ namespace BopAudio
         ExtractControlsFromXML(xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
         ExtractControlsFromXML(xmlNode, BopAudioControlType::AuxBus, BopAudioStrings::AuxBusTag, BopAudioStrings::NameAttribute);
 
-        AZStd::string_view xmlTag(xmlNode->name());
-        bool isSwitchTag{ xmlTag == BopAudioStrings::SwitchGroupTag };
-        bool isStateTag{ xmlTag == BopAudioStrings::StateGroupTag };
+        AZStd::string_view const xmlTag(xmlNode->name());
+        bool const isSwitchTag{ xmlTag == BopAudioStrings::SwitchGroupTag };
+        bool const isStateTag{ xmlTag == BopAudioStrings::StateGroupTag };
 
         if (isSwitchTag || isStateTag)
         {
-            if (auto nameAttr = xmlNode->first_attribute(BopAudioStrings::NameAttribute))
+            if (auto const nameAttr = xmlNode->first_attribute(BopAudioStrings::NameAttribute))
             {
                 AZStd::string const parentName{ nameAttr->value() };
                 AudioControls::IAudioSystemControl* group = m_audioSystemImpl->GetControlByName(parentName);
@@ -92,7 +92,7 @@ namespace BopAudio
                         parentName, isSwitchTag ? BopAudioControlType::SwitchGroup : BopAudioControlType::GameStateGroup));
                 }
 
-                auto childrenNode = xmlNode->first_node(BopAudioStrings::ChildrenListTag);
+                auto const childrenNode = xmlNode->first_node(BopAudioStrings::ChildrenListTag);
                 if (childrenNode)
                 {
                     auto childNode = childrenNode->first_node();
