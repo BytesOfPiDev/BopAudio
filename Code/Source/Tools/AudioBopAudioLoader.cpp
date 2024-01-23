@@ -146,39 +146,37 @@ namespace BopAudio
         AZ::IO::FixedMaxPath searchPath(rootFolder);
         searchPath /= subPath;
 
-        auto foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
+        auto const foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
         bool isLocalizedLoaded = isLocalized;
 
-        AZStd::ranges::for_each(
-            foundFiles,
-            [&isLocalizedLoaded, this, &searchPath, &isLocalized, &subPath](auto const& filePath) -> void
+        for (auto const& filePath : foundFiles)
+        {
+            AZ_Assert(
+                AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()),
+                "FindFiles found '%s' but FileIO says it doesn't exist!",
+                filePath.c_str());
+
+            AZ::IO::Path fileName = filePath.Filename();
+
+            if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
             {
-                AZ_Assert(
-                    AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()),
-                    "FindFiles found '%s' but FileIO says it doesn't exist!",
-                    filePath.c_str());
-
-                AZ::IO::PathView fileName = filePath.Filename();
-
-                if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
+                if (fileName != ExternalSourcesPath && !isLocalizedLoaded)
                 {
-                    if (fileName != ExternalSourcesPath && !isLocalizedLoaded)
-                    {
-                        // each sub-folder represents a different language,
-                        // we load only one as all of them should have the
-                        // same content (in the future we want to have a
-                        // consistency report to highlight if this is not the case)
-                        m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
-                        LoadSoundBanks(searchPath.Native(), m_localizationFolder, true);
-                        isLocalizedLoaded = true;
-                    }
+                    // each sub-folder represents a different language,
+                    // we load only one as all of them should have the
+                    // same content (in the future we want to have a
+                    // consistency report to highlight if this is not the case)
+                    m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
+                    LoadSoundBanks(searchPath.Native(), m_localizationFolder, true);
+                    isLocalizedLoaded = true;
                 }
-                else if (fileName.Extension() == LibraryExtension && fileName != InitLibrary)
-                {
-                    m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                        AZStd::string{ fileName.Native() }, BopAudioControlType::SoundLibrary, isLocalized, nullptr, subPath));
-                }
-            });
+            }
+            else if (fileName.Extension() == LibraryExtension && fileName != InitLibrary)
+            {
+                m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
+                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundLibrary, isLocalized, nullptr, subPath));
+            }
+        }
     }
 
 } // namespace BopAudio

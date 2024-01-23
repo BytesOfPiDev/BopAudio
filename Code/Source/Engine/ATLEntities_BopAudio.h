@@ -65,6 +65,8 @@ namespace BopAudio
 
     struct SATLEventData_BopAudio : public Audio::IATLEventData
     {
+        AZ_RTTI(SATLEventData_BopAudio, "{5AE1BEEB-BA62-483A-A84B-4E62FAFC1007}", Audio::IATLEventData);
+
         explicit SATLEventData_BopAudio(const Audio::TAudioEventID passedId)
             : m_audioEventState(Audio::eAES_NONE)
             , m_maId(AZ::Crc32())
@@ -92,3 +94,8 @@ namespace BopAudio
     };
 
 } // namespace BopAudio
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(Audio::IATLEventData, "{ABB8C1B1-0CA6-4191-BB37-F5B5F0A45D44}");
+}

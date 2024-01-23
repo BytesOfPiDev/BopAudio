@@ -19,4 +19,5 @@ set(FILES
     Source/Engine/Common_BopAudio.h
     Source/Engine/ConfigurationSettings.cpp
     Source/Engine/ConfigurationSettings.h
+    Source/Engine/MiniAudioIncludes.h
 )

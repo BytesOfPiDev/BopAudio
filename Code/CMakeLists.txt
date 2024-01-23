@@ -17,7 +17,6 @@ if(NOT PAL_TRAIT_BOPAUDIO_SUPPORTED)
   return()
 endif()
 
-
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -33,6 +32,7 @@ ly_add_target(
            AZ::AzCore
            Gem::AudioSystem.API
 )
+
 
 # The ${gem_name}.Private.Object target is an internal target
 # It should not be used outside of this Gems CMakeLists.txt
@@ -53,6 +53,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             ${gem_name}.API
+        PRIVATE
+            3rdParty::miniaudio
+            3rdParty::stb_vorbis
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface

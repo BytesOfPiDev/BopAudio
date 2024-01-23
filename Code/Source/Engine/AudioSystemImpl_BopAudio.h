@@ -3,6 +3,7 @@
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
+#include "AzFramework/Entity/EntityContext.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
@@ -131,11 +132,15 @@ namespace BopAudio
         //////////////////////////////////////////////////////////////////////////
 
     private:
+        AZStd::unique_ptr<AzFramework::EntityContext> m_audioEntityContext{};
         static char const* const BopAudioImplSubPath;
         AZStd::string m_assetsPlatform;
-        // ma_engine m_engine;
+        AZStd::string m_language{};
+
+        Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
+        AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
 
         AZStd::string m_soundLibraryFolder{};
         AZStd::string m_localizedSoundLibraryFolder{};

@@ -17,6 +17,6 @@ namespace BopAudio
 
     auto ConfigurationSettings::Load(AZStd::string_view configFile) -> bool
     {
-        return false;
+        return true;
     }
 } // namespace BopAudio

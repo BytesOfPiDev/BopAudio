@@ -18,9 +18,9 @@ namespace BopAudio
     {
         AudioAsset::Reflect(context);
 
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
+            serialize->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
@@ -38,12 +38,13 @@ namespace BopAudio
 
     void BopAudioSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AudioSystemService"));
+        required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     void BopAudioSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AudioSystemService"));
+        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
+        dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
