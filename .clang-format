@@ -17,15 +17,15 @@ BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBraces: Custom
 BraceWrapping:
-    AfterClass: true
-    AfterControlStatement: true
-    AfterEnum: true
-    AfterFunction: true
-    AfterNamespace: true
-    BeforeLambdaBody: true
-    AfterStruct: true
-    BeforeElse: true
-    SplitEmptyFunction: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  BeforeLambdaBody: true
+  AfterStruct: true
+  BeforeElse: true
+  SplitEmptyFunction: true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
@@ -44,6 +44,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
+QualifierAlignment: Right
 SortIncludes: true
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
