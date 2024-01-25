@@ -5,7 +5,7 @@ namespace BopAudio
 
     static AZStd::string_view s_configuredBanksPath = DefaultBanksPath; // NOLINT
 
-    auto GetLibrariesRootPath() -> AZStd::string_view const
+    auto GetBanksRootPath() -> AZStd::string_view const
     {
         return s_configuredBanksPath;
     }

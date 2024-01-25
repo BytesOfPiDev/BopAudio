@@ -54,6 +54,7 @@ ly_add_target(
             AZ::AzFramework
             ${gem_name}.API
         PRIVATE
+            Gem::MiniAudio
             3rdParty::miniaudio
             3rdParty::stb_vorbis
 )

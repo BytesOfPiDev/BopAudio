@@ -5,17 +5,21 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzFramework/Entity/EntityContext.h"
 #include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/MiniAudioEngine.h"
+#include "Engine/Sound.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 
-extern "C" {
-#include <miniaudio.h>
-}
+#include "MiniAudioIncludes.h"
 
 namespace BopAudio
 {
+    class MiniAudioEngine;
+
     class AudioSystemImpl_BopAudio : public Audio::AudioSystemImplementation
     {
+        friend MiniAudioEngine;
+
     public:
         AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_BopAudio);
         AZ_DISABLE_COPY_MOVE(AudioSystemImpl_BopAudio);
@@ -140,17 +144,23 @@ namespace BopAudio
         AZStd::string m_assetsPlatform;
         AZStd::string m_language{};
 
-        ma_engine* m_engine;
+        ma_engine* m_maEngine;
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
         AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
         // AZStd::vector<SATLAudioObjectData_BopAudio*> m_audioObjects{};
-        AZStd::map<AZ::Crc32, ma_sound> m_sounds;
         AZStd::map<BA_UniqueId, AZStd::string> m_registeredObjects;
 
-        AZStd::string m_soundLibraryFolder{};
-        AZStd::string m_localizedSoundLibraryFolder{};
+        AZStd::string m_soundBankFolder{};
+        AZStd::string m_localizedSoundBankFolder{};
+
+        AZStd::map<AZStd::string, SoundPtr> m_sounds;
+        AZStd::vector<MiniAudio::SoundDataAsset> m_soundDatas;
+        AZStd::map<BA_TriggerId, BA_SoundId> m_triggerToSound{};
+
+        AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
+        AZStd::unique_ptr<MiniAudioEngine> m_bopAudioEngine;
     };
 } // namespace BopAudio

@@ -1,6 +1,7 @@
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
+#include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
@@ -11,21 +12,6 @@
 
 namespace BopAudio
 {
-    namespace BopAudioStrings
-    {
-        // Project Folders
-        static constexpr auto GameParametersFolder = "GameParameters";
-        static constexpr auto EventsFolder = "Events";
-
-        // Xml Tags
-        static constexpr auto EventTag = "Event";
-        static constexpr auto NameAttribute = "Name";
-        static constexpr auto AuxBusTag = "AuxBus";
-        static constexpr auto SwitchGroupTag = "SwitchGroup";
-        static constexpr auto StateGroupTag = "StateGroup";
-        static constexpr auto ChildrenListTag = "ChildrenList";
-
-    } // namespace BopAudioStrings
 
     void AudioBopAudioLoader::Load(AudioSystemEditor_BopAudio* audioSystemImpl)
     {
@@ -34,7 +20,7 @@ namespace BopAudio
 
         LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
         LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
-        LoadSoundBanks(GetLibrariesRootPath(), "", false);
+        LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
     void AudioBopAudioLoader::LoadControlsInFolder(AZStd::string_view const folderPath)

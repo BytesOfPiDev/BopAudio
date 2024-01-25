@@ -24,8 +24,8 @@ namespace BopAudio
         void ExtractControlsFromXML(
             const AZ::rapidxml::xml_node<char>* xmlNode,
             BopAudioControlType type,
-            const AZStd::string_view controlTag,
-            const AZStd::string_view controlNameAttribute);
+            AZStd::string_view const controlTag,
+            AZStd::string_view const controlNameAttribute);
 
     private:
         AZStd::string m_localizationFolder;

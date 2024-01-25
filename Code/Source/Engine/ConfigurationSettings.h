@@ -11,7 +11,7 @@ namespace BopAudio
     static constexpr auto MediaExtension = ".baf";
     static constexpr auto InitBank = "init.soundlib";
 
-    auto GetLibrariesRootPath() -> AZStd::string_view const;
+    auto GetBanksRootPath() -> AZStd::string_view const;
     void SetLibrariesRootPath(AZStd::string_view const path);
 
     class ConfigurationSettings
