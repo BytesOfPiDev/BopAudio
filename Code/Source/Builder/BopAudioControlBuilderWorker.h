@@ -40,6 +40,6 @@ namespace BopAudio
 
     private:
         AZStd::string m_globalScopeControlsPath;
-        AZStd::atomic_bool m_isShuttingDown;
+        AZStd::atomic_bool m_isShuttingDown{};
     };
 } // namespace BopAudio

@@ -1,12 +1,12 @@
 #include "Engine/AudioSystemImpl_BopAudio.h"
 
 #include "ATLEntityData.h"
-#include "AzCore/Component/TransformBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
-#include "AzCore/Math/Matrix3x4.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "Engine/Common_BopAudio.h"
 #include "IAudioInterfacesCommonData.h"
+#include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 
 #include "BopAudio/AudioAsset.h"
@@ -61,7 +61,7 @@ namespace BopAudio
     void AudioSystemImpl_BopAudio::SetPaths()
     {
         // "sounds/bopaudio/"
-        AZStd::string libraryPath = DefaultLibrariesPath;
+        AZStd::string libraryPath = DefaultBanksPath;
 
         // "sounds/bopaudio/bopaudio_config.json"
         auto const configFilename = libraryPath + ConfigFile; //! TODO: Compile-time evaluate
@@ -79,7 +79,7 @@ namespace BopAudio
                 AZStd::string initLibraryPath{};
                 AZLOG_INFO("InitLibraryPath set: %s.", initLibraryPath.c_str());
                 // "sounds/bopaudio/linux/init.soundlib"
-                AZ::StringFunc::AssetDatabasePath::Join(platformPath.c_str(), InitLibrary, initLibraryPath);
+                AZ::StringFunc::AssetDatabasePath::Join(platformPath.c_str(), InitBank, initLibraryPath);
                 AZLOG_INFO("InitLibraryPath changed: %s.", initLibraryPath.c_str());
                 if (AZ::IO::FileIOBase::GetInstance()->Exists(initLibraryPath.c_str()))
                 {
@@ -427,9 +427,17 @@ namespace BopAudio
     auto AudioSystemImpl_BopAudio::NewAudioTriggerImplData(const AZ::rapidxml::xml_node<char>* audioTriggerNode)
         -> Audio::IATLTriggerImplData*
     {
+        if (!audioTriggerNode)
+        {
+            return nullptr;
+        }
+
+        auto nameAttrib{ audioTriggerNode->first_attribute(XmlTags::NameAttribute) };
+        auto triggerName{ nameAttrib->value() };
+        auto triggerId{ Audio::AudioStringToID<BA_UniqueId>(triggerName) };
+
         AZLOG(ASI_BopAudio, "BopAudio: NewAudioTriggerImplData.");
-        AZ_UNUSED(audioTriggerNode);
-        return nullptr;
+        return new SATLTriggerImplData_BopAudio(BA_UniqueId(triggerId));
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioTriggerImplData(Audio::IATLTriggerImplData* const oldTriggerImplData)
@@ -440,21 +448,20 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::NewAudioRtpcImplData(const AZ::rapidxml::xml_node<char>* audioRtpcNode) -> Audio::IATLRtpcImplData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioRtpcImplData.");
-        AZ_UNUSED(audioRtpcNode);
+        AZLOG_ERROR("BopAudio: NewAudioRtpcImplData [audioRtpcNode->name(): %s] Not implemented.", audioRtpcNode->name());
         return nullptr;
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioRtpcImplData(Audio::IATLRtpcImplData* const oldRtpcImplData)
     {
-        AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioRtpcImplData.");
+        AZLOG_ERROR("BopAudio: DeleteAudioRtpcImplData. Not implemented.");
         delete oldRtpcImplData;
     }
 
     auto AudioSystemImpl_BopAudio::NewAudioSwitchStateImplData(const AZ::rapidxml::xml_node<char>* audioSwitchStateNode)
         -> Audio::IATLSwitchStateImplData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioSwitchStateImplData.");
+        AZLOG_ERROR("BopAudio: NewAudioSwitchStateImplData. Not implemented.");
         AZ_UNUSED(audioSwitchStateNode);
         return nullptr;
     }

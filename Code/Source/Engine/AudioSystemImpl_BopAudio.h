@@ -17,8 +17,8 @@ namespace BopAudio
     class AudioSystemImpl_BopAudio : public Audio::AudioSystemImplementation
     {
     public:
-        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_BopAudio); // NOLINT
-        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_BopAudio); // NOLINT
+        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_BopAudio);
+        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_BopAudio);
 
         explicit AudioSystemImpl_BopAudio(AZStd::string_view assetsPlatformName);
         ~AudioSystemImpl_BopAudio() override;
@@ -144,7 +144,7 @@ namespace BopAudio
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
-        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
+        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
         AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
         // AZStd::vector<SATLAudioObjectData_BopAudio*> m_audioObjects{};
         AZStd::map<AZ::Crc32, ma_sound> m_sounds;

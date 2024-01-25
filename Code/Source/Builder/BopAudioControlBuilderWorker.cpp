@@ -1,6 +1,7 @@
 #include "Builder/BopAudioControlBuilderWorker.h"
 
 #include "ATLCommon.h"
+#include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/IO/SystemFile.h"
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/StringFunc/StringFunc.h"
@@ -18,8 +19,6 @@ namespace BopAudio
     namespace Internal
     {
         constexpr auto JsonEventsKey{ "includedEvents" };
-        [[maybe_unused]] constexpr auto SoundbankDependencyFileExtension{ ".bankdeps" };
-
         constexpr auto NodeDoesNotExistMessage =
             "%s node does not exist. Please be sure that you have defined at least one %s for this Audio Control file.\n";
         constexpr auto MalformedNodeMissingAttributeMessage{
@@ -206,7 +205,7 @@ namespace BopAudio
 
                             // Prepend the bank name with the relative path to the wwise sounds folder to get relative path to the bank from
                             //  the @products@ alias and push that into the list of banks referenced.
-                            AZStd::string soundsPrefix = DefaultLibrariesPath;
+                            AZStd::string soundsPrefix = DefaultBanksPath;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 
                             wwiseFileNode = wwiseFileNode->next_sibling(XmlTags::BopFileTag);
@@ -262,19 +261,19 @@ namespace BopAudio
             }
 
             // Loop through the ATLPreloadRequest nodes...
-            // Find any Wwise banks listed and add them to the banksReferenced vector.
+            // Find any BopAudio librarties listed and add them to the banksReferenced vector.
             while (preloadRequestNode)
             {
-                // Attempt to find the child node in the New Xml format...
-                if (auto wwiseFileNode = preloadRequestNode->first_node(XmlTags::BopFileTag))
+                // Find the first BopFileTag
+                if (auto bopAudioFileNode = preloadRequestNode->first_node(XmlTags::BopFileTag))
                 {
-                    while (wwiseFileNode)
+                    while (bopAudioFileNode)
                     {
-                        auto const bankNameAttr = wwiseFileNode->first_attribute(XmlTags::NameAttribute);
-                        if (bankNameAttr)
+                        auto const libraryNameAttr = bopAudioFileNode->first_attribute(XmlTags::NameAttribute);
+                        if (libraryNameAttr)
                         {
-                            AZStd::string soundsPrefix = DefaultLibrariesPath;
-                            banksReferenced.emplace_back(soundsPrefix + bankNameAttr->value());
+                            AZStd::string soundsPrefix = DefaultBanksPath;
+                            banksReferenced.emplace_back(soundsPrefix + libraryNameAttr->value());
                         }
                         else
                         {
@@ -282,7 +281,7 @@ namespace BopAudio
                                 AZStd::string::format(MalformedNodeMissingAttributeMessage, XmlTags::BopFileTag, XmlTags::NameAttribute));
                         }
 
-                        wwiseFileNode = wwiseFileNode->next_sibling(XmlTags::BopFileTag);
+                        bopAudioFileNode = bopAudioFileNode->next_sibling(XmlTags::BopFileTag);
                     }
                 }
                 else
@@ -296,8 +295,8 @@ namespace BopAudio
             return AZ::Success();
         }
 
-        AZ::Outcome<void, AZStd::string> GetEventsFromBankMetadata(
-            rapidjson::Value const& rootObject, AZStd::set<AZStd::string>& eventNames)
+        auto GetEventsFromBankMetadata(rapidjson::Value const& rootObject, AZStd::set<AZStd::string>& eventNames)
+            -> AZ::Outcome<void, AZStd::string>
         {
             if (!rootObject.IsObject())
             {
@@ -422,6 +421,7 @@ namespace BopAudio
         }
 
         response.m_outputProducts.push_back(jobProduct);
+        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }
 
     void BopAudioControlBuilderWorker::ShutDown()
@@ -478,7 +478,7 @@ namespace BopAudio
         const AZ::rapidxml::xml_node<char>* node,
         AZStd::string const& fullPath,
         [[maybe_unused]] AZStd::string const& sourceFile,
-        AZStd::string const& platformIdentifier,
+        [[maybe_unused]] AZStd::string const& platformIdentifier,
         [[maybe_unused]] AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies,
         AssetBuilderSDK::ProductPathDependencySet& pathDependencies)
     {
@@ -495,13 +495,6 @@ namespace BopAudio
         // Collect any references to soundbanks, initially use the newer parsing format...
         AZStd::vector<AZStd::string> banksReferenced;
         AZ::Outcome<void, AZStd::string> gatherBankReferencesResult = Internal::GetBanksFromAtlPreloads(preloadsNode, banksReferenced);
-        if (!gatherBankReferencesResult)
-        {
-            // Legacy...
-            // Convert platform name to platform name that is used by wwise and ATL.
-            AZStd::string atlPlatformName = AZStd::move(Internal::Legacy::GetAtlPlatformName(platformIdentifier));
-            gatherBankReferencesResult = Internal::Legacy::GetBanksFromAtlPreloads(preloadsNode, atlPlatformName, banksReferenced);
-        }
 
         if (!gatherBankReferencesResult)
         {
@@ -551,7 +544,7 @@ namespace BopAudio
         AZ::u64 firstSubDirectoryIndex = AZ::StringFunc::Find(projectSourcePath, m_globalScopeControlsPath);
         AZ::StringFunc::LKeep(projectSourcePath, firstSubDirectoryIndex);
 
-        AZStd::set<AZStd::string> wwiseEventsInReferencedBanks;
+        AZStd::set<AZStd::string> bopAudioTriggersInReferencedBanks;
 
         // Load all bankdeps files for all banks referenced and aggregate the list of events in those files.
         for (AZStd::string const& relativeBankPath : banksReferenced)
@@ -559,10 +552,10 @@ namespace BopAudio
             // Create the full path to the bankdeps file from the bank file.
             AZStd::string bankMetadataPath;
             AZ::StringFunc::Path::Join(projectSourcePath.c_str(), relativeBankPath.c_str(), bankMetadataPath);
-            AZ::StringFunc::Path::ReplaceExtension(bankMetadataPath, Internal::SoundbankDependencyFileExtension);
+            AZ::StringFunc::Path::ReplaceExtension(bankMetadataPath, SoundbankDependencyFileExtension);
 
             AZ::Outcome<void, AZStd::string> getReferencedEventsResult =
-                Internal::GetEventsFromBank(bankMetadataPath, wwiseEventsInReferencedBanks);
+                Internal::GetEventsFromBank(bankMetadataPath, bopAudioTriggersInReferencedBanks);
             if (!getReferencedEventsResult.IsSuccess())
             {
                 // only warn if we couldn't get info from a bankdeps file. Won't impact registering dependencies, but used to help
@@ -579,7 +572,7 @@ namespace BopAudio
         // Confirm that each event referenced by the file exists in the list of events available from the banks referenced.
         for (AZStd::string const& eventInControlFile : eventsReferenced)
         {
-            if (wwiseEventsInReferencedBanks.find(eventInControlFile) == wwiseEventsInReferencedBanks.end())
+            if (bopAudioTriggersInReferencedBanks.find(eventInControlFile) == bopAudioTriggersInReferencedBanks.end())
             {
                 AZ_Warning(
                     "Audio Control Builder",

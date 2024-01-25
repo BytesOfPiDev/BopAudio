@@ -171,10 +171,10 @@ namespace BopAudio
                     isLocalizedLoaded = true;
                 }
             }
-            else if (fileName.Extension() == LibraryExtension && fileName != InitLibrary)
+            else if (fileName.Extension() == SoundbankExtension && fileName != InitBank)
             {
                 m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundLibrary, isLocalized, nullptr, subPath));
+                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundBank, isLocalized, nullptr, subPath));
             }
         }
     }

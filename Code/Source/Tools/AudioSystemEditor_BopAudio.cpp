@@ -31,7 +31,7 @@ namespace BopAudio
         }
         else if (tag == XmlTags::BopFileTag)
         {
-            return BopAudioControlType::SoundLibrary;
+            return BopAudioControlType::SoundBank;
         }
         else if (tag == XmlTags::SwitchTag)
         {
@@ -57,7 +57,7 @@ namespace BopAudio
             return XmlTags::ValueTag;
         case BopAudioControlType::AuxBus:
             return XmlTags::AuxBusTag;
-        case BopAudioControlType::SoundLibrary:
+        case BopAudioControlType::SoundBank:
             return XmlTags::BopFileTag;
         case BopAudioControlType::GameState:
             return XmlTags::ValueTag;
@@ -174,7 +174,7 @@ namespace BopAudio
                 case BopAudioControlType::Environment:
                     return AudioControls::eACET_ENVIRONMENT;
               */
-        case BopAudioControlType::SoundLibrary:
+        case BopAudioControlType::SoundBank:
             return AudioControls::eACET_PRELOAD;
         }
 
@@ -197,7 +197,7 @@ namespace BopAudio
         case AudioControls::eACET_ENVIRONMENT:
             return (BopAudioControlType::AuxBus | BopAudioControlType::Rtpc);
         case AudioControls::eACET_PRELOAD:
-            return BopAudioControlType::SoundLibrary;
+            return BopAudioControlType::SoundBank;
         }
         return AudioControls::AUDIO_IMPL_INVALID_TYPE;
     }
@@ -453,7 +453,7 @@ namespace BopAudio
                     return connectionNode;
                 }
 
-            case BopAudioControlType::SoundLibrary:
+            case BopAudioControlType::SoundBank:
                 {
                     auto connectionNode = xmlAllocator.allocate_node(
                         AZ::rapidxml::node_element, xmlAllocator.allocate_string(TypeToTag(control->GetType()).data()));

@@ -3,12 +3,13 @@
 #include "AzCore/std/string/string_view.h"
 namespace BopAudio
 {
-    static constexpr auto DefaultLibrariesPath = "sounds/bopaudio/";
+    static constexpr auto DefaultBanksPath = "sounds/bopaudio/";
     static constexpr auto ExternalSourcesPath = "external";
     static constexpr auto ConfigFile = "bopaudio_config.json";
-    static constexpr auto LibraryExtension = ".soundlib";
+    static constexpr auto SoundbankExtension = ".soundlib";
+    static constexpr auto SoundbankDependencyFileExtension{ ".soundbankdeps" };
     static constexpr auto MediaExtension = ".baf";
-    static constexpr auto InitLibrary = "init.soundlib";
+    static constexpr auto InitBank = "init.soundlib";
 
     auto GetLibrariesRootPath() -> AZStd::string_view const;
     void SetLibrariesRootPath(AZStd::string_view const path);

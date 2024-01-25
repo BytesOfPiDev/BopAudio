@@ -7,11 +7,13 @@
 
 namespace BopAudio
 {
+    static constexpr auto MaxStringIdSize{ 32 };
 
     using BA_GameObjectId = AZ::Crc32;
     using BA_RtpcId = AZ::Crc32;
     using BA_UniqueId = AZ::Crc32;
     using BA_LibraryId = AZ::Crc32;
+    using BA_Name = AZStd::string;
 
     using UniqueIDVector = AZStd::vector<BA_UniqueId, Audio::AudioImplStdAllocator>;
 
