@@ -31,4 +31,6 @@ namespace BopAudio
         AZ::Name m_name;
         SoundPtr m_sound;
     };
+
+    auto MakeSoundPtr(AZ::Name const& soundName, ma_engine* engine) -> SoundPtr;
 } // namespace BopAudio

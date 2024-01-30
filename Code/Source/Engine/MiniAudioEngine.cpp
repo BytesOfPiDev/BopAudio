@@ -1,32 +1,35 @@
 #include "Engine/MiniAudioEngine.h"
 
-#include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
-#include "AzCore/RTTI/TypeInfoSimple.h"
-#include "Engine/MiniAudioEngineBus.h"
+#include "AudioAllocators.h"
+#include "AzCore/Console/ILogger.h"
+#include "AzCore/std/algorithm.h"
 #include "IAudioSystem.h"
-#include "MiniAudio/SoundAsset.h"
+#include "MiniAudio/MiniAudioBus.h"
 
 #include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/Common_BopAudio.h"
-#include "Engine/ConfigurationSettings.h"
+#include "Engine/MiniAudioIncludes.h"
 
 namespace BopAudio
 {
-
     class AudioSystemImpl_BopAudio;
 
     MiniAudioEngine::MiniAudioEngine() = default;
+
+    MiniAudioEngine::~MiniAudioEngine()
+    {
+        AZLOG_INFO("Begin audio object cleanup...");
+        m_audioObjects.clear();
+
+        AZLOG_INFO("Finished audio object cleanup.");
+    }
 
     auto MiniAudioEngine::Initialize() -> bool
     {
         return true;
     }
 
-    auto MiniAudioEngine::Unload() -> bool
+    auto MiniAudioEngine::Shutdown() -> bool
     {
-        m_soundBanks.clear();
         return true;
     }
 
@@ -46,53 +49,42 @@ namespace BopAudio
         {
             return;
         }
-        /*
-                auto const* const triggerNameNode{ triggerNode->first_attribute(BopAudioStrings::NameAttribute) };
-                auto const* const triggerSoundName{ triggerNode->first_attribute(BopAudioStrings::SoundAttribute) };
-                if (!triggerNameNode || !triggerSoundName)
-                {
-                    return;
-                }
-
-                auto const triggerName{ triggerNameNode->value() };
-                auto const soundName{ triggerSoundName->value() };
-                auto const triggerId{ Audio::AudioStringToID<BA_UniqueId>(triggerName) };
-                auto const soundId{ Audio::AudioStringToID<BA_SoundId>(soundName) };
-
-                m_triggers.push_back(triggerId);
-                m_soundIds.push_back(soundId);
-
-                AZ::IO::Path soundPath{ GetBanksRootPath() };
-                soundPath /= triggerSoundName->value();
-
-                AZ::Data::AssetId result{};
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    result,
-                    &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-                    soundPath.c_str(),
-                    AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid(),
-                    true);
-
-                if (!result.IsValid())
-                {
-                    return;
-                }
-
-                MiniAudio::SoundDataAsset soundAsset{ AZ::Data::AssetManager::Instance().GetAsset<MiniAudio::SoundAsset>(
-                    result, AZ::Data::AssetLoadBehavior::PreLoad) };
-
-                soundAsset.QueueLoad();
-                soundAsset.BlockUntilLoadComplete();
-                // m_soundDatas.insert(soundAsset);
-
-                //        m_sounds[soundId] = SoundPtr{ new ma_sound };
-                m_triggerToSound[triggerId] = soundId;
-            */
     }
 
-    auto MiniAudioEngine::ActivateTrigger([[maybe_unused]] BA_UniqueId baId, [[maybe_unused]] BA_SoundId baSoundId) -> bool
+    auto MiniAudioEngine::ActivateTrigger([[maybe_unused]] BA_TriggerId triggerId) -> bool
     {
-        return false;
+        if (m_triggerSounds.empty())
+        {
+            return false;
+        }
+
+        auto iter{ m_triggerSounds.begin() };
+        auto& [soundName, soundPtr]{ *iter };
+
+        ma_sound_seek_to_pcm_frame(soundPtr.get(), 0);
+        ma_sound_start(soundPtr.get());
+
+        return true;
+    }
+
+    auto MiniAudioEngine::CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData) -> BA_GameObjectId
+    {
+        return audioObjectData ? m_audioObjects.emplace_back(audioObjectData->m_name.GetStringView()).GetUniqueId() : InvalidBaUniqueId;
+    }
+
+    void MiniAudioEngine::RemoveAudioObject(BA_UniqueId audioObjectId)
+    {
+        AZStd::remove_if(
+            m_audioObjects.begin(),
+            m_audioObjects.end(),
+            [audioObjectId](auto const& audioObject) -> bool
+            {
+                return audioObject.GetUniqueId() == audioObjectId;
+            });
+    }
+
+    void MiniAudioEngine::LoadEventsFolder()
+    {
     }
 
 } // namespace BopAudio

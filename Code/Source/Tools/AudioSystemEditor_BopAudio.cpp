@@ -140,8 +140,6 @@ namespace BopAudio
 
             return newControl.get();
         }
-
-        return {};
     }
 
     auto AudioSystemEditor_BopAudio::GetControl(AudioControls::CID id) const -> AudioControls::IAudioSystemControl*
@@ -254,10 +252,10 @@ namespace BopAudio
                 }
 
                 bool const isLocalized = AZ::StringFunc::Equal(localized, "true");
+
                 // If the control wasn't found, create a placeholder.
                 // We want to see that connection even if it's not in the middleware.
                 // User could be viewing the editor without a middleware project.
-
                 AudioControls::IAudioSystemControl* control = GetControlByName(name, isLocalized);
                 if (!control)
                 {
@@ -489,7 +487,7 @@ namespace BopAudio
         };
     }
 
-    auto AudioSystemEditor_BopAudio::GetTypeIconSelected(AudioControls::TImplControlType type) const -> AZStd::string_view const
+    auto AudioSystemEditor_BopAudio::GetTypeIconSelected(AudioControls::TImplControlType /*type*/) const -> AZStd::string_view const
     {
         return {};
     }

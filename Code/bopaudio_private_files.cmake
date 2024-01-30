@@ -14,6 +14,8 @@ set(FILES
     Source/Clients/AudioAssetHandler.h
 
     Source/Engine/ATLEntities_BopAudio.h
+    Source/Engine/AudioObject.cpp
+    Source/Engine/AudioObject.h
     Source/Engine/AudioSystemImpl_BopAudio.cpp
     Source/Engine/AudioSystemImpl_BopAudio.h
     Source/Engine/Common_BopAudio.h

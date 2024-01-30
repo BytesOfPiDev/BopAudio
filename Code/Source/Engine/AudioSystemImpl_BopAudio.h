@@ -10,8 +10,6 @@
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 
-#include "MiniAudioIncludes.h"
-
 namespace BopAudio
 {
     class MiniAudioEngine;
@@ -144,21 +142,13 @@ namespace BopAudio
         AZStd::string m_assetsPlatform;
         AZStd::string m_language{};
 
-        ma_engine* m_maEngine;
-
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
         AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
-        // AZStd::vector<SATLAudioObjectData_BopAudio*> m_audioObjects{};
-        AZStd::map<BA_UniqueId, AZStd::string> m_registeredObjects;
 
         AZStd::string m_soundBankFolder{};
         AZStd::string m_localizedSoundBankFolder{};
-
-        AZStd::map<AZStd::string, SoundPtr> m_sounds;
-        AZStd::vector<MiniAudio::SoundDataAsset> m_soundDatas;
-        AZStd::map<BA_TriggerId, BA_SoundId> m_triggerToSound{};
 
         AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
         AZStd::unique_ptr<MiniAudioEngine> m_bopAudioEngine;

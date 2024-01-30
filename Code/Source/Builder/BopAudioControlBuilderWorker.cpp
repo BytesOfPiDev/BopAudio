@@ -185,30 +185,30 @@ namespace BopAudio
                     }
                     else
                     {
-                        auto wwiseFileNode = configGroupNode->first_node(XmlTags::BopFileTag);
-                        if (!wwiseFileNode)
+                        auto bopFileNode = configGroupNode->first_node(XmlTags::BopFileTag);
+                        if (!bopFileNode)
                         {
                             return AZ::Failure(AZStd::string::format(
                                 MalformedNodeMissingChildNodeMessage, Audio::ATLXmlTags::ATLConfigGroupTag, XmlTags::BopFileTag));
                         }
 
-                        // For each WwiseFile (soundbank) referenced in the config group, grab the file name and add it to the reference
+                        // For each BopAudioFile (soundbank) referenced in the config group, grab the file name and add it to the reference
                         // list
-                        while (wwiseFileNode)
+                        while (bopFileNode)
                         {
-                            auto const bankNameAttribute = wwiseFileNode->first_attribute(XmlTags::NameAttribute);
+                            auto const bankNameAttribute = bopFileNode->first_attribute(XmlTags::NameAttribute);
                             if (!bankNameAttribute)
                             {
                                 return AZ::Failure(AZStd::string::format(
                                     MalformedNodeMissingAttributeMessage, XmlTags::BopFileTag, XmlTags::NameAttribute));
                             }
 
-                            // Prepend the bank name with the relative path to the wwise sounds folder to get relative path to the bank from
-                            //  the @products@ alias and push that into the list of banks referenced.
+                            // Prepend the bank name with the relative path to the BopAudio sounds folder to get relative path to the bank
+                            // from the @products@ alias and push that into the list of banks referenced.
                             AZStd::string soundsPrefix = DefaultBanksPath;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 
-                            wwiseFileNode = wwiseFileNode->next_sibling(XmlTags::BopFileTag);
+                            bopFileNode = bopFileNode->next_sibling(XmlTags::BopFileTag);
                         }
                     }
 
@@ -227,8 +227,8 @@ namespace BopAudio
             auto triggerNode = triggersNode->first_node(Audio::ATLXmlTags::ATLTriggerTag);
             while (triggerNode)
             {
-                // For each audio trigger, push the name of the Wwise event (if assigned) into the list.
-                // It's okay for an ATLTrigger node to not have a Wwise event associated with it.
+                // For each audio trigger, push the name of the BopAudio event (if assigned) into the list.
+                // It's okay for an ATLTrigger node to not have a BopAudio event associated with it.
                 if (auto const eventNode = triggerNode->first_node(XmlTags::TriggerTag))
                 {
                     if (auto const eventNameAttr = eventNode->first_attribute(XmlTags::NameAttribute))
@@ -261,7 +261,7 @@ namespace BopAudio
             }
 
             // Loop through the ATLPreloadRequest nodes...
-            // Find any BopAudio librarties listed and add them to the banksReferenced vector.
+            // Find any BopAudio soundbanks listed and add them to the banksReferenced vector.
             while (preloadRequestNode)
             {
                 // Find the first BopFileTag
@@ -577,7 +577,7 @@ namespace BopAudio
                 AZ_Warning(
                     "Audio Control Builder",
                     false,
-                    "Failed to find Wwise event %s in the list of events contained in banks referenced by %s. Event may fail to play "
+                    "Failed to find BopAudio event %s in the list of events contained in banks referenced by %s. Event may fail to play "
                     "properly.",
                     eventInControlFile.c_str(),
                     sourceFile.c_str());

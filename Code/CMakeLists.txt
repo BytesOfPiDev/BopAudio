@@ -50,13 +50,12 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
             ${gem_name}.API
-        PRIVATE
-            Gem::MiniAudio
             3rdParty::miniaudio
             3rdParty::stb_vorbis
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::MiniAudio
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -130,12 +129,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
-                AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
-                Gem::AudioSystem.Editor.API
+                3rdParty::miniaudio
+                3rdParty::stb_vorbis
+                AZ::AzToolsFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Gem::MiniAudio.Editor
     )
 
   ly_add_target(

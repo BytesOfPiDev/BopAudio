@@ -43,7 +43,6 @@ namespace BopAudio
 
     void BopAudioSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
         dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 

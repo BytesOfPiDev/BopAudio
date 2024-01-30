@@ -119,19 +119,13 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        ma_engine_config engineConfig{};
-        engineConfig = ma_engine_config_init();
-        m_maEngine = new ma_engine;
-
-        ma_result result{};
-        result = ma_engine_init(&engineConfig, m_maEngine);
-        if (result != MA_SUCCESS)
+        if (!m_bopAudioEngine->Initialize())
         {
+            AZ_Error("AudioSystemImpl_BopAudio", false, "Failed to initialize MiniAudioEngine!");
             return Audio::EAudioRequestStatus::Failure;
         }
 
         m_audioEntityContext->InitContext();
-        m_bopAudioEngine->Initialize();
 
         AZLOG_INFO("Bop Audio System Implementation initialized."); // NOLINT
         return Audio::EAudioRequestStatus::Success;
@@ -139,10 +133,10 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::ShutDown() -> Audio::EAudioRequestStatus
     {
+        m_bopAudioEngine->Shutdown();
+
         m_audioEntityContext->DestroyContext();
         m_assetHandlers.clear();
-        ma_engine_uninit(m_maEngine);
-        m_maEngine = nullptr;
 
         AZLOG_INFO("Bop Audio shutdown."); // NOLINT
         return Audio::EAudioRequestStatus::Success;
@@ -157,16 +151,6 @@ namespace BopAudio
     auto AudioSystemImpl_BopAudio::StopAllSounds() -> Audio::EAudioRequestStatus
     {
         AZLOG_INFO("Bop Audio received StopAllSounds.\n");
-
-        for (auto& [soundId, sound] : m_sounds)
-        {
-            auto result = ma_sound_stop(sound.get());
-
-            if (result != MA_SUCCESS)
-            {
-                return Audio::EAudioRequestStatus::FailureInvalidRequest;
-            }
-        }
 
         return Audio::EAudioRequestStatus::Success;
     }
@@ -183,8 +167,8 @@ namespace BopAudio
         }
 
         auto* const bopAudioObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
-
-        m_registeredObjects[bopAudioObjectData->m_id] = objectName;
+        bopAudioObjectData->m_name = objectName;
+        bopAudioObjectData->m_id = m_bopAudioEngine->CreateAudioObject();
 
         return Audio::EAudioRequestStatus::Success;
     }
@@ -195,13 +179,13 @@ namespace BopAudio
 
         if (!audioObjectData)
         {
-            AZLOG_ERROR("BopAudio: UnRegisterAudioObject failed."); // NOLINT
+            AZLOG_ERROR("BopAudio: UnRegisterAudioObject failed.");
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        auto* const bopAudioObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
-        m_registeredObjects.erase(bopAudioObjectData->m_id);
+        auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
+        m_bopAudioEngine->RemoveAudioObject(implOldObjectData->m_id);
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -268,16 +252,7 @@ namespace BopAudio
         [[maybe_unused]] auto* implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData) };
         [[maybe_unused]] auto* implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        auto const& soundIter{ m_sounds.find(implTriggerData->m_soundName.GetStringView()) };
-        if (soundIter == m_sounds.end())
-        {
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        auto& [soundId, sound]{ *soundIter };
-
-        ma_sound_seek_to_pcm_frame(sound.get(), 0);
-        ma_sound_start(sound.get());
+        // m_bopAudioEngine->ActivateTrigger(implTriggerData->m_triggerId);
 
         AZ_UNUSED(audioObjectData, triggerData, eventData, pSourceData);
         return Audio::EAudioRequestStatus::Success;
@@ -299,30 +274,12 @@ namespace BopAudio
     }
 
     auto AudioSystemImpl_BopAudio::SetPosition(
-        Audio::IATLAudioObjectData* const audioObjectData, Audio::SATLWorldPosition const& worldPosition) -> Audio::EAudioRequestStatus
+        Audio::IATLAudioObjectData* const audioObjectData, [[maybe_unused]] Audio::SATLWorldPosition const& worldPosition)
+        -> Audio::EAudioRequestStatus
     {
         AZLOG(ASI_BopAudio, "BopAudio: SetPosition.\n");
-        auto bopAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData) };
+        [[maybe_unused]] auto bopAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData) };
 
-        if (!bopAudioObjectData->m_hasPosition)
-        {
-            return Audio::EAudioRequestStatus::FailureInvalidRequest;
-        }
-        /*
-                auto soundIter = m_sounds.find(bopAudioObjectData->);
-                if (soundIter == m_sounds.end())
-                {
-                    return Audio::EAudioRequestStatus::FailureInvalidObjectId;
-                }
-
-                auto& [id, sound]{ *soundIter };
-
-                auto posVec{ worldPosition.GetPositionVec() };
-                auto dirVec{ worldPosition.GetForwardVec() };
-
-                ma_sound_set_position(sound.get(), posVec.GetX(), posVec.GetY(), posVec.GetZ());
-                ma_sound_set_direction(sound.get(), dirVec.GetX(), dirVec.GetY(), dirVec.GetZ());
-        */
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -482,17 +439,16 @@ namespace BopAudio
             return nullptr;
         }
 
-        auto const triggerNameAttrib{ audioTriggerNode->first_attribute(XmlTags::NameAttribute) };
-        auto const baId{ Audio::AudioStringToID<BA_UniqueId>(triggerNameAttrib->value()) };
-
-        if (baId == InvalidBaUniqueId)
+        BA_UniqueId const baId = [&audioTriggerNode]() -> decltype(baId)
         {
-            return nullptr;
-        }
+            auto const triggerNameAttrib{ audioTriggerNode->first_attribute(XmlTags::NameAttribute) };
+            return triggerNameAttrib ? Audio::AudioStringToID<decltype(baId)>(triggerNameAttrib->value()) : InvalidBaUniqueId;
+        }();
 
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioTriggerImplData. Created trigger: [Name: %s].", triggerNameAttrib->value());
+        bool const hasValidId{ baId != InvalidBaUniqueId };
+        AZ_Error("AudioSystemImpl_BopAudio", hasValidId, "Failed to create a new audio trigger with ID '%u'.", static_cast<AZ::u32>(baId));
 
-        return azcreate(SATLTriggerImplData_BopAudio, (baId), Audio::AudioImplAllocator);
+        return hasValidId ? azcreate(SATLTriggerImplData_BopAudio, (baId), Audio::AudioImplAllocator) : nullptr;
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioTriggerImplData(Audio::IATLTriggerImplData* const oldTriggerImplData)
@@ -510,7 +466,7 @@ namespace BopAudio
     void AudioSystemImpl_BopAudio::DeleteAudioRtpcImplData(Audio::IATLRtpcImplData* const oldRtpcImplData)
     {
         AZLOG_ERROR("BopAudio: DeleteAudioRtpcImplData. Not implemented.");
-        delete oldRtpcImplData;
+        azdestroy(oldRtpcImplData, Audio::AudioImplAllocator, SATLRtpcImplData_BopAudio);
     }
 
     auto AudioSystemImpl_BopAudio::NewAudioSwitchStateImplData(const AZ::rapidxml::xml_node<char>* audioSwitchStateNode)
@@ -524,7 +480,7 @@ namespace BopAudio
     void AudioSystemImpl_BopAudio::DeleteAudioSwitchStateImplData(Audio::IATLSwitchStateImplData* const oldSwitchStateImplData)
     {
         AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioSwitchStateImplData.");
-        delete oldSwitchStateImplData;
+        azdestroy(oldSwitchStateImplData, Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_BopAudio::NewAudioEnvironmentImplData(const AZ::rapidxml::xml_node<char>* audioEnvironmentNode)
@@ -536,7 +492,7 @@ namespace BopAudio
 
     void AudioSystemImpl_BopAudio::DeleteAudioEnvironmentImplData(Audio::IATLEnvironmentImplData* const oldEnvironmentImplData)
     {
-        delete oldEnvironmentImplData;
+        azdestroy(oldEnvironmentImplData, Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_BopAudio::NewGlobalAudioObjectData(Audio::TAudioObjectID const objectId) -> Audio::IATLAudioObjectData*
@@ -549,13 +505,14 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: NewAudioObjectData. [objectId: %llu].", objectId);
 
-        return aznew SATLAudioObjectData_BopAudio(objectId, false);
+        return azcreate(SATLAudioObjectData_BopAudio, (objectId), Audio::AudioImplAllocator);
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioObjectData(Audio::IATLAudioObjectData* const oldObjectData)
     {
         AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioObjectData.");
-        azdestroy(oldObjectData);
+
+        azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_BopAudio);
     }
 
     auto AudioSystemImpl_BopAudio::NewDefaultAudioListenerObjectData(Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio*

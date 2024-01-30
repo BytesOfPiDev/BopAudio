@@ -16,7 +16,10 @@ namespace BopAudio
         AudioEngineRequests() = default;
         virtual ~AudioEngineRequests() = default;
 
-        virtual auto GetSoundEngine() -> ma_engine* = 0;
+        virtual auto Initialize() -> bool = 0;
+        virtual auto Shutdown() -> bool = 0;
+
+        // virtual auto GetSoundEngine() -> ma_engine* = 0;
     };
 
     using AudioEngineInterface = AZ::Interface<AudioEngineRequests>;

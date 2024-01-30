@@ -10,9 +10,9 @@ namespace BopAudio
     class AudioAsset : public AZ::Data::AssetData
     {
     public:
-        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_TYPE_INFO_WITH_NAME_DECL(AudioAsset); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioAsset);
 
         static constexpr auto FileExtension = "bafile";
         static constexpr auto AssetGroup = "Sound";
