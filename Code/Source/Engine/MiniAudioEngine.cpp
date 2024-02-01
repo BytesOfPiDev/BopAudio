@@ -25,6 +25,8 @@ namespace BopAudio
 
     auto MiniAudioEngine::Initialize() -> bool
     {
+        m_initSoundBank = SoundBank::LoadInitBank();
+
         return true;
     }
 

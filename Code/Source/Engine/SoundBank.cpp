@@ -3,6 +3,8 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/std/typetraits/typetraits.h"
 #include "MiniAudio/MiniAudioBus.h"
 #include "MiniAudio/SoundAsset.h"
 #include "rapidjson/document.h"
@@ -12,7 +14,8 @@
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "MiniAudioIncludes.h"
-#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <type_traits>
 
 namespace BopAudio
 {
@@ -37,38 +40,21 @@ namespace BopAudio
     {
     }
 
-    auto SoundBank::Load() -> bool
+    auto SoundBank::LoadInitBank() -> SoundBank
     {
-        /*
-              rapidjson::Document doc;
-              AZStd::span<char> buffer(static_cast<char*>(m_fileEntryInfo->pFileData), m_fileEntryInfo->nSize);
-              doc.Parse(buffer.data());
-
-              auto* const soundsObjectJsonPtr{ rapidjson::GetValueByPointer(doc, JsonKeys::SoundFileNames) };
-              if (!soundsObjectJsonPtr)
-              {
-                  AZ_Warning("SoundBank", false, "SoundBank '%s' is empty.", m_fileEntryInfo->sFileName);
-                  return false;
-              }
-
-              AZStd::vector<AZ::Name> soundNames{};
-              for (auto& object : soundsObjectJsonPtr->GetObject())
-              {
-                  if (!object.name.IsString())
-                  {
-                      AZ_Error("SoundBank", false, "Unexpected value type for SoundBank '%s'. Expected a string.", object.name.GetString());
-                      continue;
-                  }
-
-                  auto& soundName{ soundNames.emplace_back(object.name.GetString()) };
-
-                  AZLOG_INFO("BopAudio: Found sound '%s'.\n", soundName.GetCStr());
-              }
-        */
-
         auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) };
 
-        auto soundNames{ GetSoundNamesFromSoundBankFile(banksRootPath) };
+        auto buffer{ LoadSoundBankToBuffer(banksRootPath / InitBank) };
+        auto soundNames{ GetSoundNamesFromSoundBankFile(buffer) };
+        return SoundBank{};
+    }
+
+    auto SoundBank::Load() -> bool
+    {
+        AZStd::span<char> buffer(static_cast<char*>(m_fileEntryInfo->pFileData), m_fileEntryInfo->nSize);
+        auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) };
+
+        auto soundNames{ GetSoundNamesFromSoundBankFile(buffer) };
 
         auto* fileImplData{ static_cast<SATLAudioFileEntryData_BopAudio*>(m_fileEntryInfo->pImplData) };
 
@@ -169,25 +155,31 @@ namespace BopAudio
         return AZStd::move(soundPtr);
     }
 
-    auto GetSoundNamesFromSoundBankFile(AZ::IO::Path soundBankFilePath) -> SoundNames
+    auto LoadSoundBankToBuffer(AZ::IO::Path soundBankFilePath) -> AZStd::vector<char>
     {
-        rapidjson::Document doc;
-        AZStd::vector<char> buffer = [&soundBankFilePath]() -> decltype(buffer)
+        using ReturnType = decltype(LoadSoundBankToBuffer(soundBankFilePath));
+
+        return [&soundBankFilePath]() -> ReturnType
         {
             AZ::IO::FileIOStream fileStream{ soundBankFilePath.c_str(), AZ::IO::OpenMode::ModeRead };
-            decltype(buffer) tempBuffer(fileStream.GetLength());
+            ReturnType tempBuffer(fileStream.GetLength());
             fileStream.Read(tempBuffer.size(), tempBuffer.data());
 
             return tempBuffer;
         }();
+    }
 
-        doc.Parse(buffer.data(), buffer.size());
+    auto GetSoundNamesFromSoundBankFile(AZStd::span<char> soundBankFileBuffer) -> SoundNames
+    {
+        rapidjson::Document doc;
+
+        doc.Parse(soundBankFileBuffer.data(), soundBankFileBuffer.size());
 
         auto* const soundsObjectJsonPtr{ rapidjson::GetValueByPointer(doc, JsonKeys::SoundFileNames) };
 
         if (!soundsObjectJsonPtr)
         {
-            AZLOG_WARN("SoundBank '%s' is empty.", soundBankFilePath.c_str());
+            AZLOG_WARN("The SoundBank buffer is empty.");
             return {};
         }
 
@@ -209,4 +201,16 @@ namespace BopAudio
 
         return soundNames;
     }
+
+    auto GetSoundNamesFromSoundBankFile(AZ::IO::PathView soundBankFilePath) -> SoundNames
+    {
+        AZStd::vector<char> buffer = LoadSoundBankToBuffer(soundBankFilePath);
+        return GetSoundNamesFromSoundBankFile(buffer);
+    }
+
+    auto GetSoundNamesFromSoundBankFile(AZ::Name const& soundBankName) -> SoundNames
+    {
+        return GetSoundNamesFromSoundBankFile(AZ::IO::Path{ DefaultBanksPath } / soundBankName.GetStringView());
+    }
+
 } // namespace BopAudio
