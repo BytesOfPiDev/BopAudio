@@ -2,6 +2,7 @@
 
 #include "ATLEntityData.h"
 #include "AzCore/Name/Name.h"
+#include "Engine/AudioEvent.h"
 #include "Engine/Sound.h"
 #include "MiniAudio/SoundAsset.h"
 
@@ -24,6 +25,7 @@ namespace BopAudio
         static auto LoadInitBank() -> SoundBank;
 
         auto Load() -> bool;
+        auto Load(AZStd::span<char> soundBankFileBuffer);
         auto GetSoundAsset(AZ::Name const& soundName) -> MiniAudio::SoundDataAsset
         {
             if (!m_soundAssets.contains(soundName))
@@ -42,6 +44,7 @@ namespace BopAudio
 
     private:
         AZStd::unordered_map<AZ::Name, MiniAudio::SoundDataAsset> m_soundAssets{};
+        [[maybe_unused]] AZStd::vector<AudioEvent> m_events{};
         Audio::SATLAudioFileEntryInfo* m_fileEntryInfo{};
     };
 

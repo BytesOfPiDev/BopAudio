@@ -3,6 +3,7 @@
 #include "AzCore/Component/Component.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "Engine/MiniAudioEngine.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 
@@ -54,11 +55,12 @@ namespace BopAudio
 
         [[nodiscard]] constexpr auto GetEngine() const -> Audio::AudioSystemImplementation const*
         {
-            return m_engineBopAudio.get();
+            return m_audioSystemImpl.get();
         }
 
     private:
-        AZStd::unique_ptr<Audio::AudioSystemImplementation> m_engineBopAudio;
+        AZStd::unique_ptr<Audio::AudioSystemImplementation> m_audioSystemImpl;
+        AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
     };
 
 } // namespace BopAudio

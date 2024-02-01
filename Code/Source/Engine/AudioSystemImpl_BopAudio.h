@@ -151,6 +151,5 @@ namespace BopAudio
         AZStd::string m_localizedSoundBankFolder{};
 
         AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
-        AZStd::unique_ptr<MiniAudioEngine> m_bopAudioEngine;
     };
 } // namespace BopAudio

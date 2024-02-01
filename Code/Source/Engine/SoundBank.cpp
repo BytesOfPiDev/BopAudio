@@ -4,7 +4,7 @@
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
-#include "AzCore/std/typetraits/typetraits.h"
+#include "AzCore/IO/Path/Path.h"
 #include "MiniAudio/MiniAudioBus.h"
 #include "MiniAudio/SoundAsset.h"
 #include "rapidjson/document.h"
@@ -14,8 +14,6 @@
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "MiniAudioIncludes.h"
-#include <AzCore/IO/Path/Path.h>
-#include <type_traits>
 
 namespace BopAudio
 {
@@ -49,19 +47,16 @@ namespace BopAudio
         return SoundBank{};
     }
 
-    auto SoundBank::Load() -> bool
+    auto SoundBank::Load(AZStd::span<char> soundBankFileBuffer)
     {
-        AZStd::span<char> buffer(static_cast<char*>(m_fileEntryInfo->pFileData), m_fileEntryInfo->nSize);
         auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) };
 
-        auto soundNames{ GetSoundNamesFromSoundBankFile(buffer) };
-
-        auto* fileImplData{ static_cast<SATLAudioFileEntryData_BopAudio*>(m_fileEntryInfo->pImplData) };
+        auto soundNames{ GetSoundNamesFromSoundBankFile(soundBankFileBuffer) };
 
         AZLOG_INFO("BopAudio: Loading sounds...");
         bool const isSuccess = AZStd::ranges::all_of(
             soundNames,
-            [&banksRootPath, &fileImplData, this](AZ::Name const& soundName) -> bool
+            [&banksRootPath, this](AZ::Name const& soundName) -> bool
             {
                 AZLOG_INFO("BopAudio: Loading sound.");
 
@@ -114,7 +109,6 @@ namespace BopAudio
                         soundName.GetCStr(),
                         soundAsset.GetHint().c_str());
 
-                    fileImplData->m_soundAssets.erase(soundName);
                     return false;
                 }
 
@@ -122,12 +116,33 @@ namespace BopAudio
                     "SoundBank | Registered sound '%s' to miniaudio with the tag '%s'.", soundName.GetCStr(), soundAsset.GetHint().c_str());
 
                 m_soundAssets[soundName] = soundAsset;
-                fileImplData->m_soundNames.insert(soundName);
 
                 return true;
             });
 
         return isSuccess;
+    }
+
+    auto SoundBank::Load() -> bool
+    {
+        AZStd::span<char> buffer(static_cast<char*>(m_fileEntryInfo->pFileData), m_fileEntryInfo->nSize);
+        auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) };
+
+        auto* fileImplData{ static_cast<SATLAudioFileEntryData_BopAudio*>(m_fileEntryInfo->pImplData) };
+        if (!Load(buffer))
+        {
+            return false;
+        };
+
+        AZStd::ranges::for_each(
+            m_soundAssets,
+            [&fileImplData](auto const& soundNameAssetPair)
+            {
+                auto const& [soundName, soundAsset]{ soundNameAssetPair };
+                fileImplData->m_soundNames.insert(soundName);
+            });
+
+        return true;
     }
 
     auto SoundBank::CreateSound(AZ::Name const& soundName) -> SoundPtr

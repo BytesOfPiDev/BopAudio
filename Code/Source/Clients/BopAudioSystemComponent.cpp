@@ -9,6 +9,7 @@
 #include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
+#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
@@ -64,6 +65,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
+        m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
     }
 
     void BopAudioSystemComponent::Activate()
@@ -89,8 +91,8 @@ namespace BopAudio
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
             AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
-        m_engineBopAudio = AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
-        if (m_engineBopAudio)
+        m_audioSystemImpl = AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
+        if (m_audioSystemImpl)
         {
             Audio::SystemRequest::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
@@ -107,7 +109,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Release()
     {
-        m_engineBopAudio = nullptr;
+        m_audioSystemImpl = nullptr;
     }
 
 } // namespace BopAudio

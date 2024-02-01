@@ -53,6 +53,11 @@ namespace BopAudio
         }
     }
 
+    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& /*activateTriggerRequest*/) -> bool
+    {
+        return true;
+    }
+
     auto MiniAudioEngine::ActivateTrigger([[maybe_unused]] BA_TriggerId triggerId) -> bool
     {
         if (m_triggerSounds.empty())

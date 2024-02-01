@@ -45,12 +45,12 @@ namespace BopAudio
 
     struct SATLTriggerImplData_BopAudio : public Audio::IATLTriggerImplData
     {
-        explicit SATLTriggerImplData_BopAudio(BA_UniqueId uniqueId)
-            : m_uniqueId{ uniqueId }
+        explicit SATLTriggerImplData_BopAudio(BA_UniqueId id)
+            : m_id{ id }
         {
         }
 
-        BA_UniqueId m_uniqueId;
+        BA_UniqueId m_id;
     };
 
     struct SATLListenerData_BopAudio : public Audio::IATLListenerData

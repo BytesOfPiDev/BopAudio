@@ -21,14 +21,14 @@ namespace BopAudio
         ~MiniAudioEngine() override;
 
         auto Initialize() -> bool override;
-        auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool;
+        auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool override;
         auto Shutdown() -> bool override;
 
-        auto ActivateTrigger() -> bool;
+        auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest) -> bool override;
         auto ActivateTrigger(BA_TriggerId baId) -> bool;
 
-        [[nodiscard]] auto CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId;
-        void RemoveAudioObject(BA_UniqueId audioObjectId);
+        [[nodiscard]] auto CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId override;
+        void RemoveAudioObject(BA_UniqueId audioObjectId) override;
 
     protected:
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);
@@ -39,7 +39,7 @@ namespace BopAudio
         SoundBank m_initSoundBank{};
         AZStd::vector<SoundBank> m_soundBanks{};
 
-        AZStd::vector<SoundObject> m_audioObjects{};
+        AZStd::vector<AudioObject> m_audioObjects{};
         AZStd::unordered_map<BA_TriggerId, SoundPtr> m_triggerSounds{};
     };
 } // namespace BopAudio

@@ -5,10 +5,10 @@
 namespace BopAudio
 {
 
-    class SoundObject
+    class AudioObject
     {
     public:
-        SoundObject(AZStd::string_view objectName)
+        AudioObject(AZStd::string_view objectName)
             : m_uniqueId{ objectName } {};
 
         [[nodiscard]] auto GetUniqueId() const -> BA_UniqueId
@@ -26,9 +26,9 @@ namespace BopAudio
 namespace AZStd
 {
     template<>
-    struct hash<BopAudio::SoundObject>
+    struct hash<BopAudio::AudioObject>
     {
-        inline auto operator()(BopAudio::SoundObject const& soundObject) const -> size_t
+        inline auto operator()(BopAudio::AudioObject const& soundObject) const -> size_t
         {
             return soundObject.GetUniqueId();
         }

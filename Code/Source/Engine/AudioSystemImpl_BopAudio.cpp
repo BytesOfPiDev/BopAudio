@@ -5,6 +5,9 @@
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "Engine/MiniAudioEngine.h"
+#include "Engine/MiniAudioEngineBus.h"
+#include "Engine/MiniAudioEngineRequests.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
@@ -30,8 +33,6 @@ namespace BopAudio
         }
 
         SetPaths();
-
-        m_bopAudioEngine = std::make_unique<MiniAudioEngine>();
 
         Audio::AudioSystemImplementationRequestBus::Handler::BusConnect();
         Audio::AudioSystemImplementationNotificationBus::Handler::BusConnect();
@@ -119,7 +120,7 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        if (!m_bopAudioEngine->Initialize())
+        if (!AudioEngineInterface::Get()->Initialize())
         {
             AZ_Error("AudioSystemImpl_BopAudio", false, "Failed to initialize MiniAudioEngine!");
             return Audio::EAudioRequestStatus::Failure;
@@ -133,12 +134,12 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::ShutDown() -> Audio::EAudioRequestStatus
     {
-        m_bopAudioEngine->Shutdown();
+        AudioEngineInterface::Get()->Shutdown();
 
         m_audioEntityContext->DestroyContext();
         m_assetHandlers.clear();
 
-        AZLOG_INFO("Bop Audio shutdown."); // NOLINT
+        AZLOG_INFO("Bop Audio shutdown.");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -166,9 +167,9 @@ namespace BopAudio
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        auto* const bopAudioObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
-        bopAudioObjectData->m_name = objectName;
-        bopAudioObjectData->m_id = m_bopAudioEngine->CreateAudioObject();
+        auto* const implAudioObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
+        implAudioObjectData->m_name = objectName;
+        implAudioObjectData->m_id = AudioEngineInterface::Get()->CreateAudioObject();
 
         return Audio::EAudioRequestStatus::Success;
     }
@@ -185,7 +186,7 @@ namespace BopAudio
 
         auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
-        m_bopAudioEngine->RemoveAudioObject(implOldObjectData->m_id);
+        AudioEngineInterface::Get()->RemoveAudioObject(implOldObjectData->m_id);
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -198,7 +199,6 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::UpdateAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: UpdateAudioObject.\n");
         AZ_UNUSED(audioObjectData);
         return Audio::EAudioRequestStatus::Success;
     }
@@ -252,10 +252,13 @@ namespace BopAudio
         [[maybe_unused]] auto* implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData) };
         [[maybe_unused]] auto* implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        // m_bopAudioEngine->ActivateTrigger(implTriggerData->m_triggerId);
+        ActivateTriggerRequest activateTriggerRequest{};
+        activateTriggerRequest.m_triggerId = implTriggerData->m_id;
+        activateTriggerRequest.m_audioObjectId = implAudioObjectData->m_id;
 
         AZ_UNUSED(audioObjectData, triggerData, eventData, pSourceData);
-        return Audio::EAudioRequestStatus::Success;
+        return AudioEngineInterface::Get()->ActivateTrigger(activateTriggerRequest) ? Audio::EAudioRequestStatus::Success
+                                                                                    : Audio::EAudioRequestStatus::Failure;
     }
 
     auto AudioSystemImpl_BopAudio::StopEvent(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLEventData const* const eventData)
@@ -346,7 +349,7 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: RegisterInMemoryFile.\n");
 
-        m_bopAudioEngine->LoadSoundBank(audioFileEntry);
+        AudioEngineInterface::Get()->LoadSoundBank(audioFileEntry);
         return Audio::EAudioRequestStatus::Success;
     }
 
