@@ -2,6 +2,7 @@
 
 #include "ATLEntityData.h"
 #include "AzCore/Name/Name.h"
+#include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioEvent.h"
 #include "Engine/Sound.h"
 #include "MiniAudio/SoundAsset.h"
@@ -15,10 +16,13 @@ namespace BopAudio
 
     class SoundBank
     {
+        using SoundAssetMap = AZStd::unordered_map<AZ::Name, MiniAudio::SoundDataAsset>;
+
     public:
         AZ_DEFAULT_COPY_MOVE(SoundBank);
 
         SoundBank() = default;
+        SoundBank(AZStd::string_view soundBankFileName);
         SoundBank(Audio::SATLAudioFileEntryInfo* fileEntryData);
         virtual ~SoundBank() = default;
 
@@ -26,16 +30,13 @@ namespace BopAudio
 
         auto Load() -> bool;
         auto Load(AZStd::span<char> soundBankFileBuffer);
-        auto GetSoundAsset(AZ::Name const& soundName) -> MiniAudio::SoundDataAsset
+        [[nodiscard]] auto GetAssets() const -> SoundAssetMap const&
         {
-            if (!m_soundAssets.contains(soundName))
-            {
-                return {};
-            }
-
-            return m_soundAssets[soundName];
-        };
-        auto CreateSound(AZ::Name const& soundName) -> SoundPtr;
+            return m_soundAssets;
+        }
+        [[nodiscard]] auto GetSoundAsset(AZ::Name const& soundName) const -> MiniAudio::SoundDataAsset;
+        [[nodiscard]] auto CreateSound(BA_UniqueId soundId) const -> SoundPtr;
+        //[[nodiscard]] auto CreateSound(AZ::Name const& soundName) const -> SoundPtr;
 
         [[nodiscard]] auto IsEmpty() const -> bool
         {
@@ -43,9 +44,14 @@ namespace BopAudio
         };
 
     private:
-        AZStd::unordered_map<AZ::Name, MiniAudio::SoundDataAsset> m_soundAssets{};
+        BA_SoundBankId m_id;
+        AZ::Name m_soundBankName{};
+        SoundAssetMap m_soundAssets{};
         [[maybe_unused]] AZStd::vector<AudioEvent> m_events{};
         Audio::SATLAudioFileEntryInfo* m_fileEntryInfo{};
+
+    protected:
+        // [[nodiscard]] auto CreateSound(decltype(m_soundAssets)::const_iterator soundIter) const -> SoundPtr;
     };
 
     /*

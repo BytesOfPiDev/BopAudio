@@ -47,15 +47,15 @@ namespace BopAudio
     void AudioSystemImpl_BopAudio::SetPaths()
     {
         // "sounds/bopaudio/"
-        AZStd::string libraryPath = DefaultBanksPath;
+        AZ::IO::Path libraryPath = DefaultBanksPath;
 
         // "sounds/bopaudio/bopaudio_config.json"
-        auto const configFilename = libraryPath + ConfigFile; //! TODO: Compile-time evaluate
+        auto const configFilePath = libraryPath / ConfigFile;
 
-        if (AZ::IO::FileIOBase::GetInstance() && AZ::IO::FileIOBase::GetInstance()->Exists(configFilename.c_str()))
+        if (AZ::IO::FileIOBase::GetInstance() && AZ::IO::FileIOBase::GetInstance()->Exists(configFilePath.c_str()))
         {
             ConfigurationSettings configSettings{};
-            if (configSettings.Load(configFilename))
+            if (configSettings.Load(configFilePath))
             {
                 AZStd::string platformPath{};
                 // HACK: Manually setting to linux. I'll implement the platform detection once that works.
@@ -79,13 +79,13 @@ namespace BopAudio
         }
         else
         {
-            AZLOG_ERROR("Failed to find Bop Audio configuration file: \"%s\".", configFilename.c_str()); // NOLINT
+            AZLOG_ERROR("Failed to find Bop Audio configuration file: \"%s\".", configFilePath.c_str()); // NOLINT
         }
 
         m_soundBankFolder = libraryPath;
         m_localizedSoundBankFolder = libraryPath;
 
-        SetLibrariesRootPath(m_soundBankFolder);
+        SetBanksRootPath(m_soundBankFolder);
     }
 
     void AudioSystemImpl_BopAudio::OnAudioSystemLoseFocus()
@@ -253,8 +253,11 @@ namespace BopAudio
         [[maybe_unused]] auto* implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
         ActivateTriggerRequest activateTriggerRequest{};
-        activateTriggerRequest.m_triggerId = implTriggerData->m_id;
-        activateTriggerRequest.m_audioObjectId = implAudioObjectData->m_id;
+        activateTriggerRequest.m_triggerId = implTriggerData ? implTriggerData->m_id : INVALID_AUDIO_TRIGGER_IMPL_ID;
+        activateTriggerRequest.m_soundName = implTriggerData ? implTriggerData->m_soundName : AZ::Name{};
+        activateTriggerRequest.m_audioObjectId = implAudioObjectData ? implAudioObjectData->m_id : INVALID_AUDIO_OBJECT_ID;
+
+        activateTriggerRequest.m_eventData = implEventData;
 
         AZ_UNUSED(audioObjectData, triggerData, eventData, pSourceData);
         return AudioEngineInterface::Get()->ActivateTrigger(activateTriggerRequest) ? Audio::EAudioRequestStatus::Success
@@ -442,16 +445,22 @@ namespace BopAudio
             return nullptr;
         }
 
-        BA_UniqueId const baId = [&audioTriggerNode]() -> decltype(baId)
+        AZ::Name const triggerName = [&audioTriggerNode]() -> decltype(triggerName)
         {
             auto const triggerNameAttrib{ audioTriggerNode->first_attribute(XmlTags::NameAttribute) };
-            return triggerNameAttrib ? Audio::AudioStringToID<decltype(baId)>(triggerNameAttrib->value()) : InvalidBaUniqueId;
+            return decltype(triggerName){ triggerNameAttrib ? triggerNameAttrib->value() : nullptr };
         }();
+
+        auto const baId = Audio::AudioStringToID<BA_UniqueId>(triggerName.GetCStr());
 
         bool const hasValidId{ baId != InvalidBaUniqueId };
         AZ_Error("AudioSystemImpl_BopAudio", hasValidId, "Failed to create a new audio trigger with ID '%u'.", static_cast<AZ::u32>(baId));
 
-        return hasValidId ? azcreate(SATLTriggerImplData_BopAudio, (baId), Audio::AudioImplAllocator) : nullptr;
+        auto* implAudioTriggerData{ azcreate(SATLTriggerImplData_BopAudio, (baId), Audio::AudioImplAllocator) };
+        implAudioTriggerData->m_id = baId;
+        implAudioTriggerData->m_soundName = triggerName; // For now, they're the same. Eventually it will be different.
+
+        return implAudioTriggerData;
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioTriggerImplData(Audio::IATLTriggerImplData* const oldTriggerImplData)

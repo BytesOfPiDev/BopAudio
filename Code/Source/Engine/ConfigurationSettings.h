@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AzCore/std/string/string_view.h"
+#include "AzCore/IO/Path/Path_fwd.h"
+
 namespace BopAudio
 {
     static constexpr auto DefaultBanksPath = "sounds/bopaudio/";
@@ -11,13 +12,13 @@ namespace BopAudio
     static constexpr auto MediaExtension = ".baf";
     static constexpr auto InitBank = "init.soundlib";
 
-    auto GetBanksRootPath() -> AZStd::string_view const;
-    void SetLibrariesRootPath(AZStd::string_view const path);
+    auto GetBanksRootPath() -> AZ::IO::PathView;
+    void SetBanksRootPath(AZ::IO::PathView banksRootPath);
 
     class ConfigurationSettings
     {
     public:
-        auto Load(AZStd::string_view configFile) -> bool;
+        auto Load(AZ::IO::PathView configFile) -> bool;
     };
 
 } // namespace BopAudio

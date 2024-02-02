@@ -24,6 +24,8 @@ namespace BopAudio
         auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool override;
         auto Shutdown() -> bool override;
 
+        auto GetSoundEngine() -> ma_engine* override;
+
         auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest) -> bool override;
         auto ActivateTrigger(BA_TriggerId baId) -> bool;
 
@@ -33,13 +35,14 @@ namespace BopAudio
     protected:
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);
 
-        void LoadEventsFolder();
+        auto FindAudioObject(BA_UniqueId audioObjectId) -> AudioObject*;
+        void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
 
     private:
         SoundBank m_initSoundBank{};
         AZStd::vector<SoundBank> m_soundBanks{};
 
         AZStd::vector<AudioObject> m_audioObjects{};
-        AZStd::unordered_map<BA_TriggerId, SoundPtr> m_triggerSounds{};
+        AZStd::unordered_map<BA_UniqueId, SoundPtr> m_soundCache{};
     };
 } // namespace BopAudio

@@ -147,8 +147,8 @@ namespace BopAudio
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
         AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
 
-        AZStd::string m_soundBankFolder{};
-        AZStd::string m_localizedSoundBankFolder{};
+        AZ::IO::Path m_soundBankFolder{};
+        AZ::IO::Path m_localizedSoundBankFolder{};
 
         AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
     };

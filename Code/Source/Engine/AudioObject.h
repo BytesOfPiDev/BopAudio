@@ -5,19 +5,21 @@
 namespace BopAudio
 {
 
-    class AudioObject
+    struct AudioObject
     {
-    public:
+        AZ_DEFAULT_COPY_MOVE(AudioObject);
+
+        AudioObject() = default;
         AudioObject(AZStd::string_view objectName)
-            : m_uniqueId{ objectName } {};
+            : m_id{ objectName } {};
+        ~AudioObject() = default;
 
         [[nodiscard]] auto GetUniqueId() const -> BA_UniqueId
         {
-            return m_uniqueId;
+            return m_id;
         }
 
-    private:
-        BA_UniqueId m_uniqueId;
+        BA_UniqueId m_id{};
         [[maybe_unused]] AZ::Transform m_transform{};
     };
 

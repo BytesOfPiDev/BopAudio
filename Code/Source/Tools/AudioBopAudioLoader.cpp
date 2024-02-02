@@ -5,15 +5,11 @@
 #include "Engine/SoundBank.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
-#include "rapidjson/document.h"
-#include "rapidjson/pointer.h"
 
 #include "Engine/Common_BopAudio.h"
 #include "Tools/AudioBopAudioLoader.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
-#include <AzCore/Console/ILogger.h>
-#include <AzCore/IO/OpenMode.h>
 
 namespace BopAudio
 {
@@ -127,12 +123,12 @@ namespace BopAudio
         }
     }
 
-    auto AudioBopAudioLoader::GetLocalizationFolder() const -> AZStd::string const&
+    auto AudioBopAudioLoader::GetLocalizationFolder() const -> AZ::IO::PathView
     {
         return m_localizationFolder;
     }
 
-    void AudioBopAudioLoader::LoadSoundBanks(AZStd::string_view const rootFolder, AZStd::string_view const subPath, bool isLocalized)
+    void AudioBopAudioLoader::LoadSoundBanks(AZ::IO::PathView rootFolder, AZ::IO::PathView subPath, bool isLocalized)
     {
         AZ::IO::FixedMaxPath searchPath(rootFolder);
         searchPath /= subPath;
@@ -157,15 +153,15 @@ namespace BopAudio
                     // we load only one as all of them should have the
                     // same content (in the future we want to have a
                     // consistency report to highlight if this is not the case)
-                    m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
-                    LoadSoundBanks(searchPath.Native(), m_localizationFolder, true);
+                    m_localizationFolder = fileName;
+                    LoadSoundBanks(searchPath, m_localizationFolder, true);
                     isLocalizedLoaded = true;
                 }
             }
             else if (fileName.Extension() == SoundbankExtension && fileName != InitBank)
             {
                 m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundBank, isLocalized, nullptr, subPath));
+                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundBank, isLocalized, nullptr, subPath.Native()));
 
                 SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
                 AZStd::ranges::for_each(
@@ -173,7 +169,7 @@ namespace BopAudio
                     [this, &isLocalized, &subPath](SoundName const& soundName)
                     {
                         m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                            soundName.GetStringView(), BopAudioControlType::Trigger, isLocalized, nullptr, subPath));
+                            soundName.GetStringView(), BopAudioControlType::Trigger, isLocalized, nullptr, subPath.Native()));
 
                         AZ_Info("AudioBopAudioLoader", "Created control for sound '%s'.\n", soundName.GetCStr());
                     });

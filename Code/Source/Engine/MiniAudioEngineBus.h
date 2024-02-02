@@ -28,7 +28,7 @@ namespace BopAudio
         virtual void RemoveAudioObject(BA_UniqueId audioObjectId) = 0;
         virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> bool = 0;
 
-        // virtual auto GetSoundEngine() -> ma_engine* = 0;
+        virtual auto GetSoundEngine() -> ma_engine* = 0;
     };
 
     using AudioEngineInterface = AZ::Interface<AudioEngineRequests>;

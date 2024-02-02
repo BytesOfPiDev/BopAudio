@@ -523,7 +523,8 @@ namespace BopAudio
 
         if (isLocalized)
         {
-            AZ::StringFunc::Path::Join(m_loader.GetLocalizationFolder().c_str(), name.c_str(), name);
+            auto o3deProjectRelativePath{ AZ::IO::Path{ m_loader.GetLocalizationFolder() } / name.c_str() };
+            name = o3deProjectRelativePath.Native();
         }
 
         return GetControl(GetID(name));

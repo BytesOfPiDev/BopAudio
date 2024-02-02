@@ -1,21 +1,22 @@
 #include "Engine/ConfigurationSettings.h"
+#include <AzCore/IO/Path/Path.h>
 
 namespace BopAudio
 {
 
-    static AZStd::string_view s_configuredBanksPath = DefaultBanksPath; // NOLINT
+    static AZ::IO::PathView s_configuredBanksPath = DefaultBanksPath; // NOLINT
 
-    auto GetBanksRootPath() -> AZStd::string_view const
+    auto GetBanksRootPath() -> AZ::IO::PathView
     {
         return s_configuredBanksPath;
     }
 
-    void SetLibrariesRootPath(AZStd::string_view const path)
+    void SetBanksRootPath(AZ::IO::PathView banksRootPath)
     {
-        s_configuredBanksPath = path;
+        s_configuredBanksPath = banksRootPath;
     }
 
-    auto ConfigurationSettings::Load(AZStd::string_view configFile) -> bool
+    auto ConfigurationSettings::Load(AZ::IO::PathView /*configFile*/) -> bool
     {
         return true;
     }

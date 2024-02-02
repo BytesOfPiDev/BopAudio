@@ -4,7 +4,6 @@
 #include "AudioAllocators.h"
 #include "AzCore/Math/Crc.h"
 #include "Engine/Sound.h"
-#include "IAudioInterfacesCommonData.h"
 
 #include "MiniAudio/SoundAsset.h"
 
@@ -16,10 +15,19 @@ namespace BopAudio
     using BA_RtpcId = AZ::Crc32;
     using BA_UniqueId = AZ::Crc32;
     constexpr auto InvalidBaUniqueId{ AZ::Crc32{} };
-    using BA_TriggerId = AZ::Crc32;
+    using BA_TriggerId = Audio::TAudioTriggerImplID;
     using BA_SoundId = AZ::Crc32;
     using BA_SoundBankId = AZ::Name;
     using BA_Name = AZStd::string;
+
+    template<typename T>
+    static auto NumericIdToName(T id) -> AZ::Name
+    {
+        static_assert(AZStd::is_convertible_v<T, AZ::Crc32>, "Id must be convertible to AZ::u32!");
+
+        constexpr auto IdStringFormat{ "id_%u" };
+        return AZ::Name{ AZStd::string::format(IdStringFormat, static_cast<AZ::u32>(id)) };
+    }
 
     using UniqueIDVector = AZStd::vector<BA_UniqueId, Audio::AudioImplStdAllocator>;
 
@@ -50,7 +58,8 @@ namespace BopAudio
         {
         }
 
-        BA_UniqueId m_id;
+        BA_TriggerId m_id;
+        AZ::Name m_soundName;
     };
 
     struct SATLListenerData_BopAudio : public Audio::IATLListenerData
@@ -93,6 +102,7 @@ namespace BopAudio
         BA_UniqueId m_baId;
         Audio::TAudioEventID m_atlId;
         Audio::TAudioSourceId m_sourceId;
+        SoundPtr m_soundInstance;
     };
 
     struct SATLAudioFileEntryData_BopAudio : public Audio::IATLAudioFileEntryData

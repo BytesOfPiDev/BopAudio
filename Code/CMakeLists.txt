@@ -56,6 +56,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::MiniAudio
+            Gem::AudioSystem
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
