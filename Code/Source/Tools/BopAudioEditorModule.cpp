@@ -1,7 +1,8 @@
 
+#include "BopAudio/BopAudioTypeIds.h"
 #include "BopAudioEditorSystemComponent.h"
-#include <BopAudio/BopAudioTypeIds.h>
-#include <BopAudioModuleInterface.h>
+#include "BopAudioModuleInterface.h"
+#include "Builder/BopAudioControlBuilderComponent.h"
 
 void InitBopAudioResources()
 {
@@ -27,16 +28,14 @@ namespace BopAudio
             // EditContext. This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
-                {
-                    BopAudioEditorSystemComponent::CreateDescriptor(),
-                });
+                { BopAudioEditorSystemComponent::CreateDescriptor(), BopAudioControlBuilderComponent::CreateDescriptor() });
         }
 
         /**
          * Add required SystemComponents to the SystemEntity.
          * Non-SystemComponents should not be added here
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        [[nodiscard]] auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<BopAudioEditorSystemComponent>(),

@@ -60,7 +60,7 @@ namespace BopAudio
         // IAudioSystemEditor implementation
         /////////////////////////////////////////////////////////
         void Reload() override;
-        auto CreateControl(const AudioControls::SControlDef& controlDefinition) -> AudioControls::IAudioSystemControl* override;
+        auto CreateControl(AudioControls::SControlDef const& controlDefinition) -> AudioControls::IAudioSystemControl* override;
         auto GetRoot() -> AudioControls::IAudioSystemControl* override
         {
             return &m_rootControl;
@@ -74,10 +74,10 @@ namespace BopAudio
         auto CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, AudioControls::EACEControlType atlControlType)
             -> AudioControls::TConnectionPtr override;
         auto CreateXMLNodeFromConnection(
-            const AudioControls::TConnectionPtr connection, const AudioControls::EACEControlType atlControlType)
+            AudioControls::TConnectionPtr const connection, AudioControls::EACEControlType const atlControlType)
             -> AZ::rapidxml::xml_node<char>* override;
-        [[nodiscard]] auto GetTypeIcon(AudioControls::TImplControlType type) const -> const AZStd::string_view override;
-        [[nodiscard]] auto GetTypeIconSelected(AudioControls::TImplControlType type) const -> const AZStd::string_view override;
+        [[nodiscard]] auto GetTypeIcon(AudioControls::TImplControlType type) const -> AZStd::string_view const override;
+        [[nodiscard]] auto GetTypeIconSelected(AudioControls::TImplControlType type) const -> AZStd::string_view const override;
         [[nodiscard]] auto GetName() const -> AZStd::string override;
         [[nodiscard]] auto GetDataPath() const -> AZ::IO::FixedMaxPath override;
         void DataSaved() override
@@ -92,7 +92,7 @@ namespace BopAudio
     private:
         // Gets the ID of the control given its name. As controls can have the same name
         // if they're under different parents, the name of the parent is also needed (if there is one)
-        [[nodiscard]] auto GetID(const AZStd::string_view name) const -> AudioControls::CID;
+        [[nodiscard]] auto GetID(AZStd::string_view const name) const -> AudioControls::CID;
 
         void UpdateConnectedStatus();
 

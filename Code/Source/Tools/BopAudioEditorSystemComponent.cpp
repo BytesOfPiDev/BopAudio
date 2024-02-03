@@ -1,6 +1,5 @@
 #include "BopAudioEditorSystemComponent.h"
 
-#include "AzCore/PlatformIncl.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzToolsFramework/API/ViewPaneOptions.h"
 
@@ -10,11 +9,8 @@
 
 namespace BopAudio
 {
-    AZ_COMPONENT_IMPL( // NOLINT
-        BopAudioEditorSystemComponent,
-        "BopAudioEditorSystemComponent",
-        BopAudioEditorSystemComponentTypeId,
-        BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        BopAudioEditorSystemComponent, "BopAudioEditorSystemComponent", BopAudioEditorSystemComponentTypeId, BaseSystemComponent);
 
     void BopAudioEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -49,6 +45,7 @@ namespace BopAudio
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("MiniAudioEditorService"));
         BaseSystemComponent::GetDependentServices(dependent);
     }
 

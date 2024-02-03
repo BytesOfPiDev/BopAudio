@@ -1,46 +1,30 @@
-#include "Engine/Common_BopAudio.h"
+#include "AudioFileUtils.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/IO/Path/Path_fwd.h"
 #include "Engine/ConfigurationSettings.h"
+#include "Engine/SoundBank.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
-#include "Tools/AudioSystemControl_BopAudio.h"
-#include <AzCore/IO/FileIO.h>
-#include <Tools/AudioSystemEditor_BopAudio.h>
 
-#include <AudioFileUtils.h>
-#include <AzCore/IO/Path/Path_fwd.h>
-#include <IAudioSystem.h>
-#include <Tools/AudioBopAudioLoader.h>
+#include "Engine/Common_BopAudio.h"
+#include "Tools/AudioBopAudioLoader.h"
+#include "Tools/AudioSystemControl_BopAudio.h"
+#include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
-    namespace BopAudioStrings
-    {
-        // Project Folders
-        static constexpr auto GameParametersFolder = "GameParameters";
-        static constexpr auto EventsFolder = "Events";
-
-        // Xml Tags
-        // static constexpr auto GameParameterTag = "GameParameter";
-        static constexpr auto EventTag = "Event";
-        static constexpr auto NameAttribute = "Name";
-        static constexpr auto AuxBusTag = "AuxBus";
-        static constexpr auto SwitchGroupTag = "SwitchGroup";
-        static constexpr auto StateGroupTag = "StateGroup";
-        static constexpr auto ChildrenListTag = "ChildrenList";
-
-    } // namespace BopAudioStrings
 
     void AudioBopAudioLoader::Load(AudioSystemEditor_BopAudio* audioSystemImpl)
     {
         m_audioSystemImpl = audioSystemImpl;
-        AZ::IO::FixedMaxPath steamAudioProjectFullPath{ m_audioSystemImpl->GetDataPath() };
+        AZ::IO::FixedMaxPath audioProjectFullPath{ m_audioSystemImpl->GetDataPath() };
 
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ steamAudioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ steamAudioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
-        LoadSoundBanks(GetLibrariesRootPath(), "", false);
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
+        LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
-    void AudioBopAudioLoader::LoadControlsInFolder(const AZStd::string_view folderPath)
+    void AudioBopAudioLoader::LoadControlsInFolder(AZStd::string_view const folderPath)
     {
         auto foundFiles = Audio::FindFilesInPath(folderPath, "*");
 
@@ -76,17 +60,16 @@ namespace BopAudio
         }
 
         ExtractControlsFromXML(xmlNode, BopAudioControlType::Trigger, BopAudioStrings::EventTag, BopAudioStrings::NameAttribute);
-        ExtractControlsFromXML(
-            xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
+        ExtractControlsFromXML(xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
         ExtractControlsFromXML(xmlNode, BopAudioControlType::AuxBus, BopAudioStrings::AuxBusTag, BopAudioStrings::NameAttribute);
 
-        AZStd::string_view xmlTag(xmlNode->name());
-        bool isSwitchTag{ xmlTag == BopAudioStrings::SwitchGroupTag };
-        bool isStateTag{ xmlTag == BopAudioStrings::StateGroupTag };
+        AZStd::string_view const xmlTag(xmlNode->name());
+        bool const isSwitchTag{ xmlTag == BopAudioStrings::SwitchGroupTag };
+        bool const isStateTag{ xmlTag == BopAudioStrings::StateGroupTag };
 
         if (isSwitchTag || isStateTag)
         {
-            if (auto nameAttr = xmlNode->first_attribute(BopAudioStrings::NameAttribute))
+            if (auto const nameAttr = xmlNode->first_attribute(BopAudioStrings::NameAttribute))
             {
                 AZStd::string const parentName{ nameAttr->value() };
                 AudioControls::IAudioSystemControl* group = m_audioSystemImpl->GetControlByName(parentName);
@@ -96,7 +79,7 @@ namespace BopAudio
                         parentName, isSwitchTag ? BopAudioControlType::SwitchGroup : BopAudioControlType::GameStateGroup));
                 }
 
-                auto childrenNode = xmlNode->first_node(BopAudioStrings::ChildrenListTag);
+                auto const childrenNode = xmlNode->first_node(BopAudioStrings::ChildrenListTag);
                 if (childrenNode)
                 {
                     auto childNode = childrenNode->first_node();
@@ -140,49 +123,58 @@ namespace BopAudio
         }
     }
 
-    auto AudioBopAudioLoader::GetLocalizationFolder() const -> AZStd::string const&
+    auto AudioBopAudioLoader::GetLocalizationFolder() const -> AZ::IO::PathView
     {
         return m_localizationFolder;
     }
 
-    void AudioBopAudioLoader::LoadSoundBanks(AZStd::string_view const rootFolder, AZStd::string_view const subPath, bool isLocalized)
+    void AudioBopAudioLoader::LoadSoundBanks(AZ::IO::PathView rootFolder, AZ::IO::PathView subPath, bool isLocalized)
     {
         AZ::IO::FixedMaxPath searchPath(rootFolder);
         searchPath /= subPath;
 
-        auto foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
+        auto const foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
         bool isLocalizedLoaded = isLocalized;
 
-        AZStd::ranges::for_each(
-            foundFiles,
-            [&isLocalizedLoaded, this, &searchPath, &isLocalized, &subPath](auto const& filePath) -> void
+        for (auto const& filePath : foundFiles)
+        {
+            AZ_Assert(
+                AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()),
+                "FindFiles found '%s' but FileIO says it doesn't exist!",
+                filePath.c_str());
+
+            AZ::IO::Path fileName = filePath.Filename();
+
+            if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
             {
-                AZ_Assert(
-                    AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()),
-                    "FindFiles found '%s' but FileIO says it doesn't exist!",
-                    filePath.c_str());
-
-                AZ::IO::PathView fileName = filePath.Filename();
-
-                if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
+                if (fileName != ExternalSourcesPath && !isLocalizedLoaded)
                 {
-                    if (fileName != ExternalSourcesPath && !isLocalizedLoaded)
+                    // each sub-folder represents a different language,
+                    // we load only one as all of them should have the
+                    // same content (in the future we want to have a
+                    // consistency report to highlight if this is not the case)
+                    m_localizationFolder = fileName;
+                    LoadSoundBanks(searchPath, m_localizationFolder, true);
+                    isLocalizedLoaded = true;
+                }
+            }
+            else if (fileName.Extension() == SoundbankExtension && fileName != InitBank)
+            {
+                m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
+                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundBank, isLocalized, nullptr, subPath.Native()));
+
+                SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
+                AZStd::ranges::for_each(
+                    soundNames,
+                    [this, &isLocalized, &subPath](SoundName const& soundName)
                     {
-                        // each sub-folder represents a different language,
-                        // we load only one as all of them should have the
-                        // same content (in the future we want to have a
-                        // consistency report to highlight if this is not the case)
-                        m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
-                        LoadSoundBanks(searchPath.Native(), m_localizationFolder, true);
-                        isLocalizedLoaded = true;
-                    }
-                }
-                else if (fileName.Extension() == LibraryExtension && fileName != InitLibrary)
-                {
-                    m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                        AZStd::string{ fileName.Native() }, BopAudioControlType::SoundLibrary, isLocalized, nullptr, subPath));
-                }
-            });
+                        m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
+                            soundName.GetStringView(), BopAudioControlType::Trigger, isLocalized, nullptr, subPath.Native()));
+
+                        AZ_Info("AudioBopAudioLoader", "Created control for sound '%s'.\n", soundName.GetCStr());
+                    });
+            }
+        }
     }
 
 } // namespace BopAudio

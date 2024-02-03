@@ -17,8 +17,6 @@ if(NOT PAL_TRAIT_BOPAUDIO_SUPPORTED)
   return()
 endif()
 
-include(${gem_path}/3rdParty/FindSteamAudio.cmake)
-
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -32,9 +30,9 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
-           3rdParty::SteamAudio
            Gem::AudioSystem.API
 )
+
 
 # The ${gem_name}.Private.Object target is an internal target
 # It should not be used outside of this Gems CMakeLists.txt
@@ -52,9 +50,13 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
+            ${gem_name}.API
+            3rdParty::miniaudio
+            3rdParty::stb_vorbis
             AZ::AzCore
             AZ::AzFramework
-            ${gem_name}.API
+            Gem::MiniAudio
+            Gem::AudioSystem
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -128,13 +130,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
-                AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
-                Gem::AudioSystem.Editor.API
+                3rdParty::miniaudio
+                3rdParty::stb_vorbis
+                AZ::AzToolsFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                3rdParty::SteamAudio
                 Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Gem::MiniAudio.Editor
     )
 
   ly_add_target(
@@ -180,7 +184,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   if(PAL_TRAIT_BOPAUDIO_TEST_SUPPORTED)
     # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
     ly_add_target(
-            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+           NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 bopaudio_tests_files.cmake

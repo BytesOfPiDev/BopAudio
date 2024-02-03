@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "Triggers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "SoundConfigs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "EnableLooping": {
+                  "type": "boolean"
+                },
+                "StartFrame": {
+                  "type": "integer"
+                }
+              },
+              "required": ["Name", "EnableLooping", "StartFrame"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["Triggers"]
+}

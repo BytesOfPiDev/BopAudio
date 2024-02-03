@@ -1,57 +1,80 @@
 #pragma once
 
-#include <ATLEntityData.h>
-#include <AudioAllocators.h>
-#include <AzCore/Math/Crc.h>
-#include <IAudioInterfacesCommonData.h>
+#include "ATLEntityData.h"
+#include "AudioAllocators.h"
+#include "AzCore/Math/Crc.h"
+#include "Engine/Sound.h"
+
+#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
+    static constexpr auto MaxStringIdSize{ 32 };
 
-    // using TAKUniqueIDVector = AZStd::vector<AkUniqueID, Audio::AudioImplStdAllocator>;
+    using BA_GameObjectId = Audio::TAudioObjectID;
+    using BA_RtpcId = AZ::Crc32;
+    using BA_UniqueId = AZ::Crc32;
+    constexpr auto InvalidBaUniqueId{ AZ::Crc32{} };
+    using BA_TriggerId = Audio::TAudioTriggerImplID;
+    using BA_SoundId = AZ::Crc32;
+    using BA_SoundBankId = AZ::Name;
+    using BA_Name = AZStd::string;
 
-    using SA_GameObjectId = AZ::Crc32;
-    using SA_RtpcId = AZ::Crc32;
-    using SA_UniqueId = AZ::Crc32;
-    using SA_LibraryId = AZ::Crc32;
+    template<typename T>
+    static auto NumericIdToName(T id) -> AZ::Name
+    {
+        static_assert(AZStd::is_convertible_v<T, AZ::Crc32>, "Id must be convertible to AZ::u32!");
+
+        constexpr auto IdStringFormat{ "id_%u" };
+        return AZ::Name{ AZStd::string::format(IdStringFormat, static_cast<AZ::u32>(id)) };
+    }
+
+    using UniqueIDVector = AZStd::vector<BA_UniqueId, Audio::AudioImplStdAllocator>;
 
     struct SATLAudioObjectData_BopAudio : public Audio::IATLAudioObjectData
     {
-        AZ_DEFAULT_COPY_MOVE(SATLAudioObjectData_BopAudio); // NOLINT
+        AZ_DISABLE_COPY_MOVE(SATLAudioObjectData_BopAudio);
 
-        SATLAudioObjectData_BopAudio(const SA_GameObjectId id, const bool hasPosition)
-            : m_hasPosition(hasPosition)
-            , m_id(id)
+        SATLAudioObjectData_BopAudio(BA_GameObjectId id)
+            : m_id(id)
+            , m_name{}
+            , m_transform{}
+            , m_sound{}
         {
         }
 
         ~SATLAudioObjectData_BopAudio() override = default;
 
-        bool m_hasPosition;
-        SA_GameObjectId m_id;
+        BA_GameObjectId m_id;
+        AZ::Name m_name;
+        AZ::Transform m_transform;
+        SoundPtr m_sound;
     };
 
     struct SATLTriggerImplData_BopAudio : public Audio::IATLTriggerImplData
     {
-        explicit SATLTriggerImplData_BopAudio(SA_UniqueId uniqueId)
-            : m_uniqueId{ uniqueId } {};
+        explicit SATLTriggerImplData_BopAudio(BA_UniqueId id)
+            : m_id{ id }
+        {
+        }
 
-        SA_UniqueId const m_uniqueId;
+        BA_TriggerId m_id;
+        AZ::Name m_soundName;
     };
 
     struct SATLListenerData_BopAudio : public Audio::IATLListenerData
     {
-        explicit SATLListenerData_BopAudio(SA_GameObjectId const id)
+        explicit SATLListenerData_BopAudio(BA_GameObjectId const id)
             : m_listenerObjectId(id)
         {
         }
 
-        SA_GameObjectId m_listenerObjectId = SA_GameObjectId();
+        BA_GameObjectId m_listenerObjectId = BA_GameObjectId();
     };
 
     struct SATLRtpcImplData_BopAudio : public Audio::IATLRtpcImplData
     {
-        SATLRtpcImplData_BopAudio(const SA_RtpcId id, const float passedMult, const float passedShift)
+        SATLRtpcImplData_BopAudio(BA_RtpcId const id, float const passedMult, float const passedShift)
             : m_mult(passedMult)
             , m_shift(passedShift)
             , m_id(id)
@@ -60,23 +83,26 @@ namespace BopAudio
 
         float m_mult;
         float m_shift;
-        SA_RtpcId m_id;
+        BA_RtpcId m_id;
     };
 
     struct SATLEventData_BopAudio : public Audio::IATLEventData
     {
-        explicit SATLEventData_BopAudio(const Audio::TAudioEventID passedId)
+        explicit SATLEventData_BopAudio(Audio::TAudioEventID const passedId)
             : m_audioEventState(Audio::eAES_NONE)
-            , m_maId(AZ::Crc32())
+            , m_baId{}
             , m_atlId(passedId)
             , m_sourceId(INVALID_AUDIO_SOURCE_ID)
         {
         }
 
+        ~SATLEventData_BopAudio() override = default;
+
         Audio::EAudioEventState m_audioEventState;
-        SA_UniqueId m_maId;
-        const Audio::TAudioEventID m_atlId;
+        BA_UniqueId m_baId;
+        Audio::TAudioEventID m_atlId;
         Audio::TAudioSourceId m_sourceId;
+        SoundPtr m_soundInstance;
     };
 
     struct SATLAudioFileEntryData_BopAudio : public Audio::IATLAudioFileEntryData
@@ -86,9 +112,17 @@ namespace BopAudio
         {
         }
 
-        ~SATLAudioFileEntryData_BopAudio() override = default;
+        ~SATLAudioFileEntryData_BopAudio() override
+        {
+            m_sounds.clear();
+            m_soundAssets.clear();
+            m_soundNames.clear();
+        };
 
-        SA_LibraryId m_bankId;
+        BA_SoundBankId m_bankId;
+        AZStd::unordered_set<AZ::Name> m_soundNames;
+        AZStd::unordered_map<AZ::Name, MiniAudio::SoundDataAsset> m_soundAssets{};
+        AZStd::unordered_map<AZ::Name, SoundPtr> m_sounds{};
     };
 
 } // namespace BopAudio

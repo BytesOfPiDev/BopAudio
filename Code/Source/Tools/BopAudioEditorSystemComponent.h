@@ -1,12 +1,9 @@
-
 #pragma once
 
 #include "Clients/BopAudioSystemComponent.h"
 
-#include "AzToolsFramework/Entity/EditorEntityContextBus.h"
+#include "AzToolsFramework/API/ToolsApplicationAPI.h"
 #include "IAudioSystemEditor.h"
-
-#include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
@@ -19,8 +16,8 @@ namespace BopAudio
         using BaseSystemComponent = BopAudioSystemComponent;
 
     public:
-        AZ_COMPONENT_DECL(BopAudioEditorSystemComponent); // NOLINT
-        AZ_DISABLE_COPY_MOVE(BopAudioEditorSystemComponent); // NOLINT
+        AZ_COMPONENT_DECL(BopAudioEditorSystemComponent);
+        AZ_DISABLE_COPY_MOVE(BopAudioEditorSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

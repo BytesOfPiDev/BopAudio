@@ -1,14 +1,13 @@
 #pragma once
 
-#include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Component/Component.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "Engine/MiniAudioEngine.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 
 #include "BopAudio/BopAudioBus.h"
-#include "phonon.h"
 
 namespace BopAudio
 {
@@ -54,25 +53,14 @@ namespace BopAudio
         void Release() override;
         ////////////////////////////////////////////////////////////////////////
 
-        [[nodiscard]] auto GetEngine() const -> Audio::AudioSystemImplementation const*
+        [[nodiscard]] constexpr auto GetEngine() const -> Audio::AudioSystemImplementation const*
         {
-            return m_engineBopAudio.get();
-        }
-
-        auto ModifyEngine() -> Audio::AudioSystemImplementation*
-        {
-            return m_engineBopAudio.get();
+            return m_audioSystemImpl.get();
         }
 
     private:
-        IPLContextSettings m_contextSettings{};
-        IPLContext m_context{ nullptr };
-        IPLHRTFSettings m_hrtfSettings{};
-        IPLAudioSettings m_audioSettings{};
-        IPLHRTF m_hrtf = nullptr;
-
-        AZStd::unique_ptr<Audio::AudioSystemImplementation> m_engineBopAudio;
-        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
+        AZStd::unique_ptr<Audio::AudioSystemImplementation> m_audioSystemImpl;
+        AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
     };
 
 } // namespace BopAudio
