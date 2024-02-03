@@ -14,7 +14,8 @@ namespace BopAudio
         ma_sound_stop(ptr);
         ma_sound_uninit(ptr);
         ma_resource_manager_unregister_data(
-            ma_engine_get_resource_manager(MiniAudio::MiniAudioInterface::Get()->GetSoundEngine()), m_soundName.GetCStr());
+            ma_engine_get_resource_manager(MiniAudio::MiniAudioInterface::Get()->GetSoundEngine()),
+            m_soundName.GetCStr());
     }
 
     auto CreateSoundByName(AZ::Name const& soundName) -> SoundPtr
@@ -25,16 +26,26 @@ namespace BopAudio
         // Try and load an instance of the sound.
         SoundPtr soundPtr = [&soundName]() -> decltype(soundPtr)
         {
-            auto const o3deProjectRelativePath{ AZ::IO::Path{ GetBanksRootPath() } / soundName.GetStringView() };
+            auto const o3deProjectRelativePath{ AZ::IO::Path{ GetBanksRootPath() } /
+                                                soundName.GetStringView() };
             AZ::Name const resourceName{ o3deProjectRelativePath.Native() };
 
             decltype(soundPtr) tempPtr{ new ma_sound, SoundDeleter(resourceName) };
 
             ma_uint32 const flags = MA_SOUND_FLAG_DECODE;
             ma_result result = ma_sound_init_from_file(
-                AudioEngineInterface::Get()->GetSoundEngine(), resourceName.GetCStr(), flags, nullptr, nullptr, tempPtr.get());
+                AudioEngineInterface::Get()->GetSoundEngine(),
+                resourceName.GetCStr(),
+                flags,
+                nullptr,
+                nullptr,
+                tempPtr.get());
 
-            AZ_Error("CreateSoundByName", result == MA_SUCCESS, "Failed to init sound using resource name: %s.", resourceName.GetCStr());
+            AZ_Error(
+                "CreateSoundByName",
+                result == MA_SUCCESS,
+                "Failed to init sound using resource name: %s.",
+                resourceName.GetCStr());
 
             return AZStd::move(tempPtr);
         }();

@@ -12,7 +12,8 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<BopAudioComponent, AZ::Component>()->Version(1)->Field("File", &BopAudioComponent::m_audioAsset);
+            serialize->Class<BopAudioComponent, AZ::Component>()->Version(1)->Field(
+                "File", &BopAudioComponent::m_audioAsset);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -25,21 +26,25 @@ namespace BopAudio
         }
     }
 
-    void BopAudioComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void BopAudioComponent::GetProvidedServices(
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("BopAudioComponentService"));
     }
 
-    void BopAudioComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void BopAudioComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("BopAudioComponentService"));
     }
 
-    void BopAudioComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void BopAudioComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
     }
 
-    void BopAudioComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void BopAudioComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 

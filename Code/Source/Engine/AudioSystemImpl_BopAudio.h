@@ -43,15 +43,23 @@ namespace BopAudio
 
         auto StopAllSounds() -> Audio::EAudioRequestStatus override;
 
-        auto RegisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
+        auto RegisterAudioObject(
+            Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
             -> Audio::EAudioRequestStatus override;
-        auto UnregisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
-        auto ResetAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
-        auto UpdateAudioObject(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
+        auto UnregisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
+            -> Audio::EAudioRequestStatus override;
+        auto ResetAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
+            -> Audio::EAudioRequestStatus override;
+        auto UpdateAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
+            -> Audio::EAudioRequestStatus override;
 
-        auto PrepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLTriggerImplData const* const triggerData)
+        auto PrepareTriggerSync(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLTriggerImplData const* const triggerData)
             -> Audio::EAudioRequestStatus override;
-        auto UnprepareTriggerSync(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLTriggerImplData const* const triggerData)
+        auto UnprepareTriggerSync(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLTriggerImplData const* const triggerData)
             -> Audio::EAudioRequestStatus override;
         auto PrepareTriggerAsync(
             Audio::IATLAudioObjectData* const audioObjectData,
@@ -66,59 +74,88 @@ namespace BopAudio
             Audio::IATLTriggerImplData const* const triggerData,
             Audio::IATLEventData* const eventData,
             Audio::SATLSourceData const* const pSourceData) -> Audio::EAudioRequestStatus override;
-        auto StopEvent(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLEventData const* const eventData)
+        auto StopEvent(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLEventData const* const eventData) -> Audio::EAudioRequestStatus override;
+        auto StopAllEvents(Audio::IATLAudioObjectData* const audioObjectData)
             -> Audio::EAudioRequestStatus override;
-        auto StopAllEvents(Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus override;
-        auto SetPosition(Audio::IATLAudioObjectData* const audioObjectData, Audio::SATLWorldPosition const& worldPosition)
-            -> Audio::EAudioRequestStatus override;
-        auto SetMultiplePositions(Audio::IATLAudioObjectData* const audioObjectData, Audio::MultiPositionParams const& multiPositionParams)
+        auto SetPosition(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::SATLWorldPosition const& worldPosition) -> Audio::EAudioRequestStatus override;
+        auto SetMultiplePositions(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::MultiPositionParams const& multiPositionParams)
             -> Audio::EAudioRequestStatus override;
         auto SetEnvironment(
             Audio::IATLAudioObjectData* const audioObjectData,
             Audio::IATLEnvironmentImplData const* const environmentData,
             float const amount) -> Audio::EAudioRequestStatus override;
-        auto SetRtpc(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLRtpcImplData const* const rtpcData, float const value)
+        auto SetRtpc(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLRtpcImplData const* const rtpcData,
+            float const value) -> Audio::EAudioRequestStatus override;
+        auto SetSwitchState(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLSwitchStateImplData const* const switchStateData)
             -> Audio::EAudioRequestStatus override;
-        auto SetSwitchState(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLSwitchStateImplData const* const switchStateData)
+        auto SetObstructionOcclusion(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            float const obstruction,
+            float const occlusion) -> Audio::EAudioRequestStatus override;
+        auto SetListenerPosition(
+            Audio::IATLListenerData* const listenerData,
+            Audio::SATLWorldPosition const& newPosition) -> Audio::EAudioRequestStatus override;
+        auto ResetRtpc(
+            Audio::IATLAudioObjectData* const audioObjectData,
+            Audio::IATLRtpcImplData const* const rtpcData) -> Audio::EAudioRequestStatus override;
+
+        auto RegisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry)
             -> Audio::EAudioRequestStatus override;
-        auto SetObstructionOcclusion(Audio::IATLAudioObjectData* const audioObjectData, float const obstruction, float const occlusion)
-            -> Audio::EAudioRequestStatus override;
-        auto SetListenerPosition(Audio::IATLListenerData* const listenerData, Audio::SATLWorldPosition const& newPosition)
-            -> Audio::EAudioRequestStatus override;
-        auto ResetRtpc(Audio::IATLAudioObjectData* const audioObjectData, Audio::IATLRtpcImplData const* const rtpcData)
+        auto UnregisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry)
             -> Audio::EAudioRequestStatus override;
 
-        auto RegisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus override;
-        auto UnregisterInMemoryFile(Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus override;
-
-        auto ParseAudioFileEntry(const AZ::rapidxml::xml_node<char>* audioFileEntryNode, Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
+        auto ParseAudioFileEntry(
+            const AZ::rapidxml::xml_node<char>* audioFileEntryNode,
+            Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
             -> Audio::EAudioRequestStatus override;
-        void DeleteAudioFileEntryData(Audio::IATLAudioFileEntryData* const oldAudioFileEntryData) override;
-        auto GetAudioFileLocation(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> char const* const override;
+        void DeleteAudioFileEntryData(
+            Audio::IATLAudioFileEntryData* const oldAudioFileEntryData) override;
+        auto GetAudioFileLocation(Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
+            -> char const* const override;
 
-        auto NewAudioTriggerImplData(const AZ::rapidxml::xml_node<char>* audioTriggerNode) -> Audio::IATLTriggerImplData* override;
-        void DeleteAudioTriggerImplData(Audio::IATLTriggerImplData* const oldTriggerImplData) override;
+        auto NewAudioTriggerImplData(const AZ::rapidxml::xml_node<char>* audioTriggerNode)
+            -> Audio::IATLTriggerImplData* override;
+        void DeleteAudioTriggerImplData(
+            Audio::IATLTriggerImplData* const oldTriggerImplData) override;
 
-        auto NewAudioRtpcImplData(const AZ::rapidxml::xml_node<char>* audioRtpcNode) -> Audio::IATLRtpcImplData* override;
+        auto NewAudioRtpcImplData(const AZ::rapidxml::xml_node<char>* audioRtpcNode)
+            -> Audio::IATLRtpcImplData* override;
         void DeleteAudioRtpcImplData(Audio::IATLRtpcImplData* const oldRtpcImplData) override;
 
         auto NewAudioSwitchStateImplData(const AZ::rapidxml::xml_node<char>* audioSwitchStateNode)
             -> Audio::IATLSwitchStateImplData* override;
-        void DeleteAudioSwitchStateImplData(Audio::IATLSwitchStateImplData* const oldSwitchStateImplData) override;
+        void DeleteAudioSwitchStateImplData(
+            Audio::IATLSwitchStateImplData* const oldSwitchStateImplData) override;
 
         auto NewAudioEnvironmentImplData(const AZ::rapidxml::xml_node<char>* audioEnvironmentNode)
             -> Audio::IATLEnvironmentImplData* override;
-        void DeleteAudioEnvironmentImplData(Audio::IATLEnvironmentImplData* const oldEnvironmentImplData) override;
+        void DeleteAudioEnvironmentImplData(
+            Audio::IATLEnvironmentImplData* const oldEnvironmentImplData) override;
 
-        auto NewGlobalAudioObjectData(Audio::TAudioObjectID const objectId) -> Audio::IATLAudioObjectData* override;
-        auto NewAudioObjectData(Audio::TAudioObjectID const objectId) -> Audio::IATLAudioObjectData* override;
+        auto NewGlobalAudioObjectData(Audio::TAudioObjectID const objectId)
+            -> Audio::IATLAudioObjectData* override;
+        auto NewAudioObjectData(Audio::TAudioObjectID const objectId)
+            -> Audio::IATLAudioObjectData* override;
         void DeleteAudioObjectData(Audio::IATLAudioObjectData* const oldObjectData) override;
 
-        auto NewDefaultAudioListenerObjectData(Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio* override;
-        auto NewAudioListenerObjectData(Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio* override;
+        auto NewDefaultAudioListenerObjectData(Audio::TATLIDType const objectId)
+            -> SATLListenerData_BopAudio* override;
+        auto NewAudioListenerObjectData(Audio::TATLIDType const objectId)
+            -> SATLListenerData_BopAudio* override;
         void DeleteAudioListenerObjectData(Audio::IATLListenerData* const oldListenerData) override;
 
-        auto NewAudioEventData(Audio::TAudioEventID const eventId) -> SATLEventData_BopAudio* override;
+        auto NewAudioEventData(Audio::TAudioEventID const eventId)
+            -> SATLEventData_BopAudio* override;
         void DeleteAudioEventData(Audio::IATLEventData* const oldEventData) override;
         void ResetAudioEventData(Audio::IATLEventData* const eventData) override;
 

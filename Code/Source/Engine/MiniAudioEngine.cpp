@@ -62,7 +62,8 @@ namespace BopAudio
         }
     }
 
-    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest) -> bool
+    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
+        -> bool
     {
         // auto const& triggerId{ activateTriggerRequest.m_triggerId };
         auto const& audioObjectId{ activateTriggerRequest.m_audioObjectId };
@@ -79,10 +80,12 @@ namespace BopAudio
             if (iter == AZStd::end(m_soundCache))
             {
                 auto tmpSoundPtr = CreateSoundByName(soundName);
-                auto const& [insertedAtIter, success]{ m_soundCache.insert_or_assign(audioObject->m_id, AZStd::move(tmpSoundPtr)) };
+                auto const& [insertedAtIter, success]{ m_soundCache.insert_or_assign(
+                    audioObject->m_id, AZStd::move(tmpSoundPtr)) };
                 if (!success)
                 {
-                    AZ_Error("MiniAudioEngine", false, "Failed to find and create the requested sound.");
+                    AZ_Error(
+                        "MiniAudioEngine", false, "Failed to find and create the requested sound.");
                     return false;
                 }
                 iter = insertedAtIter;
@@ -99,7 +102,8 @@ namespace BopAudio
         auto soundPtr = AZStd::move(CreateSoundByName(soundName));
         if (!soundPtr)
         {
-            AZ_Error("MiniAudioEngine", false, "Failed to create sound: '%s'.", soundName.GetCStr());
+            AZ_Error(
+                "MiniAudioEngine", false, "Failed to create sound: '%s'.", soundName.GetCStr());
             return false;
         }
 
@@ -126,9 +130,12 @@ namespace BopAudio
         return true;
     }
 
-    auto MiniAudioEngine::CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData) -> BA_GameObjectId
+    auto MiniAudioEngine::CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData)
+        -> BA_GameObjectId
     {
-        return audioObjectData ? m_audioObjects.emplace_back(audioObjectData->m_name.GetStringView()).GetUniqueId() : InvalidBaUniqueId;
+        return audioObjectData
+            ? m_audioObjects.emplace_back(audioObjectData->m_name.GetStringView()).GetUniqueId()
+            : InvalidBaUniqueId;
     }
 
     void MiniAudioEngine::RemoveAudioObject(BA_UniqueId audioObjectId)
@@ -158,10 +165,18 @@ namespace BopAudio
     {
         auto result = ma_sound_seek_to_pcm_frame(soundInstance, 0);
 
-        AZ_Error("MiniAudioEngine", result == MA_SUCCESS, "Failed to seek audio frame on sound: '%s'.", soundName.GetCStr());
+        AZ_Error(
+            "MiniAudioEngine",
+            result == MA_SUCCESS,
+            "Failed to seek audio frame on sound: '%s'.",
+            soundName.GetCStr());
 
         result = ma_sound_start(soundInstance);
 
-        AZ_Error("MiniAudioEngine", result == MA_SUCCESS, "Failed to start sound: '%s'.", soundName.GetCStr());
+        AZ_Error(
+            "MiniAudioEngine",
+            result == MA_SUCCESS,
+            "Failed to start sound: '%s'.",
+            soundName.GetCStr());
     }
 } // namespace BopAudio

@@ -60,24 +60,33 @@ namespace BopAudio
         // IAudioSystemEditor implementation
         /////////////////////////////////////////////////////////
         void Reload() override;
-        auto CreateControl(AudioControls::SControlDef const& controlDefinition) -> AudioControls::IAudioSystemControl* override;
+        auto CreateControl(AudioControls::SControlDef const& controlDefinition)
+            -> AudioControls::IAudioSystemControl* override;
         auto GetRoot() -> AudioControls::IAudioSystemControl* override
         {
             return &m_rootControl;
         }
-        [[nodiscard]] auto GetControl(AudioControls::CID id) const -> AudioControls::IAudioSystemControl* override;
-        [[nodiscard]] auto ImplTypeToATLType(AudioControls::TImplControlType type) const -> AudioControls::EACEControlType override;
+        [[nodiscard]] auto GetControl(AudioControls::CID id) const
+            -> AudioControls::IAudioSystemControl* override;
+        [[nodiscard]] auto ImplTypeToATLType(AudioControls::TImplControlType type) const
+            -> AudioControls::EACEControlType override;
         [[nodiscard]] auto GetCompatibleTypes(AudioControls::EACEControlType atlControlType) const
             -> AudioControls::TImplControlTypeMask override;
-        auto CreateConnectionToControl(AudioControls::EACEControlType atlControlType, AudioControls::IAudioSystemControl* middlewareControl)
+        auto CreateConnectionToControl(
+            AudioControls::EACEControlType atlControlType,
+            AudioControls::IAudioSystemControl* middlewareControl)
             -> AudioControls::TConnectionPtr override;
-        auto CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, AudioControls::EACEControlType atlControlType)
+        auto CreateConnectionFromXMLNode(
+            AZ::rapidxml::xml_node<char>* node, AudioControls::EACEControlType atlControlType)
             -> AudioControls::TConnectionPtr override;
         auto CreateXMLNodeFromConnection(
-            AudioControls::TConnectionPtr const connection, AudioControls::EACEControlType const atlControlType)
+            AudioControls::TConnectionPtr const connection,
+            AudioControls::EACEControlType const atlControlType)
             -> AZ::rapidxml::xml_node<char>* override;
-        [[nodiscard]] auto GetTypeIcon(AudioControls::TImplControlType type) const -> AZStd::string_view const override;
-        [[nodiscard]] auto GetTypeIconSelected(AudioControls::TImplControlType type) const -> AZStd::string_view const override;
+        [[nodiscard]] auto GetTypeIcon(AudioControls::TImplControlType type) const
+            -> AZStd::string_view const override;
+        [[nodiscard]] auto GetTypeIconSelected(AudioControls::TImplControlType type) const
+            -> AZStd::string_view const override;
         [[nodiscard]] auto GetName() const -> AZStd::string override;
         [[nodiscard]] auto GetDataPath() const -> AZ::IO::FixedMaxPath override;
         void DataSaved() override
@@ -86,12 +95,16 @@ namespace BopAudio
         void ConnectionRemoved(AudioControls::IAudioSystemControl* control) override;
         //////////////////////////////////////////////////////////
 
-        auto GetControlByName(AZStd::string name, bool isLocalized = false, AudioControls::IAudioSystemControl* parent = nullptr) const
+        auto GetControlByName(
+            AZStd::string name,
+            bool isLocalized = false,
+            AudioControls::IAudioSystemControl* parent = nullptr) const
             -> AudioControls::IAudioSystemControl*;
 
     private:
-        // Gets the ID of the control given its name. As controls can have the same name
-        // if they're under different parents, the name of the parent is also needed (if there is one)
+        // Gets the ID of the control given its name. As controls can have the
+        // same name if they're under different parents, the name of the parent
+        // is also needed (if there is one)
         [[nodiscard]] auto GetID(AZStd::string_view const name) const -> AudioControls::CID;
 
         void UpdateConnectedStatus();

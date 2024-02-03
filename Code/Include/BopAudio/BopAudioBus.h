@@ -13,9 +13,8 @@ namespace BopAudio
         virtual ~BopAudioRequests() = default;
         // Put your public methods here
     };
-    
-    class BopAudioBusTraits
-        : public AZ::EBusTraits
+
+    class BopAudioBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////

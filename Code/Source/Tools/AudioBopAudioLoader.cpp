@@ -19,8 +19,11 @@ namespace BopAudio
         m_audioSystemImpl = audioSystemImpl;
         AZ::IO::FixedMaxPath audioProjectFullPath{ m_audioSystemImpl->GetDataPath() };
 
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::GameParametersFolder }.Native());
-        LoadControlsInFolder(AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
+        LoadControlsInFolder(
+            AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::GameParametersFolder }
+                .Native());
+        LoadControlsInFolder(
+            AZ::IO::FixedMaxPath{ audioProjectFullPath / BopAudioStrings::EventsFolder }.Native());
         LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
@@ -59,9 +62,21 @@ namespace BopAudio
             return;
         }
 
-        ExtractControlsFromXML(xmlNode, BopAudioControlType::Trigger, BopAudioStrings::EventTag, BopAudioStrings::NameAttribute);
-        ExtractControlsFromXML(xmlNode, BopAudioControlType::Rtpc, BopAudioStrings::GameParametersFolder, BopAudioStrings::NameAttribute);
-        ExtractControlsFromXML(xmlNode, BopAudioControlType::AuxBus, BopAudioStrings::AuxBusTag, BopAudioStrings::NameAttribute);
+        ExtractControlsFromXML(
+            xmlNode,
+            BopAudioControlType::Trigger,
+            BopAudioStrings::EventTag,
+            BopAudioStrings::NameAttribute);
+        ExtractControlsFromXML(
+            xmlNode,
+            BopAudioControlType::Rtpc,
+            BopAudioStrings::GameParametersFolder,
+            BopAudioStrings::NameAttribute);
+        ExtractControlsFromXML(
+            xmlNode,
+            BopAudioControlType::AuxBus,
+            BopAudioStrings::AuxBusTag,
+            BopAudioStrings::NameAttribute);
 
         AZStd::string_view const xmlTag(xmlNode->name());
         bool const isSwitchTag{ xmlTag == BopAudioStrings::SwitchGroupTag };
@@ -72,11 +87,14 @@ namespace BopAudio
             if (auto const nameAttr = xmlNode->first_attribute(BopAudioStrings::NameAttribute))
             {
                 AZStd::string const parentName{ nameAttr->value() };
-                AudioControls::IAudioSystemControl* group = m_audioSystemImpl->GetControlByName(parentName);
+                AudioControls::IAudioSystemControl* group =
+                    m_audioSystemImpl->GetControlByName(parentName);
                 if (!group)
                 {
                     group = m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                        parentName, isSwitchTag ? BopAudioControlType::SwitchGroup : BopAudioControlType::GameStateGroup));
+                        parentName,
+                        isSwitchTag ? BopAudioControlType::SwitchGroup
+                                    : BopAudioControlType::GameStateGroup));
                 }
 
                 auto const childrenNode = xmlNode->first_node(BopAudioStrings::ChildrenListTag);
@@ -85,11 +103,13 @@ namespace BopAudio
                     auto childNode = childrenNode->first_node();
                     while (childNode)
                     {
-                        if (auto childNameAttr = childNode->first_attribute(BopAudioStrings::NameAttribute))
+                        if (auto childNameAttr =
+                                childNode->first_attribute(BopAudioStrings::NameAttribute))
                         {
                             m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
                                 childNameAttr->value(),
-                                isSwitchTag ? BopAudioControlType::Switch : BopAudioControlType::GameState,
+                                isSwitchTag ? BopAudioControlType::Switch
+                                            : BopAudioControlType::GameState,
                                 false,
                                 group));
                         }
@@ -118,7 +138,8 @@ namespace BopAudio
         {
             if (auto nameAttr = xmlNode->first_attribute(controlNameAttribute.data()))
             {
-                m_audioSystemImpl->CreateControl(AudioControls::SControlDef(nameAttr->value(), type));
+                m_audioSystemImpl->CreateControl(
+                    AudioControls::SControlDef(nameAttr->value(), type));
             }
         }
     }
@@ -128,7 +149,8 @@ namespace BopAudio
         return m_localizationFolder;
     }
 
-    void AudioBopAudioLoader::LoadSoundBanks(AZ::IO::PathView rootFolder, AZ::IO::PathView subPath, bool isLocalized)
+    void AudioBopAudioLoader::LoadSoundBanks(
+        AZ::IO::PathView rootFolder, AZ::IO::PathView subPath, bool isLocalized)
     {
         AZ::IO::FixedMaxPath searchPath(rootFolder);
         searchPath /= subPath;
@@ -161,7 +183,11 @@ namespace BopAudio
             else if (fileName.Extension() == SoundbankExtension && fileName != InitBank)
             {
                 m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                    AZStd::string{ fileName.Native() }, BopAudioControlType::SoundBank, isLocalized, nullptr, subPath.Native()));
+                    AZStd::string{ fileName.Native() },
+                    BopAudioControlType::SoundBank,
+                    isLocalized,
+                    nullptr,
+                    subPath.Native()));
 
                 SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
                 AZStd::ranges::for_each(
@@ -169,9 +195,16 @@ namespace BopAudio
                     [this, &isLocalized, &subPath](SoundName const& soundName)
                     {
                         m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                            soundName.GetStringView(), BopAudioControlType::Trigger, isLocalized, nullptr, subPath.Native()));
+                            soundName.GetStringView(),
+                            BopAudioControlType::Trigger,
+                            isLocalized,
+                            nullptr,
+                            subPath.Native()));
 
-                        AZ_Info("AudioBopAudioLoader", "Created control for sound '%s'.\n", soundName.GetCStr());
+                        AZ_Info(
+                            "AudioBopAudioLoader",
+                            "Created control for sound '%s'.\n",
+                            soundName.GetCStr());
                     });
             }
         }

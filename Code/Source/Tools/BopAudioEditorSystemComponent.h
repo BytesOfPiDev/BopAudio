@@ -25,7 +25,8 @@ namespace BopAudio
         ~BopAudioEditorSystemComponent() override;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetIncompatibleServices(
+            AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
@@ -38,7 +39,8 @@ namespace BopAudio
         void NotifyRegisterViews() override;
 
         ////////////////////////////////////////////////////////////////////////
-        // AudioControlsEditor::EditorImplPluginEventBus interface implementation
+        // AudioControlsEditor::EditorImplPluginEventBus interface
+        // implementation
         void InitializeEditorImplPlugin() override;
         void ReleaseEditorImplPlugin() override;
         auto GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor* override;

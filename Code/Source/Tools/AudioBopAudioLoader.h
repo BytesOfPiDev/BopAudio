@@ -18,7 +18,8 @@ namespace BopAudio
         [[nodiscard]] auto GetLocalizationFolder() const -> AZ::IO::PathView;
 
     private:
-        void LoadSoundBanks(AZ::IO::PathView const rootFolder, AZ::IO::PathView subPath, bool isLocalized);
+        void LoadSoundBanks(
+            AZ::IO::PathView const rootFolder, AZ::IO::PathView subPath, bool isLocalized);
         void LoadControlsInFolder(AZStd::string_view const folderPath);
         void LoadControl(AZ::rapidxml::xml_node<char> const* xmlNode);
 

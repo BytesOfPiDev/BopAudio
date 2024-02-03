@@ -24,7 +24,8 @@ namespace BopAudio
         virtual auto Shutdown() -> bool = 0;
 
         virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool = 0;
-        [[nodiscard]] virtual auto CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId = 0;
+        [[nodiscard]] virtual auto CreateAudioObject(
+            SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId = 0;
         virtual void RemoveAudioObject(BA_UniqueId audioObjectId) = 0;
         virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> bool = 0;
 

@@ -13,7 +13,10 @@
 
 namespace BopAudio
 {
-    AZ_COMPONENT_IMPL(BopAudioSystemComponent, "BopAudioSystemComponent", BopAudioSystemComponentTypeId); // NOLINT
+    AZ_COMPONENT_IMPL(
+        BopAudioSystemComponent,
+        "BopAudioSystemComponent",
+        BopAudioSystemComponentTypeId); // NOLINT
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -25,24 +28,28 @@ namespace BopAudio
         }
     }
 
-    void BopAudioSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void BopAudioSystemComponent::GetProvidedServices(
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("BopAudioService"));
         provided.push_back(AZ_CRC_CE("AudioEngineService"));
     }
 
-    void BopAudioSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void BopAudioSystemComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("BopAudioService"));
         incompatible.push_back(AZ_CRC_CE("AudioEngineService"));
     }
 
-    void BopAudioSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void BopAudioSystemComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
-    void BopAudioSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void BopAudioSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
@@ -82,7 +89,8 @@ namespace BopAudio
         BopAudioRequestBus::Handler::BusDisconnect();
     }
 
-    void BopAudioSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void BopAudioSystemComponent::OnTick(
+        [[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
     }
 
@@ -91,11 +99,13 @@ namespace BopAudio
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
             AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
-        m_audioSystemImpl = AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
+        m_audioSystemImpl =
+            AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
         if (m_audioSystemImpl)
         {
             Audio::SystemRequest::Initialize initRequest;
-            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(
+                AZStd::move(initRequest));
 
             return true;
             AZLOG_INFO("AudioEngineBopAudio created!"); // NOLINT

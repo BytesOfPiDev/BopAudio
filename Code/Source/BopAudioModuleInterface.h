@@ -6,8 +6,7 @@
 
 namespace BopAudio
 {
-    class BopAudioModuleInterface
-        : public AZ::Module
+    class BopAudioModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(BopAudioModuleInterface)
@@ -21,4 +20,4 @@ namespace BopAudio
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace BopAudio
+} // namespace BopAudio

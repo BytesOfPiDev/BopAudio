@@ -25,11 +25,16 @@ namespace BopAudio
     {
         if (!AZ::Data::AssetManager::IsReady())
         {
-            AZ_Error("BopAudioAssetHandler", false, "The Asset Manager isn't ready. It is required in order to handle assets.");
+            AZ_Error(
+                "BopAudioAssetHandler",
+                false,
+                "The Asset Manager isn't ready. It is required in order to "
+                "handle assets.");
             return;
         }
 
-        AZ::Data::AssetManager::Instance().RegisterHandler(this, AZ::AzTypeInfo<AudioAsset>::Uuid());
+        AZ::Data::AssetManager::Instance().RegisterHandler(
+            this, AZ::AzTypeInfo<AudioAsset>::Uuid());
         AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioAsset>::Uuid());
     }
 
@@ -45,14 +50,16 @@ namespace BopAudio
         AZ::Data::AssetManager::Instance().UnregisterHandler(this);
     }
 
-    auto BopAudioAssetHandler::CreateAsset(AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
+    auto BopAudioAssetHandler::CreateAsset(
+        AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
         if (aztypeid_cmp(type, AZ::AzTypeInfo<AudioAsset>::Uuid()))
         {
             return aznew AudioAsset{};
         }
 
-        AZ_Error("AudioAssetHandler", false, "The type requested is not supported."); // NOLINT
+        AZ_Error("AudioAssetHandler", false,
+                 "The type requested is not supported."); // NOLINT
         return {};
     }
 
@@ -61,7 +68,8 @@ namespace BopAudio
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult
     {
-        bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<AudioAsset>(*stream, *asset.GetAs<AudioAsset>());
+        bool const assetLoaded =
+            AZ::Utils::LoadObjectFromStreamInPlace<AudioAsset>(*stream, *asset.GetAs<AudioAsset>());
 
         if (!assetLoaded)
         {
@@ -92,7 +100,7 @@ namespace BopAudio
         return extensions.push_back(AudioAsset::FileExtension);
     }
 
-    auto BopAudioAssetHandler::GetAssetTypeDisplayName() const -> const char*
+    auto BopAudioAssetHandler::GetAssetTypeDisplayName() const -> char const*
     {
         return "Steam Audio Asset";
     }
@@ -102,7 +110,7 @@ namespace BopAudio
         return {};
     }
 
-    auto BopAudioAssetHandler::GetGroup() const -> const char*
+    auto BopAudioAssetHandler::GetGroup() const -> char const*
     {
         return AudioAsset::AssetGroup;
     }

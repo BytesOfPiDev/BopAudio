@@ -74,7 +74,8 @@ namespace BopAudio
 
     struct SATLRtpcImplData_BopAudio : public Audio::IATLRtpcImplData
     {
-        SATLRtpcImplData_BopAudio(BA_RtpcId const id, float const passedMult, float const passedShift)
+        SATLRtpcImplData_BopAudio(
+            BA_RtpcId const id, float const passedMult, float const passedShift)
             : m_mult(passedMult)
             , m_shift(passedShift)
             , m_id(id)

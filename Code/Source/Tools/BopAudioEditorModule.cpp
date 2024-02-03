@@ -6,7 +6,8 @@
 
 void InitBopAudioResources()
 {
-    // We must register our Qt resources (.qrc file) since this is being loaded from a separate module (gem)
+    // We must register our Qt resources (.qrc file) since this is being loaded
+    // from a separate module (gem)
     Q_INIT_RESOURCE(BopAudio);
 }
 
@@ -22,13 +23,16 @@ namespace BopAudio
         {
             InitBopAudioResources();
 
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
-            // EditContext. This happens through the [MyComponent]::Reflect() function.
+            // Push results of [MyComponent]::CreateDescriptor() into
+            // m_descriptors here. Add ALL components descriptors associated
+            // with this gem to m_descriptors. This will associate the
+            // AzTypeInfo information for the components with the the
+            // SerializeContext, BehaviorContext and EditContext. This happens
+            // through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
-                { BopAudioEditorSystemComponent::CreateDescriptor(), BopAudioControlBuilderComponent::CreateDescriptor() });
+                { BopAudioEditorSystemComponent::CreateDescriptor(),
+                  BopAudioControlBuilderComponent::CreateDescriptor() });
         }
 
         /**

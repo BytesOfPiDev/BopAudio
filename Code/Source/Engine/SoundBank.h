@@ -34,9 +34,11 @@ namespace BopAudio
         {
             return m_soundAssets;
         }
-        [[nodiscard]] auto GetSoundAsset(AZ::Name const& soundName) const -> MiniAudio::SoundDataAsset;
+        [[nodiscard]] auto GetSoundAsset(AZ::Name const& soundName) const
+            -> MiniAudio::SoundDataAsset;
         [[nodiscard]] auto CreateSound(BA_UniqueId soundId) const -> SoundPtr;
-        //[[nodiscard]] auto CreateSound(AZ::Name const& soundName) const -> SoundPtr;
+        //[[nodiscard]] auto CreateSound(AZ::Name const& soundName) const ->
+        // SoundPtr;
 
         [[nodiscard]] auto IsEmpty() const -> bool
         {
@@ -51,30 +53,37 @@ namespace BopAudio
         Audio::SATLAudioFileEntryInfo* m_fileEntryInfo{};
 
     protected:
-        // [[nodiscard]] auto CreateSound(decltype(m_soundAssets)::const_iterator soundIter) const -> SoundPtr;
+        // [[nodiscard]] auto
+        // CreateSound(decltype(m_soundAssets)::const_iterator soundIter) const
+        // -> SoundPtr;
     };
 
     /*
      * Attempts to load a sound bank into a buffer.
      *
-     * @param soundBankName The O3DE project-relative path and filename of the soundbank.
+     * @param soundBankName The O3DE project-relative path and filename of the
+     * soundbank.
      * @return AZStd::vector<char> The raw file data.
      */
     auto LoadSoundBankToBuffer(AZ::IO::Path soundBankFilePath) -> AZStd::vector<char>;
 
     /*
-     * Parses a buffer as a sound bank file and returns the sound names within it.
+     * Parses a buffer as a sound bank file and returns the sound names within
+     * it.
      *
      * @param soundBankFileBuffer A char buffer containing a sound bank's data.
-     * @return SoundNames The container of sound names found within the sound bank.
+     * @return SoundNames The container of sound names found within the sound
+     * bank.
      */
     auto GetSoundNamesFromSoundBankFile(AZStd::span<char> soundBankFileBuffer) -> SoundNames;
 
     /*
      * Loads and parses a given sound bank full file path.
      *
-     * @param soundBankFilePath The O3DE project-relative file path of the sound bank.
-     * @return SoundNames The container of sound names found within the sound bank.
+     * @param soundBankFilePath The O3DE project-relative file path of the sound
+     * bank.
+     * @return SoundNames The container of sound names found within the sound
+     * bank.
      */
     auto GetSoundNamesFromSoundBankFile(AZ::IO::PathView soundBankFilePath) -> SoundNames;
 
@@ -82,7 +91,8 @@ namespace BopAudio
      * Loads a sound bank by it's BopAudio-project name.
      *
      * @param soundBankName The BopAudio-project name.
-     * @return SoundNames The container of sound names found within the sound bank.
+     * @return SoundNames The container of sound names found within the sound
+     * bank.
      */
     auto GetSoundNamesFromSoundBankFile(AZ::Name const& soundBankName) -> SoundNames;
 

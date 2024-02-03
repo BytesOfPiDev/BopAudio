@@ -25,7 +25,8 @@ namespace BopAudio
     {
     public:
         IAudioSystemControl_BopAudio() = default;
-        IAudioSystemControl_BopAudio(AZStd::string const& name, AudioControls::CID id, AudioControls::TImplControlType type);
+        IAudioSystemControl_BopAudio(
+            AZStd::string const& name, AudioControls::CID id, AudioControls::TImplControlType type);
         ~IAudioSystemControl_BopAudio() override = default;
     };
 } // namespace BopAudio

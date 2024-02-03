@@ -16,7 +16,8 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AudioAsset, AZ::Data::AssetData>()->Version(1)->Field("Data", &AudioAsset::m_data);
+            serialize->Class<AudioAsset, AZ::Data::AssetData>()->Version(1)->Field(
+                "Data", &AudioAsset::m_data);
 
             serialize->RegisterGenericType<AZ::Data::Asset<AudioAsset>>();
 

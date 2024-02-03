@@ -16,12 +16,18 @@ namespace BopAudio
         AZ_CLASS_ALLOCATOR_DECL;
 
         //! AssetBuilderCommandBus overrides ...
-        void CreateJobs(AssetBuilderSDK::CreateJobsRequest const& request, AssetBuilderSDK::CreateJobsResponse& response);
-        void ProcessJob(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void CreateJobs(
+            AssetBuilderSDK::CreateJobsRequest const& request,
+            AssetBuilderSDK::CreateJobsResponse& response);
+        void ProcessJob(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response);
         void ShutDown() override;
 
         auto GatherProductDependencies(
-            AZStd::string const& fullPath, AZStd::string const& relativePath, AssetBuilderSDK::ProductPathDependencySet& dependencies)
+            AZStd::string const& fullPath,
+            AZStd::string const& relativePath,
+            AssetBuilderSDK::ProductPathDependencySet& dependencies)
             -> AZ::Outcome<AZStd::string, AZStd::string>;
 
         auto ParseProductDependencies(

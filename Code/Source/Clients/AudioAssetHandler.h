@@ -19,11 +19,13 @@ namespace BopAudio
         void Register();
         void Unregister();
 
-        auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) -> AZ::Data::AssetPtr override;
+        auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
+            -> AZ::Data::AssetPtr override;
         auto LoadAssetData(
             AZ::Data::Asset<AZ::Data::AssetData> const& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult override;
+            AZ::Data::AssetFilterCB const& assetLoadFilterCB)
+            -> AZ::Data::AssetHandler::LoadResult override;
         void DestroyAsset(AZ::Data::AssetPtr ptr) override;
         void GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes) override;
 
@@ -33,6 +35,7 @@ namespace BopAudio
         [[nodiscard]] auto GetBrowserIcon() const -> char const* override;
         [[nodiscard]] auto GetGroup() const -> char const* override;
         [[nodiscard]] auto GetComponentTypeId() const -> AZ::Uuid override;
-        [[nodiscard]] auto CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool override;
+        [[nodiscard]] auto CanCreateComponent(AZ::Data::AssetId const& assetId) const
+            -> bool override;
     };
 } // namespace BopAudio

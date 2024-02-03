@@ -29,7 +29,9 @@ namespace BopAudio
         auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest) -> bool override;
         auto ActivateTrigger(BA_TriggerId baId) -> bool;
 
-        [[nodiscard]] auto CreateAudioObject(SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId override;
+        [[nodiscard]] auto CreateAudioObject(
+            SATLAudioObjectData_BopAudio* const audioObjectData = nullptr)
+            -> BA_GameObjectId override;
         void RemoveAudioObject(BA_UniqueId audioObjectId) override;
 
     protected:
