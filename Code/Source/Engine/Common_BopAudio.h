@@ -43,5 +43,5 @@ namespace BopAudio::JsonKeys
 {
     static constexpr char BopAudioFile[] = "/BopAudioDocument";
     static constexpr char SoundFileNames[] = "/BopAudioDocument/Sounds";
-    static constexpr char EventsKey[]{ "/BopAudioDocument/Triggers" };
+    static constexpr char EventsArrayKey[]{ "/BopAudioDocument/Triggers" };
 } // namespace BopAudio::JsonKeys

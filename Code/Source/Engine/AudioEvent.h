@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Engine/Task.h"
+
 namespace BopAudio
 {
-    class AudioEvent
+    struct AudioEvent
     {
+        AudioEventTask m_task; // Just one for now
     };
 } // namespace BopAudio

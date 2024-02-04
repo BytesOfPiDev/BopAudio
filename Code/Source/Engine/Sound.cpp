@@ -18,7 +18,7 @@ namespace BopAudio
             m_soundName.GetCStr());
     }
 
-    auto CreateSoundByName(AZ::Name const& soundName) -> SoundPtr
+    auto CreateSoundByName(ResourceId const& soundName) -> SoundPtr
     {
         ma_engine* engine{ AudioEngineInterface::Get()->GetSoundEngine() };
         AZ_Error("CreateSoundByName", engine != nullptr, "Failed to get miniaudio sound engine!");
@@ -27,7 +27,7 @@ namespace BopAudio
         SoundPtr soundPtr = [&soundName]() -> decltype(soundPtr)
         {
             auto const o3deProjectRelativePath{ AZ::IO::Path{ GetBanksRootPath() } /
-                                                soundName.GetStringView() };
+                                                soundName.ToName().GetStringView() };
             AZ::Name const resourceName{ o3deProjectRelativePath.Native() };
 
             decltype(soundPtr) tempPtr{ new ma_sound, SoundDeleter(resourceName) };

@@ -2,21 +2,25 @@
 
 #include "ATLEntityData.h"
 #include "AzCore/Name/Name.h"
-#include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioEvent.h"
+#include "Engine/Id.h"
 #include "Engine/Sound.h"
 #include "MiniAudio/SoundAsset.h"
 
 struct ma_sound;
 
+namespace RAPIDJSONNAMESPACE
+{
+    struct Document;
+}
+
 namespace BopAudio
 {
-    using SoundName = AZ::Name;
-    using SoundNames = AZStd::vector<SoundName>;
+    using SoundNames = AZStd::vector<ResourceId>;
 
     class SoundBank
     {
-        using SoundAssetMap = AZStd::unordered_map<AZ::Name, MiniAudio::SoundDataAsset>;
+        using SoundAssetMap = AZStd::unordered_map<ResourceId, MiniAudio::SoundDataAsset>;
 
     public:
         AZ_DEFAULT_COPY_MOVE(SoundBank);
@@ -34,19 +38,20 @@ namespace BopAudio
         {
             return m_soundAssets;
         }
-        [[nodiscard]] auto GetSoundAsset(AZ::Name const& soundName) const
+        [[nodiscard]] auto GetSoundAsset(ResourceId const& soundName) const
             -> MiniAudio::SoundDataAsset;
-        [[nodiscard]] auto CreateSound(BA_UniqueId soundId) const -> SoundPtr;
-        //[[nodiscard]] auto CreateSound(AZ::Name const& soundName) const ->
-        // SoundPtr;
+        [[nodiscard]] auto CreateSound(ResourceId soundId) const -> SoundPtr;
 
         [[nodiscard]] auto IsEmpty() const -> bool
         {
             return !m_soundAssets.empty();
         };
 
+    protected:
+        auto LoadTriggers(rapidjson::Document const& doc) -> bool;
+
     private:
-        BA_SoundBankId m_id;
+        ResourceId m_id;
         AZ::Name m_soundBankName{};
         SoundAssetMap m_soundAssets{};
         [[maybe_unused]] AZStd::vector<AudioEvent> m_events{};

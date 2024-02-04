@@ -6,7 +6,6 @@
 #include "AzFramework/Entity/EntityContext.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
-#include "Engine/Sound.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 

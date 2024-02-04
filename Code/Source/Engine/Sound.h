@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AzCore/Name/Name.h"
+#include "Engine/Id.h"
 
 struct ma_sound;
 
@@ -29,5 +30,5 @@ namespace BopAudio
         SoundPtr m_sound;
     };
 
-    auto CreateSoundByName(AZ::Name const& soundName) -> SoundPtr;
+    auto CreateSoundByName(ResourceId const& soundName) -> SoundPtr;
 } // namespace BopAudio

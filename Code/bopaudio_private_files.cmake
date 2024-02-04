@@ -12,6 +12,8 @@ set(FILES
     Source/Clients/AudioAsset.cpp
     Source/Clients/AudioAssetHandler.cpp
     Source/Clients/AudioAssetHandler.h
+    Source/Clients/StringUtil.cpp
+    Source/Clients/StringUtil.h
 
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEvent.cpp
@@ -23,6 +25,8 @@ set(FILES
     Source/Engine/Common_BopAudio.h
     Source/Engine/ConfigurationSettings.cpp
     Source/Engine/ConfigurationSettings.h
+    Source/Engine/Id.cpp
+    Source/Engine/Id.h
     Source/Engine/MiniAudio.cpp
     Source/Engine/MiniAudioEngine.cpp
     Source/Engine/MiniAudioEngine.h
@@ -33,5 +37,7 @@ set(FILES
     Source/Engine/SoundBank.h
     Source/Engine/Sound.cpp
     Source/Engine/Sound.h
+    Source/Engine/Task.cpp
+    Source/Engine/Task.h
 
 )

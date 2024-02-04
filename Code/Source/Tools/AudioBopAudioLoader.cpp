@@ -1,13 +1,15 @@
+#include "Tools/AudioBopAudioLoader.h"
+
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
-#include "Engine/ConfigurationSettings.h"
-#include "Engine/SoundBank.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
+#include "Clients/StringUtil.h"
 #include "Engine/Common_BopAudio.h"
-#include "Tools/AudioBopAudioLoader.h"
+#include "Engine/ConfigurationSettings.h"
+#include "Engine/SoundBank.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
 
@@ -192,10 +194,10 @@ namespace BopAudio
                 SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
                 AZStd::ranges::for_each(
                     soundNames,
-                    [this, &isLocalized, &subPath](SoundName const& soundName)
+                    [this, &isLocalized, &subPath](ResourceId const& soundName)
                     {
                         m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
-                            soundName.GetStringView(),
+                            ToCStr(soundName),
                             BopAudioControlType::Trigger,
                             isLocalized,
                             nullptr,
@@ -204,7 +206,7 @@ namespace BopAudio
                         AZ_Info(
                             "AudioBopAudioLoader",
                             "Created control for sound '%s'.\n",
-                            soundName.GetCStr());
+                            ToCStr(soundName));
                     });
             }
         }
