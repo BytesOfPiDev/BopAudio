@@ -1,9 +1,13 @@
 #pragma once
 
+#include <AzCore/JSON/document.h>
+
 #include "ATLEntityData.h"
 #include "AzCore/Interface/Interface.h"
 #include "AzCore/RTTI/RTTIMacros.h"
-#include "Engine/ATLEntities_BopAudio.h"
+
+#include "BopAudio/Util.h"
+#include "Engine/Id.h"
 
 struct ma_engine;
 
@@ -20,14 +24,14 @@ namespace BopAudio
         AudioEngineRequests() = default;
         virtual ~AudioEngineRequests() = default;
 
-        virtual auto Initialize() -> bool = 0;
+        [[nodiscard]] virtual auto Initialize() -> NullOutcome = 0;
         virtual auto Shutdown() -> bool = 0;
 
-        virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool = 0;
-        [[nodiscard]] virtual auto CreateAudioObject(
-            SATLAudioObjectData_BopAudio* const audioObjectData = nullptr) -> BA_GameObjectId = 0;
-        virtual void RemoveAudioObject(BA_UniqueId audioObjectId) = 0;
-        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> bool = 0;
+        [[nodiscard]] virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
+            -> NullOutcome = 0;
+        [[nodiscard]] virtual auto CreateAudioObject(UniqueId const&) -> bool = 0;
+        virtual void RemoveAudioObject(UniqueId audioObjectId) = 0;
+        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> AudioOutcome<void> = 0;
 
         virtual auto GetSoundEngine() -> ma_engine* = 0;
     };

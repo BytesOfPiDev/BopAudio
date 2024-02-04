@@ -5,16 +5,17 @@
 
 namespace BopAudio
 {
-    class BopAudioAssetHandler
+    class SoundBankAssetHandler
         : public AZ::Data::AssetHandler
         , public AZ::AssetTypeInfoBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(BopAudioAssetHandler); // NOLINT
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY_MOVE(SoundBankAssetHandler);
+        AZ_TYPE_INFO_WITH_NAME_DECL(SoundBankAssetHandler);
 
-        BopAudioAssetHandler();
-        ~BopAudioAssetHandler() override;
+        SoundBankAssetHandler();
+        ~SoundBankAssetHandler() override;
 
         void Register();
         void Unregister();

@@ -18,6 +18,6 @@ namespace BopAudio
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+        [[nodiscard]] auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override;
     };
 } // namespace BopAudio

@@ -1,26 +1,44 @@
 #pragma once
 
-#include "Engine/ATLEntities_BopAudio.h"
+#include "Clients/AudioEventAsset.h"
+#include "Engine/Id.h"
 
 namespace BopAudio
 {
+    class AudioEventAsset;
 
-    struct AudioObject
+    class AudioObject
     {
-        AZ_DEFAULT_COPY_MOVE(AudioObject);
+    public:
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY(AudioObject);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioObject);
 
         AudioObject() = default;
         AudioObject(AZStd::string_view objectName)
-            : m_id{ objectName } {};
+            : m_name{ objectName } {};
         ~AudioObject() = default;
 
-        [[nodiscard]] auto GetUniqueId() const -> BA_UniqueId
+        constexpr auto operator==(AudioObjectId instanceId) -> bool
         {
-            return m_id;
+            return m_audioObjectId == instanceId;
         }
 
-        BA_UniqueId m_id{};
-        [[maybe_unused]] AZ::Transform m_transform{};
+        constexpr auto operator!=(AudioObjectId audioObjectId) -> bool
+        {
+            return !(m_audioObjectId == audioObjectId);
+        }
+
+        void Update(float deltaTime);
+
+        [[nodiscard]] auto GetId() const -> AudioObjectId
+        {
+            return m_audioObjectId;
+        }
+
+    private:
+        AudioObjectId m_audioObjectId{};
+        AZ::Name m_name{};
     };
 
 }; // namespace BopAudio
@@ -32,7 +50,7 @@ namespace AZStd
     {
         inline auto operator()(BopAudio::AudioObject const& soundObject) const -> size_t
         {
-            return soundObject.GetUniqueId();
+            return soundObject.GetId().GetHash();
         }
     };
 } // namespace AZStd

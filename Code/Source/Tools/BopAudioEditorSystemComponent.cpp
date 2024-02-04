@@ -53,7 +53,6 @@ namespace BopAudio
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
-        dependent.push_back(AZ_CRC_CE("MiniAudioEditorService"));
         BaseSystemComponent::GetDependentServices(dependent);
     }
 

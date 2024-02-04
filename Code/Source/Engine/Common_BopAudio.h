@@ -1,5 +1,7 @@
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
+
 namespace BopAudio::XmlTags
 {
     // Xml Element Names
@@ -20,11 +22,11 @@ namespace BopAudio::XmlTags
 
 } // namespace BopAudio::XmlTags
 
-namespace BopAudioStrings
+namespace AudioStrings
 {
     // Project Folders
     static constexpr auto GameParametersFolder = "GameParameters";
-    static constexpr auto EventsFolder = "Events";
+    static constexpr auto EventsFolder = "events";
 
     // Xml Tags
     static constexpr auto EventTag = "Event";
@@ -37,11 +39,92 @@ namespace BopAudioStrings
     static constexpr auto StateGroupTag = "StateGroup";
     static constexpr auto ChildrenListTag = "ChildrenList";
 
-} // namespace BopAudioStrings
+    // Json Tags
+    static constexpr auto TasksTag{ "Tasks" };
+    static constexpr auto EventPlayTag = "Play";
+    static constexpr auto EventStopTag = "Stop";
 
-namespace BopAudio::JsonKeys
+} // namespace AudioStrings
+
+namespace JsonKeys
 {
-    static constexpr char BopAudioFile[] = "/BopAudioDocument";
-    static constexpr char SoundFileNames[] = "/BopAudioDocument/Sounds";
-    static constexpr char EventsKey[]{ "/BopAudioDocument/Triggers" };
-} // namespace BopAudio::JsonKeys
+    static constexpr AZ::IO::PathView SoundsKey_O = "/BopAudioDocument/Sounds";
+    static constexpr AZ::IO::PathView EventsKey_O{ "/BopAudioDocument/Events" };
+    static constexpr AZ::IO::PathView EventDocNameKey_S{ "/EventDocument/Name" };
+    static constexpr AZ::IO::PathView EventDocTasksKey_A{ "/EventDocument/Tasks" };
+
+    static constexpr AZ::IO::PathView PlayResourceName = "/Resource";
+    static constexpr AZ::IO::PathView StopEventResourceName{ "/Resource" };
+} // namespace JsonKeys
+
+namespace BopAudio
+{
+    static constexpr auto DocumentJsonSchema =
+        R"({
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "BopAudioDocument": {
+            "type": "object",
+            "properties": {
+              "Sounds": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object"
+                }
+              },
+              "Events": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "Tasks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Play": {
+                            "type": "object",
+                            "properties": {
+                              "Resource": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "Resource"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "Stop": {
+                            "type": "object",
+                            "properties": {
+                              "Resource": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "Resource"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "Tasks"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "BopAudioDocument"
+        ],
+        "additionalProperties": false
+      })";
+}

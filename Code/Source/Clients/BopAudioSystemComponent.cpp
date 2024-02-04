@@ -1,14 +1,18 @@
 #include "BopAudioSystemComponent.h"
 
-#include <AzFramework/Platform/PlatformDefaults.h>
-
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/PlatformId/PlatformDefaults.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
+#include "AzCore/Utils/Utils.h"
 
-#include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioEventAsset.h"
+#include "Clients/SoundBankAsset.h"
+#include "Clients/SoundBankAssetHandler.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
+#include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
@@ -20,7 +24,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AudioAsset::Reflect(context);
+        SoundBankAsset::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -68,10 +72,36 @@ namespace BopAudio
         {
             BopAudioInterface::Unregister(this);
         }
+
+        m_soundBankAssetHandler.Unregister();
+        m_audioEventAssetHandler.Unregister();
     }
 
     void BopAudioSystemComponent::Init()
     {
+        AZ::IO::Path const banksProductPath = []() -> decltype(banksProductPath)
+        {
+            auto builtPath{ decltype(banksProductPath){
+                AZ::Utils::GetProjectProductPathForPlatform() } };
+
+            builtPath /= DefaultBanksPath;
+            return builtPath;
+        }();
+
+        AZ::IO::Path const eventsProductPath = []() -> decltype(eventsProductPath)
+        {
+            auto builtPath{ decltype(banksProductPath){
+                AZ::Utils::GetProjectProductPathForPlatform() } };
+
+            builtPath /= SoundEventRefBase;
+            return builtPath;
+        }();
+
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksProductPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsProductPath.c_str());
+
+        m_soundBankAssetHandler.Register();
+        m_audioEventAssetHandler.Register();
         m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
     }
 
@@ -97,7 +127,7 @@ namespace BopAudio
     auto BopAudioSystemComponent::Initialize() -> bool
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
-            AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+            AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
         m_audioSystemImpl =
             AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());

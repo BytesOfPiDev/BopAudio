@@ -3,11 +3,13 @@
 #include "AzCore/Component/Component.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
-#include "Engine/MiniAudioEngine.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 
 #include "BopAudio/BopAudioBus.h"
+#include "Clients/AudioEventAssetHandler.h"
+#include "Clients/SoundBankAssetHandler.h"
+#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
@@ -18,8 +20,8 @@ namespace BopAudio
         , protected Audio::Gem::EngineRequestBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(BopAudioSystemComponent); // NOLINT
-        AZ_DISABLE_COPY_MOVE(BopAudioSystemComponent); // NOLINT
+        AZ_COMPONENT_DECL(BopAudioSystemComponent);
+        AZ_DISABLE_COPY_MOVE(BopAudioSystemComponent);
 
         BopAudioSystemComponent();
         ~BopAudioSystemComponent() override;
@@ -63,6 +65,8 @@ namespace BopAudio
     private:
         AZStd::unique_ptr<Audio::AudioSystemImplementation> m_audioSystemImpl;
         AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
+        SoundBankAssetHandler m_soundBankAssetHandler;
+        AudioEventAssetHandler m_audioEventAssetHandler;
     };
 
 } // namespace BopAudio

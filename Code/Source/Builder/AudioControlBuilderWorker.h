@@ -8,11 +8,11 @@
 
 namespace BopAudio
 {
-    class BopAudioControlBuilderWorker : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
+    class AudioControlBuilderWorker : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
     public:
         AZ_RTTI_NO_TYPE_INFO_DECL();
-        AZ_TYPE_INFO_WITH_NAME_DECL(BopAudioControlBuilderWorker);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioControlBuilderWorker);
         AZ_CLASS_ALLOCATOR_DECL;
 
         //! AssetBuilderCommandBus overrides ...
