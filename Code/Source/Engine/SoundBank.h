@@ -16,11 +16,11 @@ namespace RAPIDJSONNAMESPACE
 
 namespace BopAudio
 {
-    using SoundNames = AZStd::vector<ResourceId>;
+    using SoundNames = AZStd::vector<NamedResource>;
 
     class SoundBank
     {
-        using SoundAssetMap = AZStd::unordered_map<ResourceId, MiniAudio::SoundDataAsset>;
+        using SoundAssetMap = AZStd::unordered_map<NamedResource, MiniAudio::SoundDataAsset>;
 
     public:
         AZ_DEFAULT_COPY_MOVE(SoundBank);
@@ -38,9 +38,8 @@ namespace BopAudio
         {
             return m_soundAssets;
         }
-        [[nodiscard]] auto GetSoundAsset(ResourceId const& soundName) const
+        [[nodiscard]] auto GetSoundAsset(NamedResource const& soundName) const
             -> MiniAudio::SoundDataAsset;
-        [[nodiscard]] auto CreateSound(ResourceId soundId) const -> SoundPtr;
 
         [[nodiscard]] auto IsEmpty() const -> bool
         {
@@ -51,7 +50,7 @@ namespace BopAudio
         auto LoadTriggers(rapidjson::Document const& doc) -> bool;
 
     private:
-        ResourceId m_id;
+        NamedResource m_id{};
         AZ::Name m_soundBankName{};
         SoundAssetMap m_soundAssets{};
         [[maybe_unused]] AZStd::vector<AudioEvent> m_events{};

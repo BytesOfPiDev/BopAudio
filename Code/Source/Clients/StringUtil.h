@@ -5,8 +5,6 @@
 
 namespace BopAudio
 {
-    class ResourceId;
-
     template<typename T>
     auto ToString(T const& typeToConvert) -> AZStd::string
     {

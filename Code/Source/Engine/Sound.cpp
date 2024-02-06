@@ -1,11 +1,11 @@
 #include "Engine/Sound.h"
 
 #include "AzCore/IO/Path/Path.h"
+#include "AzCore/IO/Path/Path_fwd.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "MiniAudio/MiniAudioBus.h"
 #include "MiniAudioIncludes.h"
-#include <AzCore/IO/Path/Path_fwd.h>
 
 namespace BopAudio
 {
@@ -18,7 +18,7 @@ namespace BopAudio
             m_soundName.GetCStr());
     }
 
-    auto CreateSoundByName(ResourceId const& soundName) -> SoundPtr
+    auto CreateSoundByName(NamedResource const& soundName) -> SoundPtr
     {
         ma_engine* engine{ AudioEngineInterface::Get()->GetSoundEngine() };
         AZ_Error("CreateSoundByName", engine != nullptr, "Failed to get miniaudio sound engine!");
@@ -59,5 +59,11 @@ namespace BopAudio
         ma_sound_set_looping(soundPtr.get(), true);
 
         return AZStd::move(soundPtr);
+    }
+
+    auto Sound::Load() -> bool
+    {
+        m_sound = CreateSoundByName(m_name);
+        return m_sound != nullptr;
     }
 } // namespace BopAudio

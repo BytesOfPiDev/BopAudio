@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/Id.h"
 
 namespace BopAudio
 {
     struct ActivateTriggerRequest
     {
-        //! The Trigger to activate
-        // BA_TriggerId m_triggerId;
+        //! The trigger to activate on an audio object.
+        NamedResource m_triggerResource;
         //! The object to activate the trigger on.
-        UniqueId m_objectInstanceId;
-        ResourceId m_triggerResource;
+        AudioObjectId m_objectInstanceId;
+        //! An ID to associate with the trigger->event.
+        AZ::u32 m_eventId{};
     };
 } // namespace BopAudio

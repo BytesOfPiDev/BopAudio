@@ -24,20 +24,25 @@ namespace BopAudio
     {
         AZ_DISABLE_COPY_MOVE(SATLAudioObjectData_BopAudio);
 
-        SATLAudioObjectData_BopAudio(Audio::TAudioObjectID id)
-            : m_audioObjectId(id)
+        SATLAudioObjectData_BopAudio(Audio::TAudioObjectID atlAudioObjectId)
+            : m_atlAudioObjectId(atlAudioObjectId)
             , m_objectName{}
         {
         }
 
         ~SATLAudioObjectData_BopAudio() override = default;
 
-        [[nodiscard]] constexpr auto GetAudioObjectId() const -> Audio::TAudioObjectID
+        [[nodiscard]] constexpr auto GetAtlAudioObjectId() const -> Audio::TAudioObjectID
         {
-            return m_audioObjectId;
+            return m_atlAudioObjectId;
         }
 
         constexpr void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
+
+        [[nodiscard]] constexpr auto GetImplAudioObjectId() const -> AudioObjectId
+        {
+            return m_implAudioObjectId;
+        }
 
         [[nodiscard]] constexpr auto GetInstanceId() const -> UniqueId
         {
@@ -50,7 +55,8 @@ namespace BopAudio
         }
 
     private:
-        Audio::TAudioObjectID m_audioObjectId;
+        Audio::TAudioObjectID m_atlAudioObjectId;
+        AudioObjectId m_implAudioObjectId{};
         UniqueId m_instanceId{};
         AZ::Name m_objectName;
     };
@@ -79,18 +85,18 @@ namespace BopAudio
             m_implAudioObjectId = implAudioObjectIde;
         }
 
-        [[nodiscard]] constexpr auto GetTriggerId() const -> ResourceId
+        [[nodiscard]] constexpr auto GetTriggerResource() const -> NamedResource
         {
             return m_triggerId;
         }
 
-        constexpr void SetTriggerId(ResourceId resourceId)
+        constexpr void SetImplTriggerId(NamedResource resourceId)
         {
             m_triggerId = resourceId;
         }
 
     private:
-        ResourceId m_triggerId{};
+        NamedResource m_triggerId{};
         AudioObjectId m_implAudioObjectId{};
         Audio::TAudioObjectID m_atlAudioObjectId{};
     };
@@ -105,26 +111,70 @@ namespace BopAudio
         Audio::TAudioObjectID m_listenerObjectId{};
     };
 
-    struct SATLEventData_BopAudio : public Audio::IATLEventData
+    class SATLEventData_BopAudio : public Audio::IATLEventData
     {
-        explicit SATLEventData_BopAudio(Audio::TAudioEventID const passedId)
-            : m_baId{}
-            , m_atlId(passedId)
+    public:
+        AZ_DISABLE_COPY(SATLEventData_BopAudio);
+
+        explicit SATLEventData_BopAudio(Audio::TAudioEventID const atlEventId)
+            : m_atlEventId(atlEventId)
             , m_sourceId(INVALID_AUDIO_SOURCE_ID)
         {
         }
 
         ~SATLEventData_BopAudio() override = default;
 
-        Audio::EAudioEventState m_audioEventState{};
-        UniqueId m_baId{};
-        Audio::TAudioEventID m_atlId{};
+        [[nodiscard]] constexpr auto GetImplEventId() const -> AudioEventId
+        {
+            return m_implEventId;
+        }
+
+        constexpr void SetImplEventId(AudioEventId uniqueId)
+        {
+            m_implEventId = uniqueId;
+        }
+
+        [[nodiscard]] constexpr auto GetAtlEventId() const -> Audio::TAudioEventID
+        {
+            return m_atlEventId;
+        }
+
+        constexpr void SetAtlEventId(Audio::TAudioEventID atlEventId)
+        {
+            m_atlEventId = atlEventId;
+        }
+
+        [[nodiscard]] constexpr auto GetEventState() const -> Audio::EAudioEventState
+        {
+            return m_eventState;
+        }
+
+        constexpr void SetEventState(Audio::EAudioEventState atlEventState)
+        {
+            m_eventState = atlEventState;
+        }
+
+        [[nodiscard]] constexpr auto GetSourceId() const -> Audio::TAudioSourceId
+        {
+            return m_sourceId;
+        }
+
+        constexpr void SetSourceId(Audio::TAudioSourceId atlSourceId)
+        {
+            m_sourceId = atlSourceId;
+        }
+
+    private:
+        Audio::EAudioEventState m_eventState{};
+        Audio::TAudioEventID m_atlEventId{};
         Audio::TAudioSourceId m_sourceId{};
-        SoundPtr m_soundInstance{};
+        AudioEventId m_implEventId{};
     };
 
     struct SATLAudioFileEntryData_BopAudio : public Audio::IATLAudioFileEntryData
     {
+        AZ_DEFAULT_COPY_MOVE(SATLAudioFileEntryData_BopAudio);
+
         SATLAudioFileEntryData_BopAudio() = default;
 
         ~SATLAudioFileEntryData_BopAudio() override
@@ -134,10 +184,10 @@ namespace BopAudio
             m_soundNames.clear();
         };
 
-        ResourceId m_bankId{};
-        AZStd::unordered_set<ResourceId> m_soundNames{};
-        AZStd::unordered_map<ResourceId, MiniAudio::SoundDataAsset> m_soundAssets{};
-        AZStd::unordered_map<ResourceId, SoundPtr> m_sounds{};
+        NamedResource m_bankId{};
+        AZStd::unordered_set<NamedResource> m_soundNames{};
+        AZStd::unordered_map<NamedResource, MiniAudio::SoundDataAsset> m_soundAssets{};
+        AZStd::unordered_map<NamedResource, SoundPtr> m_sounds{};
     };
 
 } // namespace BopAudio

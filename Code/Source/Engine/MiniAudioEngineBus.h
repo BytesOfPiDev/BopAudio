@@ -26,7 +26,7 @@ namespace BopAudio
         virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool = 0;
         [[nodiscard]] virtual auto CreateAudioObject(UniqueId const&) -> bool = 0;
         virtual void RemoveAudioObject(UniqueId audioObjectId) = 0;
-        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> bool = 0;
+        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> AudioEventId = 0;
 
         virtual auto GetSoundEngine() -> ma_engine* = 0;
     };

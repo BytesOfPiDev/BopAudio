@@ -9,13 +9,11 @@
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "IAudioInterfacesCommonData.h"
-#include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
-#include "MiniAudioIncludes.h"
 
 namespace BopAudio
 {
@@ -259,23 +257,42 @@ namespace BopAudio
         Audio::IATLAudioObjectData* const audioObjectData,
         Audio::IATLTriggerImplData const* const triggerData,
         Audio::IATLEventData* const eventData,
-        Audio::SATLSourceData const* const pSourceData) -> Audio::EAudioRequestStatus
+        Audio::SATLSourceData const* const /*pSourceData*/) -> Audio::EAudioRequestStatus
     {
         AZLOG(ASI_BopAudio, "BopAudio: ActivateTrigger");
 
-        [[maybe_unused]] auto const* const implTriggerData{
-            static_cast<SATLTriggerImplData_BopAudio const*>(triggerData)
-        };
-        [[maybe_unused]] auto* implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(
+        auto* const implTriggerData{ static_cast<SATLTriggerImplData_BopAudio const*>(
+            triggerData) };
+        auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(
             audioObjectData) };
-        [[maybe_unused]] auto* implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
+        auto* const implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
+
+        if (!implAudioObjectData)
+        {
+            AZ_Error("AudioSystemImpl_BopAudio", false, "Received nullptr for the audio object!");
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
+        if (!implEventData)
+        {
+            AZ_Error("AudioSystemImpl_BopAudio", false, "Received nullptr for the event data!");
+            return Audio::EAudioRequestStatus::Failure;
+        }
 
         ActivateTriggerRequest activateTriggerRequest{};
+        activateTriggerRequest.m_triggerResource = implTriggerData->GetTriggerResource();
+        activateTriggerRequest.m_objectInstanceId = implAudioObjectData->GetImplAudioObjectId();
+        activateTriggerRequest.m_eventId = implEventData->m_triggerId;
 
-        AZ_UNUSED(audioObjectData, triggerData, eventData, pSourceData);
-        return AudioEngineInterface::Get()->ActivateTrigger(activateTriggerRequest)
-            ? Audio::EAudioRequestStatus::Success
-            : Audio::EAudioRequestStatus::Failure;
+        // The engine activates the appropriate trigger, along with the associated events, then
+        // returns the Id of the newly activated event.
+        auto const implEventId{ AudioEngineInterface::Get()->ActivateTrigger({}) };
+
+        // We'll need to save the Id if we want to control the event prior to it ending on its own.
+        implEventData->SetImplEventId(implEventId);
+
+        return implEventId.IsValid() ? Audio::EAudioRequestStatus::Success
+                                     : Audio::EAudioRequestStatus::Failure;
     }
 
     auto AudioSystemImpl_BopAudio::StopEvent(
@@ -437,7 +454,7 @@ namespace BopAudio
         auto* const soundBankFileName{ bopAudioFileNameAttrib->value() };
         auto* const implAudioFile{ azcreate(
             SATLAudioFileEntryData_BopAudio, (), Audio::AudioImplAllocator) };
-        implAudioFile->m_bankId = ResourceId{ soundBankFileName };
+        implAudioFile->m_bankId = NamedResource{ soundBankFileName };
 
         fileEntryInfo->sFileName = soundBankFileName;
         fileEntryInfo->pImplData = implAudioFile;
@@ -491,7 +508,7 @@ namespace BopAudio
         auto* implAudioTriggerData{ azcreate(
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetTriggerId(ResourceId{ triggerName });
+        implAudioTriggerData->SetImplTriggerId(NamedResource{ triggerName });
 
         return implAudioTriggerData;
     }
@@ -627,10 +644,10 @@ namespace BopAudio
 
         auto* const bopEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        eventData->m_owner = nullptr;
-        eventData->m_triggerId = INVALID_AUDIO_CONTROL_ID;
-        bopEventData->m_audioEventState = Audio::EAudioEventState::eAES_NONE;
-        bopEventData->m_sourceId = INVALID_AUDIO_CONTROL_ID;
+        // eventData->m_owner = nullptr;
+        // eventData->m_triggerId = INVALID_AUDIO_CONTROL_ID;
+        bopEventData->SetEventState(Audio::EAudioEventState::eAES_NONE);
+        bopEventData->SetSourceId(INVALID_AUDIO_SOURCE_ID);
     }
 
     auto AudioSystemImpl_BopAudio::GetImplSubPath() const -> char const* const

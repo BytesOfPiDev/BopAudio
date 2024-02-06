@@ -1,6 +1,7 @@
-#include "Engine/AudioEvent.h"
+#include "Engine/Events/PlaySound.h"
 
-namespace BopAudioEngine
+#include "AzCore/Console/ILogger.h"
+
+namespace BopAudio
 {
-
-}
+} // namespace BopAudio

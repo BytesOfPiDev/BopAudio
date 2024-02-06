@@ -4,22 +4,32 @@
 
 namespace BopAudio
 {
-    class ResourceId
+    /* clang-format off */
+    struct AudioObjectTag{};
+    struct AudioTriggerTag{};
+    struct AudioEventTag{};
+    struct AudioTaskTag{};
+    struct InstanceTag{};
+    struct UserEventTag{};
+    /* clang-format on */
+
+    template<typename Tag = void>
+    class TaggedResource
     {
     public:
-        ResourceId() = default;
+        TaggedResource() = default;
 
-        explicit ResourceId(AZStd::string_view resourceName)
+        explicit TaggedResource(AZStd::string_view resourceName)
             : m_hash(AZ::Name{ resourceName }.GetHash())
         {
         }
 
-        explicit ResourceId(AZ::Name const& resourceName)
+        explicit TaggedResource(AZ::Name const& resourceName)
             : m_hash(resourceName.GetHash())
         {
         }
 
-        constexpr auto operator==(ResourceId const& other) const -> bool
+        constexpr auto operator==(TaggedResource const& other) const -> bool
         {
             return m_hash == other.m_hash;
         }
@@ -48,13 +58,7 @@ namespace BopAudio
         AZ::u32 m_hash;
     };
 
-    /* clang-format off */
-    struct AudioObjectTag{};
-    struct AudioTriggerTag{};
-    struct AudioEventTag{};
-    struct AudioTaskTag{};
-    struct InstanceTag{};
-    /* clang-format on */
+    using NamedResource = TaggedResource<>;
 
     template<typename Tag = void>
     class TaggedId
@@ -82,12 +86,18 @@ namespace BopAudio
             return m_value;
         }
 
+        [[nodiscard]] constexpr auto IsValid() const
+        {
+            return m_value != 0;
+        }
+
     private:
         size_t m_value;
     };
 
     using UniqueId = TaggedId<>;
     using AudioObjectId = TaggedId<AudioObjectTag>;
+    using AudioEventId = TaggedId<AudioEventTag>;
     // Represents a unique instantiation of an object.
     using InstanceId = TaggedId<InstanceTag>;
 
@@ -98,9 +108,9 @@ namespace BopAudio
 namespace AZStd
 {
     template<>
-    struct hash<BopAudio::ResourceId>
+    struct hash<BopAudio::NamedResource>
     {
-        inline auto operator()(BopAudio::ResourceId const& resourceId) const -> size_t
+        inline auto operator()(BopAudio::NamedResource const& resourceId) const -> size_t
         {
             return resourceId.GetHash();
         }

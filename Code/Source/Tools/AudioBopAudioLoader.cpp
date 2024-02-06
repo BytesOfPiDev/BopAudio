@@ -3,6 +3,7 @@
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
+#include "Engine/Id.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
@@ -194,7 +195,7 @@ namespace BopAudio
                 SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
                 AZStd::ranges::for_each(
                     soundNames,
-                    [this, &isLocalized, &subPath](ResourceId const& soundName)
+                    [this, &isLocalized, &subPath](NamedResource const& soundName)
                     {
                         m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
                             ToCStr(soundName),

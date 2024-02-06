@@ -5,6 +5,7 @@
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path.h"
+#include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Sound.h"
 #include "IAudioSystem.h"
@@ -36,11 +37,11 @@ namespace BopAudio
             return resultAssetId;
         }
 
-        auto MakeSoundBankId(AZStd::string_view fileName) -> ResourceId
+        auto MakeSoundBankId(AZStd::string_view fileName) -> NamedResource
         {
             auto const soundBankPath =
                 fileName.empty() ? nullptr : AZ::IO::Path{ GetBanksRootPath() } / fileName;
-            return ResourceId{ soundBankPath.empty() ? "" : soundBankPath.Native() };
+            return NamedResource{ soundBankPath.empty() ? "" : soundBankPath.Native() };
         };
 
     } // namespace Internal
@@ -150,7 +151,7 @@ namespace BopAudio
                 }
                 AZLOG_INFO("Sound registered with: '%s'.", soundAsset.GetHint().c_str());
 
-                auto const idName{ ResourceId{ soundName } };
+                auto const idName{ NamedResource{ soundName } };
                 result = ma_resource_manager_register_encoded_data(
                     ma_engine_get_resource_manager(miniAudioEngine),
                     idName.ToName().GetCStr(),
@@ -222,26 +223,11 @@ namespace BopAudio
         return true;
     }
 
-    auto SoundBank::GetSoundAsset(ResourceId const& soundName) const -> MiniAudio::SoundDataAsset
+    auto SoundBank::GetSoundAsset(NamedResource const& soundName) const -> MiniAudio::SoundDataAsset
     {
         auto iter{ m_soundAssets.find(soundName) };
         return (iter != AZStd::end(m_soundAssets)) ? iter->second : MiniAudio::SoundDataAsset{};
     };
-
-    auto SoundBank::CreateSound(ResourceId soundId) const -> SoundPtr
-    {
-        auto const iter{ AZStd::ranges::find_if(
-            m_soundAssets,
-            [&soundId](auto const& soundNameAssetPair) -> bool
-            {
-                auto const& [soundName, soundAsset]{ soundNameAssetPair };
-                return soundId == soundName;
-            }) };
-
-        auto const& [soundName, soundNameAssetPair]{ *iter };
-
-        return CreateSoundByName(soundName);
-    }
 
     auto LoadTriggers(rapidjson::Document const& doc) -> bool
     {

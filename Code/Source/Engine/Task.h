@@ -4,19 +4,19 @@
 
 namespace BopAudio
 {
-
-    struct PlaySoundArgs;
-    struct StopSoundArgs;
-    struct SetVolumeArgs;
-    struct TranslateArgs;
     struct MuteArgs;
+    struct PlayGroupArgs;
+    struct PlaySoundData;
+    struct SetVolumeArgs;
+    struct StopSoundData;
+    struct TranslateArgs;
 
-    using TaskArgs = AZStd::variant<PlaySoundArgs, StopSoundArgs>;
+    using TaskData = AZStd::variant<PlaySoundData, StopSoundData>;
 
-    struct AudioEventTask
+    struct AudioEventHandler
     {
-        constexpr void operator()(PlaySoundArgs const& args);
-        constexpr void operator()(StopSoundArgs const& args);
+        constexpr void operator()(PlaySoundData const& args);
+        constexpr void operator()(StopSoundData const& args);
         constexpr void operator()(SetVolumeArgs const& args);
         constexpr void operator()(TranslateArgs const& args);
         constexpr void operator()(MuteArgs const& args);

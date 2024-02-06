@@ -61,8 +61,8 @@ namespace BopAudio
         }
     }
 
-    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
-        -> bool
+    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& /*activateTriggerRequest*/)
+        -> AudioEventId
     {
         /*
               // auto const& triggerId{ activateTriggerRequest.m_triggerId };
@@ -113,24 +113,26 @@ namespace BopAudio
               activateTriggerRequest.m_eventData->m_soundInstance = AZStd::move(soundPtr);
 
               */
-        return true;
+        return {};
     }
 
-    auto MiniAudioEngine::ActivateTrigger(ResourceId, UniqueId) -> bool
-    {
-        if (m_soundCache.empty())
+    /*
+        auto MiniAudioEngine::ActivateTrigger(ResourceId, UniqueId) -> bool
         {
-            return false;
+            if (m_soundCache.empty())
+            {
+                return false;
+            }
+
+            auto iter{ m_soundCache.begin() };
+            auto& [soundName, soundPtr]{ *iter };
+
+            ma_sound_seek_to_pcm_frame(soundPtr.get(), 0);
+            ma_sound_start(soundPtr.get());
+
+            return true;
         }
-
-        auto iter{ m_soundCache.begin() };
-        auto& [soundName, soundPtr]{ *iter };
-
-        ma_sound_seek_to_pcm_frame(soundPtr.get(), 0);
-        ma_sound_start(soundPtr.get());
-
-        return true;
-    }
+        */
 
     auto MiniAudioEngine::CreateAudioObject(UniqueId const&) -> bool
     {

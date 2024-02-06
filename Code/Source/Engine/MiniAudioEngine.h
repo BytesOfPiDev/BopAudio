@@ -25,8 +25,8 @@ namespace BopAudio
 
         auto GetSoundEngine() -> ma_engine* override;
 
-        auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest) -> bool override;
-        auto ActivateTrigger(ResourceId triggerId, UniqueId audioObject) -> bool;
+        auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
+            -> AudioEventId override;
 
         [[nodiscard]] auto CreateAudioObject(UniqueId const&) -> bool override;
         void RemoveAudioObject(UniqueId audioObjectId) override;

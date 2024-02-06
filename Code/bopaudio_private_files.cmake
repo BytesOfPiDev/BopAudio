@@ -15,6 +15,10 @@ set(FILES
     Source/Clients/StringUtil.cpp
     Source/Clients/StringUtil.h
 
+    Source/Engine/Events/AudioEventBase.h
+    Source/Engine/Events/PlaySound.h
+    Source/Engine/Events/StopSound.h
+
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEvent.cpp
     Source/Engine/AudioEvent.h
