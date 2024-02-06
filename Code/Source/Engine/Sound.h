@@ -2,6 +2,7 @@
 
 #include "AzCore/Name/Name.h"
 #include "Engine/Id.h"
+#include "Engine/MiniAudioIncludes.h"
 
 struct ma_sound;
 
@@ -23,14 +24,14 @@ namespace BopAudio
 
     using SoundPtr = std::unique_ptr<ma_sound, SoundDeleter>;
 
-    class Sound
+    class SoundInstance
     {
     public:
-        AZ_DISABLE_COPY(Sound);
+        AZ_DISABLE_COPY(SoundInstance);
 
-        Sound() = default;
-        ~Sound() = default;
-        Sound(NamedResource soundName)
+        SoundInstance() = default;
+        ~SoundInstance() = default;
+        SoundInstance(NamedResource soundName)
             : m_name{ soundName } {};
 
         [[nodiscard]] auto GetSoundName() const -> NamedResource

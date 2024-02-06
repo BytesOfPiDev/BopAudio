@@ -61,7 +61,7 @@ namespace BopAudio
         return AZStd::move(soundPtr);
     }
 
-    auto Sound::Load() -> bool
+    auto SoundInstance::Load() -> bool
     {
         m_sound = CreateSoundByName(m_name);
         return m_sound != nullptr;

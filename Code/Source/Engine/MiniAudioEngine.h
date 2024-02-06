@@ -42,6 +42,6 @@ namespace BopAudio
         AZStd::vector<SoundBank> m_soundBanks{};
 
         AZStd::vector<AudioObject> m_audioObjects{};
-        AZStd::unordered_map<UniqueId, SoundPtr> m_soundCache{};
+        AZStd::unordered_map<UniqueId, SoundInstance> m_soundCache{};
     };
 } // namespace BopAudio

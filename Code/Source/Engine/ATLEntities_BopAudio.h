@@ -187,7 +187,7 @@ namespace BopAudio
         NamedResource m_bankId{};
         AZStd::unordered_set<NamedResource> m_soundNames{};
         AZStd::unordered_map<NamedResource, MiniAudio::SoundDataAsset> m_soundAssets{};
-        AZStd::unordered_map<NamedResource, SoundPtr> m_sounds{};
+        AZStd::unordered_map<NamedResource, SoundInstance> m_sounds{};
     };
 
 } // namespace BopAudio
