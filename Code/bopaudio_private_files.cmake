@@ -29,6 +29,7 @@ set(FILES
     Source/Engine/Common_BopAudio.h
     Source/Engine/ConfigurationSettings.cpp
     Source/Engine/ConfigurationSettings.h
+    Source/Engine/DocumentReader.h
     Source/Engine/Id.cpp
     Source/Engine/Id.h
     Source/Engine/MiniAudio.cpp
@@ -37,10 +38,12 @@ set(FILES
     Source/Engine/MiniAudioEngineBus.h
     Source/Engine/MiniAudioEngineRequests.h
     Source/Engine/MiniAudioIncludes.h
-    Source/Engine/SoundBank.cpp
-    Source/Engine/SoundBank.h
     Source/Engine/Sound.cpp
     Source/Engine/Sound.h
+    Source/Engine/SoundBank.cpp
+    Source/Engine/SoundBank.h
+    Source/Engine/SoundSource.cpp
+    Source/Engine/SoundSource.h
     Source/Engine/Task.cpp
     Source/Engine/Task.h
 

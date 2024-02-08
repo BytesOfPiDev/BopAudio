@@ -20,42 +20,42 @@ namespace BopAudio
         TaggedResource() = default;
 
         explicit TaggedResource(AZStd::string_view resourceName)
-            : m_hash(AZ::Name{ resourceName }.GetHash())
+            : m_name{ resourceName }
         {
         }
 
         explicit TaggedResource(AZ::Name const& resourceName)
-            : m_hash(resourceName.GetHash())
+            : m_name{ AZStd::move(resourceName) }
         {
         }
 
         constexpr auto operator==(TaggedResource const& other) const -> bool
         {
-            return m_hash == other.m_hash;
+            return m_name == other.m_name;
         }
 
         constexpr auto operator==(AZ::Name const& resourceName) const -> bool
         {
-            return m_hash == resourceName.GetHash();
+            return m_name == resourceName;
         };
 
         [[nodiscard]] auto ToName() const -> AZ::Name
         {
-            return AZ::Name{ m_hash };
+            return m_name;
         }
 
         [[nodiscard]] auto ToString() const -> AZStd::string
         {
-            return ToName().GetStringView();
+            return AZStd::string{ ToName().GetStringView() };
         }
 
         [[nodiscard]] constexpr auto GetHash() const -> AZ::u32
         {
-            return m_hash;
+            return m_name.GetHash();
         }
 
     private:
-        AZ::u32 m_hash;
+        AZ::Name m_name{};
     };
 
     using NamedResource = TaggedResource<>;
@@ -100,8 +100,6 @@ namespace BopAudio
     using AudioEventId = TaggedId<AudioEventTag>;
     // Represents a unique instantiation of an object.
     using InstanceId = TaggedId<InstanceTag>;
-
-    static_assert(AZStd::is_pod_v<UniqueId>, "Must be POD.");
 
 } // namespace BopAudio
 

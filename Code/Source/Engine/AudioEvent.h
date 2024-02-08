@@ -8,12 +8,15 @@
 
 namespace BopAudio
 {
+
     class AudioEvent
     {
     public:
         static constexpr auto MaxTasks{ 3 };
+        using TaskContainer = AZStd::fixed_vector<TaskData, MaxTasks>;
 
         AudioEvent() = default;
+        AudioEvent(TaskContainer tasks);
 
         [[nodiscard]] constexpr auto GetInstanceId() const -> InstanceId
         {
@@ -25,15 +28,16 @@ namespace BopAudio
             return m_eventState;
         }
 
+        [[nodiscard]] constexpr auto GetTaskDatas() const -> TaskContainer const&
+        {
+            return m_taskDatas;
+        }
+
     private:
-        AZStd::fixed_vector<TaskData, MaxTasks> m_taskDatas{};
+        TaskContainer m_taskDatas{};
         Audio::EAudioEventState m_eventState{};
         InstanceId m_instanceId{};
 
     public:
-        [[nodiscard]] constexpr auto GetTaskDatas() const -> decltype(m_taskDatas) const&
-        {
-            return m_taskDatas;
-        }
     };
 } // namespace BopAudio

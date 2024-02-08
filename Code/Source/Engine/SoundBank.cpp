@@ -1,42 +1,27 @@
 #include "Engine/SoundBank.h"
 
 #include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path.h"
-#include "Engine/Id.h"
-#include "Engine/MiniAudioEngineBus.h"
-#include "Engine/Sound.h"
-#include "IAudioSystem.h"
-#include "MiniAudio/MiniAudioBus.h"
+#include "AzCore/Outcome/Outcome.h"
+#include "Engine/DocumentReader.h"
 #include "MiniAudio/SoundAsset.h"
 #include "rapidjson/document.h"
 #include "rapidjson/pointer.h"
 
-#include "Engine/ATLEntities_BopAudio.h"
+#include "Clients/StringUtil.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
-#include "MiniAudioIncludes.h"
-#include <AzCore/PlatformId/PlatformDefaults.h>
+#include "Engine/Events/PlaySound.h"
+#include "Engine/Id.h"
+#include "Engine/SoundSource.h"
+#include "Engine/Task.h"
 
 namespace BopAudio
 {
     namespace Internal
     {
-        auto FindAssetId(AZ::IO::Path const& fullPath) -> AZ::Data::AssetId
-        {
-            AZ::Data::AssetId resultAssetId{};
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                resultAssetId,
-                &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-                fullPath.c_str(),
-                AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid(),
-                true);
-
-            return resultAssetId;
-        }
-
         auto MakeSoundBankId(AZStd::string_view fileName) -> NamedResource
         {
             auto const soundBankPath =
@@ -60,122 +45,41 @@ namespace BopAudio
     {
     }
 
-    auto SoundBank::LoadInitBank() -> SoundBank
+    auto SoundBank::LoadInitBank() -> AZ::Outcome<SoundBank, char const*>
     {
         auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) / InitBank };
 
         auto buffer{ LoadSoundBankToBuffer(banksRootPath.Native()) };
 
-        SoundBank initBank{ InitBank };
-        initBank.Load();
+        if (SoundBank initBank{ InitBank }; initBank.Load())
+        {
+            return initBank;
+        }
 
-        return initBank;
+        return AZ::Failure("Failed to load the init soundbank.");
     }
 
-    auto SoundBank::Load(AZStd::span<char> soundBankFileBuffer)
+    auto SoundBank::LoadSounds(AZStd::span<char const> soundBankFileBuffer) -> bool
     {
         auto const banksRootPath{ AZ::IO::Path(GetBanksRootPath()) };
 
         auto soundNames{ GetSoundNamesFromSoundBankFile(soundBankFileBuffer) };
 
-        AZLOG_INFO("BopAudio: Loading sounds...");
         bool const isSuccess = AZStd::ranges::all_of(
             soundNames,
-            [&banksRootPath, this](auto const& soundName) -> bool
+            [this](auto const& soundName) -> bool
             {
-                AZLOG_INFO("BopAudio: Loading sound.");
+                SoundSource soundSource{ AZ::IO::Path{ ToCStr(soundName) } };
+                soundSource.Load();
 
-                auto* const assetManager{ AZ::Data::AssetManager::IsReady()
-                                              ? &AZ::Data::AssetManager::Instance()
-                                              : nullptr };
-                if (!assetManager)
-                {
-                    AZ_Error("SoundBank", false, "Failed to get the asset manager!");
-                    return false;
-                }
-                AZ::IO::Path const soundPath{ banksRootPath / soundName.ToString() };
-
-                MiniAudio::SoundDataAsset soundAsset{ assetManager->GetAsset<MiniAudio::SoundAsset>(
-                    Internal::FindAssetId(soundPath.c_str()),
-                    AZ::Data::AssetLoadBehavior::PreLoad) };
-
-                if (!soundAsset.GetId().IsValid())
+                if (!soundSource.IsReady())
                 {
                     AZ_Error(
-                        "SoundBank",
-                        false,
-                        "Failed to find sound asset '%s' using path '%s'!",
-                        soundName.ToString().data(),
-                        soundPath.c_str());
+                        "SoundBank", false, "Failed to find sound asset '%s'.", ToCStr(soundName));
                     return false;
                 }
 
-                soundAsset.QueueLoad();
-                soundAsset.BlockUntilLoadComplete();
-
-                auto const& assetData{ soundAsset->m_data };
-                if (assetData.empty())
-                {
-                    AZ_Error(
-                        "SoundBank",
-                        false,
-                        "Failed to load sound asset '%s' using path '%s'!",
-                        soundName.ToString().data(),
-                        soundPath.c_str());
-                    return false;
-                }
-
-                if (!MiniAudio::MiniAudioInterface::Get())
-                {
-                    AZ_Error("SoundBank", false, "Failed to get mini audio interface.");
-                    return false;
-                }
-
-                ma_engine* const miniAudioEngine{ AudioEngineInterface::Get()->GetSoundEngine() };
-
-                AZStd::string const registerName{ soundAsset.GetHint().c_str() };
-                ma_result result = ma_resource_manager_register_encoded_data(
-                    ma_engine_get_resource_manager(miniAudioEngine),
-                    registerName.c_str(),
-                    assetData.data(),
-                    assetData.size());
-
-                if (result != MA_SUCCESS)
-                {
-                    AZ_Error(
-                        "SoundBank",
-                        false,
-                        "Failed to register sound '%' with miniaudio!",
-                        registerName.c_str());
-                    return false;
-                }
-                AZLOG_INFO("Sound registered with: '%s'.", soundAsset.GetHint().c_str());
-
-                auto const idName{ NamedResource{ soundName } };
-                result = ma_resource_manager_register_encoded_data(
-                    ma_engine_get_resource_manager(miniAudioEngine),
-                    idName.ToName().GetCStr(),
-                    assetData.data(),
-                    assetData.size());
-
-                if (result != MA_SUCCESS)
-                {
-                    AZ_Error(
-                        "SoundBank",
-                        false,
-                        "Failed to register sound '%' with miniaudio!",
-                        idName.ToName().GetCStr());
-
-                    return false;
-                }
-
-                AZLOG_INFO(
-                    "SoundBank | Registered sound '%s' to miniaudio with the "
-                    "tag '%s'.",
-                    soundName.ToString().data(),
-                    soundAsset.GetHint().c_str());
-
-                m_soundAssets[soundName] = soundAsset;
+                m_soundAssets[NamedResource{ soundName }] = soundSource;
 
                 return true;
             });
@@ -183,97 +87,172 @@ namespace BopAudio
         return isSuccess;
     }
 
-    auto SoundBank::Load() -> bool
+    auto SoundBank::Load() -> AZ::Outcome<void, char const*>
     {
-        bool const loadedSuccessfully = [this]() -> decltype(loadedSuccessfully)
+        // We first try to load using the buffer that the AudioSystemInterface has.
+        auto const loadedFromAsiBuffer = [this]() -> bool
         {
-            AZStd::span<char> buffer = m_fileEntryInfo
-                ? decltype(buffer){ static_cast<char*>(m_fileEntryInfo->pFileData),
-                                    m_fileEntryInfo->nSize }
-                : decltype(buffer){};
+            AZStd::span<char> asiBuffer = m_fileEntryInfo
+                ? decltype(asiBuffer){ static_cast<char*>(m_fileEntryInfo->pFileData),
+                                       m_fileEntryInfo->nSize }
+                : decltype(asiBuffer){};
 
-            // Try to load with file entry info first.
-            if (Load(buffer))
-            {
-                return true;
-            }
-
-            // If that didn't work, try using the name of the sound bank.
-            auto loadedBuffer{ LoadSoundBankToBuffer(
-                AZ::IO::Path{ GetBanksRootPath() } / m_soundBankName.GetCStr()) };
-
-            return Load(loadedBuffer);
+            return LoadSounds(asiBuffer);
         }();
 
-        if (!loadedSuccessfully)
+        // If that didn't work, we try to load the buffer using the name of the sound bank.
+        // TODO: Verify:
+        // This should generally only trigger for the default soundbank, since I don't think that
+        // the ATL tries to load it, or, if it does, doesn't automatically pass it to the ASI
+        // implementation.
+        if (!loadedFromAsiBuffer)
         {
-            return false;
-        };
-
-        auto* fileImplData{ static_cast<SATLAudioFileEntryData_BopAudio*>(
-            m_fileEntryInfo->pImplData) };
-        AZStd::ranges::for_each(
-            m_soundAssets,
-            [fileImplData](auto const& soundNameAssetPair)
+            if (auto fileBuffer = LoadSoundBankToBuffer(
+                    AZ::IO::Path{ GetBanksRootPath() } / ToCStr(m_soundBankName));
+                !fileBuffer.empty())
             {
-                auto const& [soundName, soundAsset]{ soundNameAssetPair };
-                fileImplData->m_soundNames.insert(soundName);
-            });
+                LoadSounds(fileBuffer);
+            }
+        }
 
-        return true;
+        LoadEvents();
+
+        return AZ::Success();
     }
 
     auto SoundBank::GetSoundAsset(NamedResource const& soundName) const -> MiniAudio::SoundDataAsset
     {
         auto iter{ m_soundAssets.find(soundName) };
-        return (iter != AZStd::end(m_soundAssets)) ? iter->second : MiniAudio::SoundDataAsset{};
+        if (iter == AZStd::end(m_soundAssets))
+        {
+            return {};
+        }
+
+        auto const& [resourceName, audioSource]{ *iter };
+        return audioSource.GetAsset();
     };
 
-    auto LoadTriggers(rapidjson::Document const& doc) -> bool
+    auto SoundBank::LoadEvents() -> bool
     {
-        if (doc.Empty())
+        auto const loadedBuffer{ LoadSoundBankToBuffer(
+            AZ::IO::Path{ GetBanksRootPath() } / m_soundBankName.GetCStr()) };
+
+        rapidjson::Document const doc{ LoadDocument(loadedBuffer) };
+
+        return LoadEvents(doc);
+    }
+
+    auto SoundBank::LoadEvents(rapidjson::Document const& doc) -> bool
+    {
+        if (doc.HasParseError())
         {
             return false;
         }
+        rapidjson::Document::ValueType const* eventsObjectPtr{ rapidjson::GetValueByPointer(
+            doc, JsonKeys::EventsObjectKey) };
 
-        auto* const triggersObjectJsonPtr{ rapidjson::GetValueByPointer(
-            doc, JsonKeys::EventsArrayKey) };
-        if (!triggersObjectJsonPtr)
+        if (!eventsObjectPtr->IsObject())
         {
+            AZ_Error(
+                "SoundBank",
+                false,
+                "Expected an object from key '%s', but got something else.",
+                JsonKeys::EventsObjectKey);
             return false;
         }
 
-        if (!triggersObjectJsonPtr->IsArray())
+        rapidjson::Document::ConstObject eventsObject{ eventsObjectPtr->GetObject() };
+
+        if (eventsObject.ObjectEmpty())
         {
+            AZ_Error(
+                "SoundBank", false, "The object at key '%s' is empty.", JsonKeys::EventsObjectKey);
             return false;
         }
 
-        static constexpr auto buildTask = [](auto const& taskJsonArray)
+        static constexpr auto buildTaskGroupObject =
+            [](rapidjson::Document::GenericValue const& taskGroupObject) -> AZStd::vector<TaskData>
         {
-            AZStd::ranges::for_each(
-                taskJsonArray,
-                [](auto const&)
+            AZStd::vector<TaskData> tasks{};
+
+            if (auto* playResource =
+                    rapidjson::GetValueByPointer(taskGroupObject, JsonKeys::PlayEventResourceKey))
+            {
+                if (!playResource->IsString())
                 {
-                });
+                    AZ_Error(
+                        "SoundBank",
+                        false,
+                        "Expected the value of an event with key '%s' to be a string, but it was "
+                        "something else.",
+                        JsonKeys::PlayEventResourceKey);
+
+                    return {};
+                }
+
+                PlaySoundData playSoundData{};
+                playSoundData.m_resourceId = NamedResource{ playResource->GetString() };
+                tasks.emplace_back(playSoundData);
+
+                AZLOG(
+                    AE_miniaudio,
+                    "Created task: [Type: 'Play', ResourceId: '%s']",
+                    playResource->GetString());
+            }
+
+            return tasks;
         };
 
-        AZStd::ranges::for_each(
-            triggersObjectJsonPtr->GetObject(),
-            [](auto const& triggerJsonObject)
-            {
-                buildTask(triggerJsonObject.value.GetArray());
-            });
-
-        // using ObjectArray = decltype(triggersObjectJsonPtr->GetObject().begin());
-        using EventJson = decltype(triggersObjectJsonPtr->GetObject().begin()->value.GetArray());
-
-        for (auto const& triggerObject : triggersObjectJsonPtr->GetObject())
+        static constexpr auto buildEachTaskInArray =
+            [](rapidjson::Document::ConstArray const& taskArray)
         {
-            EventJson eventsJsonArray = triggerObject.value.GetArray();
-            if (eventsJsonArray.Empty())
+            AZLOG(AE_miniaudio, "\tFound %u elements in the task array.\n", taskArray.Size());
+
+            for (auto const& taskElement : taskArray)
             {
+                buildTaskGroupObject(taskElement);
+            }
+        };
+
+        for (auto const& eventsMember : eventsObject)
+        {
+            AZLOG(AE_miniaudio, "\tLoading Event: '%s'.\n", eventsMember.name.GetString());
+
+            if (!eventsMember.value.IsObject())
+            {
+                AZ_Error(
+                    "SoundBank",
+                    false,
+                    "Expected an object at '%s', but got something else.",
+                    eventsMember.name.GetString());
+
+                break;
+            }
+
+            auto const tasksMember{ eventsMember.value.FindMember("Tasks") };
+            if (tasksMember == eventsMember.value.MemberEnd())
+            {
+                AZ_Warning(
+                    "SoundBank",
+                    false,
+                    "Failed to find the 'Tasks' member in '%s'.",
+                    eventsMember.name.GetString());
+
                 continue;
             }
+
+            if (!tasksMember->value.IsArray())
+            {
+                AZ_Error(
+                    "SoundBank",
+                    false,
+                    "Expected an array at '%s', but got something else.",
+                    tasksMember->name.GetString());
+
+                continue;
+            }
+
+            buildEachTaskInArray(tasksMember->value.GetArray());
         }
 
         return false;
@@ -285,7 +264,7 @@ namespace BopAudio
 
         return [&soundBankFilePath]() -> ReturnType
         {
-            AZ::IO::FileIOStream fileStream{ soundBankFilePath.c_str(),
+            AZ::IO::FileIOStream fileStream{ ToCStr(soundBankFilePath),
                                              AZ::IO::OpenMode::ModeRead };
             ReturnType tempBuffer(fileStream.GetLength());
             fileStream.Read(tempBuffer.size(), tempBuffer.data());
@@ -294,11 +273,17 @@ namespace BopAudio
         }();
     }
 
-    auto GetSoundNamesFromSoundBankFile(AZStd::span<char> soundBankFileBuffer) -> SoundNames
+    auto GetSoundNamesFromSoundBankFile(AZStd::span<char const> soundBankFileBuffer) -> SoundNames
     {
-        rapidjson::Document doc;
+        rapidjson::Document const doc{ LoadDocument(soundBankFileBuffer) };
 
-        doc.Parse(soundBankFileBuffer.data(), soundBankFileBuffer.size());
+        if (auto outcome = ValidateDocument(doc); !outcome.IsSuccess())
+        {
+            AZ_Error(
+                "SoundBank", false, "SoundBank failed validation. Reason: %s", outcome.TakeError());
+
+            return {};
+        }
 
         auto* const soundsObjectJsonPtr{ rapidjson::GetValueByPointer(
             doc, JsonKeys::SoundFileNames) };

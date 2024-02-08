@@ -43,5 +43,82 @@ namespace BopAudio::JsonKeys
 {
     static constexpr char BopAudioFile[] = "/BopAudioDocument";
     static constexpr char SoundFileNames[] = "/BopAudioDocument/Sounds";
-    static constexpr char EventsArrayKey[]{ "/BopAudioDocument/Triggers" };
+    static constexpr char EventsObjectKey[]{ "/BopAudioDocument/Events" };
+
+    static constexpr char PlayEventKey[]{ "/Play" };
+    static constexpr char PlayEventResourceKey[]{ "/Play/Resource" };
+    static constexpr char StopEventKey[]{ "/Stop" };
+    static constexpr char StopEventResourceKey[]{ "/Stop/Resource" };
 } // namespace BopAudio::JsonKeys
+
+namespace BopAudio
+{
+    static constexpr char DocumentJsonSchema[] =
+        R"({
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "BopAudioDocument": {
+            "type": "object",
+            "properties": {
+              "Sounds": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object"
+                }
+              },
+              "Events": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "Tasks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Play": {
+                            "type": "object",
+                            "properties": {
+                              "Resource": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "Resource"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "Stop": {
+                            "type": "object",
+                            "properties": {
+                              "Resource": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "Resource"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "Tasks"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "BopAudioDocument"
+        ],
+        "additionalProperties": false
+      })";
+}

@@ -85,12 +85,12 @@ namespace BopAudio
             m_implAudioObjectId = implAudioObjectIde;
         }
 
-        [[nodiscard]] constexpr auto GetTriggerResource() const -> NamedResource
+        [[nodiscard]] auto GetTriggerResource() const -> NamedResource
         {
             return m_triggerId;
         }
 
-        constexpr void SetImplTriggerId(NamedResource resourceId)
+        void SetImplTriggerId(NamedResource resourceId)
         {
             m_triggerId = resourceId;
         }

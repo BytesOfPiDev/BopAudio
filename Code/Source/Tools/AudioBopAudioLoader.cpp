@@ -192,10 +192,9 @@ namespace BopAudio
                     nullptr,
                     subPath.Native()));
 
-                SoundNames soundNames{ GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }) };
                 AZStd::ranges::for_each(
-                    soundNames,
-                    [this, &isLocalized, &subPath](NamedResource const& soundName)
+                    GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }),
+                    [this, &isLocalized, &subPath](auto const& soundName)
                     {
                         m_audioSystemImpl->CreateControl(AudioControls::SControlDef(
                             ToCStr(soundName),

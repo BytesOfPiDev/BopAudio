@@ -1,14 +1,14 @@
 #include "Engine/MiniAudioEngine.h"
 
-#include "AudioAllocators.h"
 #include "AzCore/Console/ILogger.h"
-#include "AzCore/std/algorithm.h"
-#include "Engine/Sound.h"
+#include "AzCore/JSON/schema.h"
+#include "Engine/Common_BopAudio.h"
 #include "MiniAudio/MiniAudioBus.h"
 
-#include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/AudioEvent.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
+#include <rapidjson/schema.h>
 
 namespace BopAudio
 {
@@ -26,13 +26,23 @@ namespace BopAudio
 
     auto MiniAudioEngine::Initialize() -> bool
     {
-        m_initSoundBank = SoundBank::LoadInitBank();
+        auto loadBankOutcome{ SoundBank::LoadInitBank() };
+        m_initSoundBank = loadBankOutcome ? loadBankOutcome.TakeValue() : nullptr;
+        if (!m_initSoundBank.has_value())
+        {
+            AZLOG_ERROR(
+                "The MiniAudioEngine failed to load the default soundbank. Reason: %s.",
+                loadBankOutcome.GetError());
+
+            return false;
+        }
 
         return true;
     }
 
     auto MiniAudioEngine::Shutdown() -> bool
     {
+        m_initSoundBank.reset();
         return true;
     }
 
@@ -61,9 +71,11 @@ namespace BopAudio
         }
     }
 
-    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& /*activateTriggerRequest*/)
+    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
         -> AudioEventId
     {
+        AudioEvent audioEvent{};
+
         /*
               // auto const& triggerId{ activateTriggerRequest.m_triggerId };
               auto const& audioObjectId{ activateTriggerRequest.m_audioObjectId };

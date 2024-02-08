@@ -38,7 +38,7 @@ namespace BopAudio
         void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
 
     private:
-        SoundBank m_initSoundBank{};
+        AZStd::optional<SoundBank> m_initSoundBank{};
         AZStd::vector<SoundBank> m_soundBanks{};
 
         AZStd::vector<AudioObject> m_audioObjects{};

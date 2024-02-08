@@ -1,7 +1,7 @@
-#include "Engine/Events/PlaySound.h"
-
-#include "AzCore/Console/ILogger.h"
+#include "Engine/AudioEvent.h"
 
 namespace BopAudio
 {
+    AudioEvent::AudioEvent(TaskContainer tasks)
+        : m_taskDatas{ AZStd::move(tasks) } {};
 } // namespace BopAudio
