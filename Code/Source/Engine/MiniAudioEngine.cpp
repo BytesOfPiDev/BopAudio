@@ -8,7 +8,6 @@
 #include "Engine/AudioEvent.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
-#include <rapidjson/schema.h>
 
 namespace BopAudio
 {

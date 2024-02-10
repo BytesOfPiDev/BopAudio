@@ -1,14 +1,16 @@
 #pragma once
 
+#include "AzCore/JSON/prettywriter.h"
 #include "AzCore/Outcome/Outcome.h"
-#include "AzCore/std/containers/span.h"
+#include "AzCore/std/string/string.h"
 #include "Engine/Common_BopAudio.h"
 #include "rapidjson/document.h"
 #include "rapidjson/schema.h"
 
 namespace BopAudio
 {
-    inline auto ValidateDocument(rapidjson::Document const& doc) -> AZ::Outcome<void, char const*>
+    static inline auto ValidateDocument(rapidjson::Document const& doc)
+        -> AZ::Outcome<void, AZStd::string>
     {
         rapidjson::Document schemaDoc{};
 
@@ -21,16 +23,16 @@ namespace BopAudio
         rapidjson::SchemaDocument jsonSchema(schemaDoc);
         rapidjson::SchemaValidator validator(jsonSchema);
 
-        doc.Accept(validator);
+        if (!doc.Accept(validator))
+        {
+            rapidjson::StringBuffer error;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(error);
+            validator.GetError().Accept(writer);
+
+            return AZ::Failure(error.GetString());
+        }
 
         return AZ::Success();
     }
 
-    inline auto LoadDocument(AZStd::span<char const> buffer) -> rapidjson::Document&&
-    {
-        rapidjson::Document doc{};
-        doc.Parse(buffer.data(), buffer.size());
-
-        return AZStd::move(doc);
-    }
 } // namespace BopAudio

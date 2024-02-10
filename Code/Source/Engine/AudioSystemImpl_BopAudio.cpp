@@ -132,7 +132,7 @@ namespace BopAudio
 
         m_audioEntityContext->InitContext();
 
-        AZLOG_INFO("Bop Audio System Implementation initialized."); // NOLINT
+        AZLOG_INFO("MiniAudio SysSystem Implementation initialized.");
         return Audio::EAudioRequestStatus::Success;
     }
 

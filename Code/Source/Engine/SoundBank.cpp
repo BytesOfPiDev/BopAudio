@@ -137,7 +137,9 @@ namespace BopAudio
         auto const loadedBuffer{ LoadSoundBankToBuffer(
             AZ::IO::Path{ GetBanksRootPath() } / m_soundBankName.GetCStr()) };
 
-        rapidjson::Document const doc{ LoadDocument(loadedBuffer) };
+        rapidjson::Document doc{};
+
+        doc.Parse(loadedBuffer.data(), loadedBuffer.size());
 
         return LoadEvents(doc);
     }
@@ -275,12 +277,18 @@ namespace BopAudio
 
     auto GetSoundNamesFromSoundBankFile(AZStd::span<char const> soundBankFileBuffer) -> SoundNames
     {
-        rapidjson::Document const doc{ LoadDocument(soundBankFileBuffer) };
+        // TODO: Investigate why loading the doc from a function and moving it into 'doc' results in
+        // crash.
+        rapidjson::Document doc{};
+        doc.Parse(soundBankFileBuffer.data(), soundBankFileBuffer.size());
 
         if (auto outcome = ValidateDocument(doc); !outcome.IsSuccess())
         {
             AZ_Error(
-                "SoundBank", false, "SoundBank failed validation. Reason: %s", outcome.TakeError());
+                "SoundBank",
+                false,
+                "SoundBank failed validation. Reason: %s",
+                ToCStr(outcome.TakeError()));
 
             return {};
         }
