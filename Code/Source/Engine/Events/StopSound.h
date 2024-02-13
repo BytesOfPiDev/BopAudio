@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Events/AudioEventBase.h"
+#include "Engine/Events/AudioTaskBase.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
 {
-    struct StopSoundData : public AudioEventBase<StopSoundData>
+    struct StopSoundTask : public AudioTaskBase<StopSoundTask>
     {
-        NamedResource m_resourceId{};
+        NamedResource m_resourceToStop{};
     };
 } // namespace BopAudio

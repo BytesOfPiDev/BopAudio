@@ -37,6 +37,9 @@ namespace BopAudioStrings
     static constexpr auto StateGroupTag = "StateGroup";
     static constexpr auto ChildrenListTag = "ChildrenList";
 
+    static constexpr auto PlayTaskName = "Play";
+    static constexpr auto StopTaskName = "Stop";
+
 } // namespace BopAudioStrings
 
 namespace BopAudio::JsonKeys
@@ -45,10 +48,13 @@ namespace BopAudio::JsonKeys
     static constexpr char SoundFileNames[] = "/BopAudioDocument/Sounds";
     static constexpr char EventsObjectKey[]{ "/BopAudioDocument/Events" };
 
-    static constexpr char PlayEventKey[]{ "/Play" };
-    static constexpr char PlayEventResourceKey[]{ "/Play/Resource" };
+    static constexpr char EventGroupPlayKey[]{ "/Play" };
+    static constexpr char EventGroupPlayResourceKey[]{ "/Play/Resource" };
     static constexpr char StopEventKey[]{ "/Stop" };
     static constexpr char StopEventResourceKey[]{ "/Stop/Resource" };
+    static constexpr char EventTasksKey[]{ "/Tasks" };
+
+    static constexpr char PlayResourceKey[] = "/Play/Resource";
 } // namespace BopAudio::JsonKeys
 
 namespace BopAudio

@@ -9,6 +9,7 @@
 #include "Clients/StringUtil.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
+#include "MiniAudioIncludes.h"
 
 namespace BopAudio
 {

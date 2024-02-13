@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Engine/Events/AudioEventBase.h"
+#include "Engine/Events/AudioTaskBase.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
 {
-    struct PlaySoundData : public AudioEventBase<PlaySoundData>
+    struct PlaySoundTask : public AudioTaskBase<PlaySoundTask>
     {
-        NamedResource m_resourceId{};
+        NamedResource m_resourceToPlay;
     };
 } // namespace BopAudio

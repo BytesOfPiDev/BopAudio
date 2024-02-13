@@ -36,10 +36,14 @@ namespace BopAudio
         SoundBank(Audio::SATLAudioFileEntryInfo* fileEntryData);
         virtual ~SoundBank() = default;
 
+        [[nodiscard]] constexpr auto operator==(NamedResource const& resourceId) const
+        {
+            return m_id == resourceId;
+        }
+
         [[nodiscard]] static auto LoadInitBank() -> AZ::Outcome<SoundBank, char const*>;
 
         auto Load() -> AZ::Outcome<void, char const*>;
-        auto LoadSounds(AZStd::span<char const> soundBankFileBuffer) -> bool;
         [[nodiscard]] auto GetAssets() const -> SoundAssetMap const&
         {
             return m_soundAssets;
@@ -47,20 +51,34 @@ namespace BopAudio
         [[nodiscard]] auto GetSoundAsset(NamedResource const& soundName) const
             -> MiniAudio::SoundDataAsset;
 
+        [[nodiscard]] auto GetDocument() const -> AZStd::shared_ptr<rapidjson::Document>
+        {
+            return m_doc;
+        }
+
         [[nodiscard]] auto IsEmpty() const -> bool
         {
             return !m_soundAssets.empty();
         };
 
+        auto CloneEvent(NamedResource resourceId) -> AZ::Outcome<AudioEvent, char const*>;
+
     protected:
+        auto LoadBuffer() -> bool;
+        auto LoadSoundNames() -> bool;
+        auto LoadSounds() -> bool;
         auto LoadEvents() -> bool;
-        auto LoadEvents(rapidjson::Document const& doc) -> bool;
 
     private:
         NamedResource m_id{};
+        SoundNames m_soundNames{};
+
+        AZStd::optional<AZStd::vector<char>> m_optionalBuffer{};
+        AZStd::span<char const> m_bufferRef{};
+        AZStd::shared_ptr<rapidjson::Document> m_doc{};
         AZ::Name m_soundBankName{};
         SoundAssetMap m_soundAssets{};
-        [[maybe_unused]] AZStd::vector<AudioEvent> m_events{};
+        AZStd::vector<AudioEvent> m_events{};
         Audio::SATLAudioFileEntryInfo* m_fileEntryInfo{};
     };
 
@@ -72,7 +90,8 @@ namespace BopAudio
      *
      * @return AZStd::vector<char> The raw file data.
      */
-    auto LoadSoundBankToBuffer(AZ::IO::Path soundBankFilePath) -> AZStd::vector<char>;
+    auto LoadSoundBankToBuffer(AZ::IO::Path soundBankFilePath)
+        -> AZ::Outcome<AZStd::vector<char>, char const*>;
 
     /*
      * Parses a buffer as a sound bank file and returns the sound names within

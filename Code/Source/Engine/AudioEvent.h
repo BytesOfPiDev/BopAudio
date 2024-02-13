@@ -1,22 +1,25 @@
 #pragma once
 
-#include "AzCore/std/containers/fixed_vector.h"
-#include "Engine/Task.h"
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/JSON/document.h>
 
-#include <Engine/Events/PlaySound.h>
-#include <Engine/Events/StopSound.h>
+#include "AzCore/Outcome/Outcome.h"
+#include "AzCore/std/containers/fixed_vector.h"
+#include "IAudioInterfacesCommonData.h"
+
+#include "Engine/Id.h"
+#include "Engine/Task.h"
 
 namespace BopAudio
 {
-
     class AudioEvent
     {
     public:
         static constexpr auto MaxTasks{ 3 };
-        using TaskContainer = AZStd::fixed_vector<TaskData, MaxTasks>;
+        using TaskContainer = AZStd::fixed_vector<AudioTask, MaxTasks>;
 
-        AudioEvent() = default;
-        AudioEvent(TaskContainer tasks);
+        static auto Create(rapidjson::Document& doc, AZ::IO::Path const& eventPath)
+            -> AZ::Outcome<AudioEvent, AZStd::string>;
 
         [[nodiscard]] constexpr auto GetInstanceId() const -> InstanceId
         {
@@ -33,11 +36,21 @@ namespace BopAudio
             return m_taskDatas;
         }
 
+        [[nodiscard]] auto GetResourceId() const -> NamedResource
+        {
+            return m_eventResourceId;
+        }
+
+        auto Execute() -> AZ::Outcome<void, char const*>;
+
+    protected:
+        AudioEvent() = default;
+
     private:
+        NamedResource m_eventResourceId{};
         TaskContainer m_taskDatas{};
         Audio::EAudioEventState m_eventState{};
         InstanceId m_instanceId{};
-
-    public:
     };
+
 } // namespace BopAudio

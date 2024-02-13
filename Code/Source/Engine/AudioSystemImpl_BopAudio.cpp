@@ -5,6 +5,7 @@
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "Engine/Id.h"
 #include "Engine/MiniAudioEngine.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/MiniAudioEngineRequests.h"
@@ -267,11 +268,10 @@ namespace BopAudio
             audioObjectData) };
         auto* const implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        if (!implAudioObjectData)
-        {
-            AZ_Error("AudioSystemImpl_BopAudio", false, "Received nullptr for the audio object!");
-            return Audio::EAudioRequestStatus::Failure;
-        }
+        AZ_Warning(
+            "AudioSystemImpl_BopAudio",
+            implAudioObjectData != nullptr,
+            "Received nullptr for the audio object!");
 
         if (!implEventData)
         {
@@ -281,12 +281,14 @@ namespace BopAudio
 
         ActivateTriggerRequest activateTriggerRequest{};
         activateTriggerRequest.m_triggerResource = implTriggerData->GetTriggerResource();
-        activateTriggerRequest.m_objectInstanceId = implAudioObjectData->GetImplAudioObjectId();
+        activateTriggerRequest.m_audioObjectId =
+            implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
         activateTriggerRequest.m_eventId = implEventData->m_triggerId;
 
         // The engine activates the appropriate trigger, along with the associated events, then
         // returns the Id of the newly activated event.
-        auto const implEventId{ AudioEngineInterface::Get()->ActivateTrigger({}) };
+        auto const implEventId{ AudioEngineInterface::Get()->ActivateTrigger(
+            activateTriggerRequest) };
 
         // We'll need to save the Id if we want to control the event prior to it ending on its own.
         implEventData->SetImplEventId(implEventId);

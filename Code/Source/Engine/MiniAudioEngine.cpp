@@ -2,6 +2,7 @@
 
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/JSON/schema.h"
+#include "Engine/AudioObject.h"
 #include "Engine/Common_BopAudio.h"
 #include "MiniAudio/MiniAudioBus.h"
 
@@ -73,57 +74,15 @@ namespace BopAudio
     auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
         -> AudioEventId
     {
-        AudioEvent audioEvent{};
+        auto const audioObjectId{ activateTriggerRequest.m_audioObjectId };
+        auto* audioObject{ FindAudioObject(audioObjectId) };
 
-        /*
-              // auto const& triggerId{ activateTriggerRequest.m_triggerId };
-              auto const& audioObjectId{ activateTriggerRequest.m_audioObjectId };
-              auto const& soundName{ activateTriggerRequest.m_soundName };
+        if (!audioObject)
+        {
+            auto& newAudioObject = m_audioObjects.emplace_back();
+            audioObject = &newAudioObject;
+        }
 
-              AudioObject* audioObject{ FindAudioObject(audioObjectId) };
-
-              AZ_Warning("MiniAudioEngine", audioObject, "No audio object exists for this
-           trigger!");
-
-              if (audioObject)
-              {
-                  auto iter{ m_soundCache.find(audioObject->GetId()) };
-                  // Create an instance if it's not in the cache.
-                  if (iter == AZStd::end(m_soundCache))
-                  {
-                      auto tmpSoundPtr = CreateSoundByName(soundName);
-                      auto const& [insertedAtIter, success]{ m_soundCache.insert_or_assign(
-                          audioObject->GetId(), AZStd::move(tmpSoundPtr)) };
-                      if (!success)
-                      {
-                          AZ_Error(
-                              "MiniAudioEngine", false, "Failed to find and create the requested
-           sound."); return false;
-                      }
-                      iter = insertedAtIter;
-                  }
-
-                  auto& [instanceId, soundPtr]{ *iter };
-
-                  if (ma_sound_is_playing(soundPtr.get()))
-                  {
-                      ma_sound_stop(soundPtr.get());
-                  }
-              }
-
-              auto soundPtr = AZStd::move(CreateSoundByName(soundName));
-              if (!soundPtr)
-              {
-                  AZ_Error(
-                      "MiniAudioEngine", false, "Failed to create sound: '%s'.",
-           soundName.GetCStr()); return false;
-              }
-
-              ma_sound_set_looping(soundPtr.get(), false);
-              PlaySound(soundPtr.get(), soundName);
-              activateTriggerRequest.m_eventData->m_soundInstance = AZStd::move(soundPtr);
-
-              */
         return {};
     }
 
@@ -163,7 +122,20 @@ namespace BopAudio
         */
     }
 
-    auto MiniAudioEngine::FindAudioObject(UniqueId /*audioObjectId*/) -> AudioObject*
+    auto MiniAudioEngine::FindSoundBank(NamedResource const& resourceId) const
+        -> AZStd::shared_ptr<rapidjson::Document>
+    {
+        auto const foundIter = AZStd::ranges::find_if(
+            m_soundBanks,
+            [&resourceId](SoundBank const& soundBank)
+            {
+                return soundBank == resourceId;
+            });
+
+        return foundIter != AZStd::end(m_soundBanks) ? foundIter->GetDocument() : nullptr;
+    }
+
+    auto MiniAudioEngine::FindAudioObject(AudioObjectId /*audioObjectId*/) -> AudioObject*
     {
         /*
               auto iter = AZStd::ranges::find_if(

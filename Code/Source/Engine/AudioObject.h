@@ -1,15 +1,16 @@
 #pragma once
 
 #include "AzCore/Math/Transform.h"
+#include "Engine/AudioEvent.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
 {
+    class AudioEvent;
 
     struct AudioObject
     {
-        AZ_DEFAULT_COPY(AudioObject);
-        AZ_DISABLE_MOVE(AudioObject);
+        AZ_DISABLE_COPY(AudioObject);
 
         AudioObject() = default;
         AudioObject(AZStd::string_view objectName)
@@ -36,15 +37,20 @@ namespace BopAudio
             return !(m_audioObjectId == audioObjectId);
         }
 
+        void Update(float deltaTime);
+
         [[nodiscard]] auto GetId() const -> AudioObjectId
         {
             return m_audioObjectId;
         }
 
+        void AddEvent(AudioEvent const& audioEvent);
+
     private:
         InstanceId m_instanceId{};
         AudioObjectId m_audioObjectId{};
         AZ::Name m_name{};
+        AZStd::vector<AudioEvent> m_events{};
         [[maybe_unused]] AZ::Transform m_transform{};
     };
 

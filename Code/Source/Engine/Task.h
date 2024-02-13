@@ -2,24 +2,24 @@
 
 #include "AzCore/std/containers/variant.h"
 
+#include "Engine/Events/PlaySound.h"
+#include "Engine/Events/StopSound.h"
+
 namespace BopAudio
 {
-    struct MuteArgs;
-    struct PlayGroupArgs;
-    struct PlaySoundData;
-    struct SetVolumeArgs;
-    struct StopSoundData;
-    struct TranslateArgs;
 
-    using TaskData = AZStd::variant<PlaySoundData, StopSoundData>;
+    using AudioTask = AZStd::variant<PlaySoundTask, StopSoundTask>;
 
-    struct AudioEventHandler
+    struct AudioTaskHandler
     {
-        constexpr void operator()(PlaySoundData const& args);
-        constexpr void operator()(StopSoundData const& args);
-        constexpr void operator()(SetVolumeArgs const& args);
-        constexpr void operator()(TranslateArgs const& args);
-        constexpr void operator()(MuteArgs const& args);
+        void operator()(PlaySoundTask const& args) const;
+        void operator()(StopSoundTask const& args) const;
+    };
+
+    struct AudioTaskIsFinished
+    {
+        void operator()(PlaySoundTask const& args) const;
+        void operator()(StopSoundTask const& args) const;
     };
 
 } // namespace BopAudio
