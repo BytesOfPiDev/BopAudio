@@ -31,7 +31,7 @@ namespace BopAudio
 
     private:
         AZ::IO::Path m_localizationFolder;
-        AudioSystemEditor_BopAudio* m_audioSystemImpl = nullptr;
+        AudioSystemEditor_BopAudio* m_audioSystemEditor = nullptr;
     };
 
 } // namespace BopAudio

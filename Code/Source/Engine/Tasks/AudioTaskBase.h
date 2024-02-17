@@ -14,4 +14,5 @@ namespace BopAudio
         AudioObjectId m_targetObject;
         TaskState m_state;
     };
+
 } // namespace BopAudio

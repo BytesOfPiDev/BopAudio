@@ -25,9 +25,9 @@ namespace BopAudio
             return m_soundAsset.IsReady();
         }
 
-        [[nodiscard]] auto GetResourceId() const -> NamedResource
+        [[nodiscard]] auto GetResourceId() const -> ResourceRef
         {
-            return NamedResource{ m_name };
+            return ResourceRef{ m_name };
         };
 
     private:

@@ -85,18 +85,18 @@ namespace BopAudio
             m_implAudioObjectId = implAudioObjectIde;
         }
 
-        [[nodiscard]] auto GetTriggerResource() const -> NamedResource
+        [[nodiscard]] auto GeImplTriggerId() const -> AudioEventId
         {
-            return m_triggerId;
+            return m_audioEventResourceId;
         }
 
-        void SetImplTriggerId(NamedResource resourceId)
+        void SetImplTriggerId(AudioEventId resourceId)
         {
-            m_triggerId = resourceId;
+            m_audioEventResourceId = resourceId;
         }
 
     private:
-        NamedResource m_triggerId{};
+        AudioEventId m_audioEventResourceId{};
         AudioObjectId m_implAudioObjectId{};
         Audio::TAudioObjectID m_atlAudioObjectId{};
     };
@@ -124,15 +124,17 @@ namespace BopAudio
 
         ~SATLEventData_BopAudio() override = default;
 
-        [[nodiscard]] constexpr auto GetImplEventId() const -> AudioEventId
-        {
-            return m_implEventId;
-        }
+        /*
+              [[nodiscard]] constexpr auto GetImplEventId() const -> AudioEventId
+              {
+                  return m_implEventId;
+              }
 
-        constexpr void SetImplEventId(AudioEventId uniqueId)
+        void SetImplEventId(AudioEventId eventId)
         {
-            m_implEventId = uniqueId;
+            m_implEventId = eventId;
         }
+        */
 
         [[nodiscard]] constexpr auto GetAtlEventId() const -> Audio::TAudioEventID
         {
@@ -168,7 +170,7 @@ namespace BopAudio
         Audio::EAudioEventState m_eventState{};
         Audio::TAudioEventID m_atlEventId{};
         Audio::TAudioSourceId m_sourceId{};
-        AudioEventId m_implEventId{};
+        // AudioEventId m_implEventId{};
     };
 
     struct SATLAudioFileEntryData_BopAudio : public Audio::IATLAudioFileEntryData
@@ -184,10 +186,10 @@ namespace BopAudio
             m_soundNames.clear();
         };
 
-        NamedResource m_bankId{};
-        AZStd::unordered_set<NamedResource> m_soundNames{};
-        AZStd::unordered_map<NamedResource, MiniAudio::SoundDataAsset> m_soundAssets{};
-        AZStd::unordered_map<NamedResource, SoundInstance> m_sounds{};
+        ResourceRef m_bankId{};
+        AZStd::unordered_set<ResourceRef> m_soundNames{};
+        AZStd::unordered_map<ResourceRef, MiniAudio::SoundDataAsset> m_soundAssets{};
+        AZStd::unordered_map<ResourceRef, SoundInstance> m_sounds{};
     };
 
 } // namespace BopAudio

@@ -12,12 +12,10 @@ set(FILES
     Source/Clients/AudioAsset.cpp
     Source/Clients/AudioAssetHandler.cpp
     Source/Clients/AudioAssetHandler.h
-    Source/Clients/StringUtil.cpp
-    Source/Clients/StringUtil.h
 
-    Source/Engine/Events/AudioEventBase.h
-    Source/Engine/Events/PlaySound.h
-    Source/Engine/Events/StopSound.h
+    Source/Engine/Tasks/AudioTaskBase.h
+    Source/Engine/Tasks/PlaySound.h
+    Source/Engine/Tasks/StopSound.h
 
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEvent.cpp
@@ -44,7 +42,4 @@ set(FILES
     Source/Engine/SoundBank.h
     Source/Engine/SoundSource.cpp
     Source/Engine/SoundSource.h
-    Source/Engine/Task.cpp
-    Source/Engine/Task.h
-
 )

@@ -2,55 +2,55 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 #include "AzCore/Outcome/Outcome.h"
-#include "AzCore/std/containers/fixed_vector.h"
+#include "AzCore/std/any.h"
+#include "BopAudio/Util.h"
 #include "IAudioInterfacesCommonData.h"
 
 #include "Engine/Id.h"
-#include "Engine/Task.h"
 
 namespace BopAudio
 {
+    class AudioObject;
     class AudioEvent
     {
     public:
-        static constexpr auto MaxTasks{ 3 };
-        using TaskContainer = AZStd::fixed_vector<AudioTask, MaxTasks>;
+        AZ_DEFAULT_COPY_MOVE(AudioEvent);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioEvent);
 
-        static auto Create(rapidjson::Document& doc, AZ::IO::Path const& eventPath)
-            -> AZ::Outcome<AudioEvent, AZStd::string>;
+        ~AudioEvent() = default;
 
-        [[nodiscard]] constexpr auto GetInstanceId() const -> InstanceId
-        {
-            return m_instanceId;
-        }
+        [[nodiscard]] static auto CreateFromSource(
+            rapidjson::Document& doc, ResourceRef const& eventPath) -> AudioOutcome<AudioEvent>;
+        [[nodiscard]] static auto CreateFromSource(
+            rapidjson::Document& doc, AZ::IO::Path const& eventPath) -> AudioOutcome<AudioEvent>;
 
         [[nodiscard]] constexpr auto GetState() const -> Audio::EAudioEventState
         {
             return m_eventState;
         }
 
-        [[nodiscard]] constexpr auto GetTaskDatas() const -> TaskContainer const&
+        [[nodiscard]] auto GetId() const -> AudioEventId
         {
-            return m_taskDatas;
+            return m_id;
         }
 
-        [[nodiscard]] auto GetResourceId() const -> NamedResource
+        [[nodiscard]] auto IsResource(ResourceRef const& resourceId) const -> bool
         {
-            return m_eventResourceId;
+            return m_id.IsValid() && (m_id.ToName() == resourceId.ToName());
         }
 
-        auto Execute() -> AZ::Outcome<void, char const*>;
+        auto Execute(AudioObject& audioObject) -> AZ::Outcome<void, char const*>;
 
     protected:
         AudioEvent() = default;
 
     private:
-        NamedResource m_eventResourceId{};
-        TaskContainer m_taskDatas{};
+        AudioEventId m_id{};
+        AZStd::any m_internalData{};
         Audio::EAudioEventState m_eventState{};
-        InstanceId m_instanceId{};
     };
 
 } // namespace BopAudio

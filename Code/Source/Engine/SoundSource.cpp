@@ -6,7 +6,6 @@
 #include "MiniAudio/MiniAudioBus.h"
 #include "MiniAudio/SoundAsset.h"
 
-#include "Clients/StringUtil.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "MiniAudioIncludes.h"
@@ -21,7 +20,7 @@ namespace BopAudio
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 resultAssetId,
                 &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-                ToCStr(fullPath),
+                fullPath.c_str(),
                 AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid(),
                 true);
 
@@ -43,7 +42,7 @@ namespace BopAudio
 
             AZ::IO::Path const soundPath{ banksRootPath / localPath };
             MiniAudio::SoundDataAsset soundAsset{ assetManager->GetAsset<MiniAudio::SoundAsset>(
-                Internal::FindAssetId(ToCStr(soundPath)), AZ::Data::AssetLoadBehavior::PreLoad) };
+                Internal::FindAssetId(soundPath.c_str()), AZ::Data::AssetLoadBehavior::PreLoad) };
 
             if (!soundAsset.GetId().IsValid())
             {
@@ -88,7 +87,7 @@ namespace BopAudio
             AZStd::string const registerName{ name.data() };
             ma_result result = ma_resource_manager_register_encoded_data(
                 ma_engine_get_resource_manager(miniAudioEngine),
-                ToCStr(registerName),
+                registerName.c_str(),
                 assetData.data(),
                 assetData.size());
 
@@ -114,14 +113,14 @@ namespace BopAudio
 
     auto SoundSource::Load() -> AZ::Outcome<void, char const*>
     {
-        m_soundAsset = Internal::LoadSoundAsset(ToCStr(m_name));
+        m_soundAsset = Internal::LoadSoundAsset(m_name.GetCStr());
 
         if (!m_soundAsset.GetId().IsValid())
         {
             return AZ::Failure("Failed to load sound.");
         }
 
-        auto const nameToRegister{ ToCStr(m_name) };
+        auto const nameToRegister{ m_name.GetCStr() };
 
         if (!Internal::RegisterSound(m_soundAsset->m_data, nameToRegister))
         {
@@ -131,7 +130,7 @@ namespace BopAudio
 
         AZLOG_INFO(
             "Registered sound '%s' to miniaudio with the tag '%s'.",
-            ToCStr(m_name),
+            m_name.GetCStr(),
             nameToRegister);
 
         return AZ::Success();

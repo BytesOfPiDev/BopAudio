@@ -31,10 +31,10 @@ namespace BopAudio
 
         SoundInstance() = default;
         ~SoundInstance() = default;
-        SoundInstance(NamedResource soundName)
-            : m_name{ soundName } {};
+        SoundInstance(ResourceRef soundName)
+            : m_name{ AZStd::move(soundName) } {};
 
-        [[nodiscard]] auto GetSoundName() const -> NamedResource
+        [[nodiscard]] auto GetSoundName() const -> ResourceRef
         {
             return m_name;
         }
@@ -51,7 +51,7 @@ namespace BopAudio
         }
 
     private:
-        NamedResource m_name{};
+        ResourceRef m_name{};
         SoundPtr m_sound{};
     };
 

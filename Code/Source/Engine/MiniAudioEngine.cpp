@@ -1,12 +1,12 @@
 #include "Engine/MiniAudioEngine.h"
 
 #include "AzCore/Console/ILogger.h"
-#include "AzCore/JSON/schema.h"
-#include "Engine/AudioObject.h"
-#include "Engine/Common_BopAudio.h"
 #include "MiniAudio/MiniAudioBus.h"
 
+#include "BopAudio/Util.h"
 #include "Engine/AudioEvent.h"
+#include "Engine/AudioObject.h"
+#include "Engine/Id.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
 
@@ -72,37 +72,36 @@ namespace BopAudio
     }
 
     auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
-        -> AudioEventId
+        -> AudioOutcome<void>
     {
-        auto const audioObjectId{ activateTriggerRequest.m_audioObjectId };
-        auto* audioObject{ FindAudioObject(audioObjectId) };
-
+        // We need an audio object to activate the trigger/event on. The request should have
+        // provided one.
+        auto* audioObject{ FindAudioObject(activateTriggerRequest.m_audioObjectId) };
+        // For now, we'll create the audio object if it doesn't already exist, but emit a warning.
         if (!audioObject)
         {
+            AZ_Warning(
+                "MiniAudioEngine",
+                false,
+                "The given audio object does not exist, so we had to create it.");
+
             auto& newAudioObject = m_audioObjects.emplace_back();
             audioObject = &newAudioObject;
         }
 
-        return {};
-    }
-
-    /*
-        auto MiniAudioEngine::ActivateTrigger(ResourceId, UniqueId) -> bool
+        if (auto createEventOutcome{ CreateEvent(activateTriggerRequest.m_triggerResource) })
         {
-            if (m_soundCache.empty())
-            {
-                return false;
-            }
-
-            auto iter{ m_soundCache.begin() };
-            auto& [soundName, soundPtr]{ *iter };
-
-            ma_sound_seek_to_pcm_frame(soundPtr.get(), 0);
-            ma_sound_start(soundPtr.get());
-
-            return true;
+            audioObject->AddEvent(createEventOutcome.TakeValue());
         }
-        */
+        else
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Failed to create event with resource ['%s'].",
+                activateTriggerRequest.m_triggerResource.GetCStr()));
+        }
+
+        return AZ::Success();
+    }
 
     auto MiniAudioEngine::CreateAudioObject(UniqueId const&) -> bool
     {
@@ -122,7 +121,7 @@ namespace BopAudio
         */
     }
 
-    auto MiniAudioEngine::FindSoundBank(NamedResource const& resourceId) const
+    auto MiniAudioEngine::FindSoundBank(ResourceRef const& resourceId) const
         -> AZStd::shared_ptr<rapidjson::Document>
     {
         auto const foundIter = AZStd::ranges::find_if(
@@ -150,6 +149,27 @@ namespace BopAudio
         return nullptr;
     }
 
+    auto MiniAudioEngine::CreateEvent(AudioEventId eventId) const -> AudioOutcome<AudioEvent>
+    {
+        AudioOutcome<AudioEvent> createEventOutcome{};
+        AZStd::ranges::find_if(
+            m_soundBanks,
+            [&eventId, &createEventOutcome](auto const& soundBank)
+            {
+                AZ_Info(
+                    "MiniAudioEngine",
+                    "CreateEvent checking sound bank: [%s]",
+                    soundBank.GetResourceId().GetCStr());
+                createEventOutcome = soundBank.CloneEvent(eventId);
+                return createEventOutcome.IsSuccess();
+            });
+
+        return createEventOutcome.IsSuccess()
+            ? createEventOutcome
+            : AZ::Failure("CreateEvent failed. Reason: ['%s']. Failed to find an event with the "
+                          "given resource id.");
+    }
+
     void MiniAudioEngine::PlaySound(ma_sound* soundInstance, AZ::Name const& soundName)
     {
         auto result = ma_sound_seek_to_pcm_frame(soundInstance, 0);
@@ -168,4 +188,5 @@ namespace BopAudio
             "Failed to start sound: '%s'.",
             soundName.GetCStr());
     }
+
 } // namespace BopAudio

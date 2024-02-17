@@ -8,8 +8,9 @@ namespace BopAudio
 {
     class AudioEvent;
 
-    struct AudioObject
+    class AudioObject
     {
+    public:
         AZ_DISABLE_COPY(AudioObject);
 
         AudioObject() = default;
@@ -17,19 +18,9 @@ namespace BopAudio
             : m_name{ objectName } {};
         ~AudioObject() = default;
 
-        constexpr auto operator==(InstanceId instanceId) -> bool
-        {
-            return m_instanceId == instanceId;
-        }
-
         constexpr auto operator==(AudioObjectId instanceId) -> bool
         {
             return m_audioObjectId == instanceId;
-        }
-
-        constexpr auto operator!=(InstanceId instanceId) -> bool
-        {
-            return !(m_instanceId == instanceId);
         }
 
         constexpr auto operator!=(AudioObjectId audioObjectId) -> bool
@@ -45,9 +36,9 @@ namespace BopAudio
         }
 
         void AddEvent(AudioEvent const& audioEvent);
+        auto AddEvent(AudioEventId eventResourceId) -> AudioOutcome<AudioEvent>;
 
     private:
-        InstanceId m_instanceId{};
         AudioObjectId m_audioObjectId{};
         AZ::Name m_name{};
         AZStd::vector<AudioEvent> m_events{};

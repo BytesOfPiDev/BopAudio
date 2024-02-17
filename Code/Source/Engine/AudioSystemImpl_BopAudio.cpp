@@ -280,21 +280,27 @@ namespace BopAudio
         }
 
         ActivateTriggerRequest activateTriggerRequest{};
-        activateTriggerRequest.m_triggerResource = implTriggerData->GetTriggerResource();
+        activateTriggerRequest.m_triggerResource = implTriggerData->GeImplTriggerId();
         activateTriggerRequest.m_audioObjectId =
             implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
         activateTriggerRequest.m_eventId = implEventData->m_triggerId;
 
         // The engine activates the appropriate trigger, along with the associated events, then
         // returns the Id of the newly activated event.
-        auto const implEventId{ AudioEngineInterface::Get()->ActivateTrigger(
+        auto const activateOutcome{ AudioEngineInterface::Get()->ActivateTrigger(
             activateTriggerRequest) };
 
-        // We'll need to save the Id if we want to control the event prior to it ending on its own.
-        implEventData->SetImplEventId(implEventId);
+        AZ_Error(
+            "AudioSystemImpl_BopAudio",
+            activateOutcome.IsSuccess(),
+            "MiniAudioEngine failed to activate a trigger. Reason: '[%s]'.",
+            activateOutcome.GetError().c_str());
 
-        return implEventId.IsValid() ? Audio::EAudioRequestStatus::Success
-                                     : Audio::EAudioRequestStatus::Failure;
+        // We'll need to save the Id if we want to control the event prior to it ending on its own.
+        // implEventData->SetImplEventId(implEventId);
+
+        return activateOutcome.IsSuccess() ? Audio::EAudioRequestStatus::Success
+                                           : Audio::EAudioRequestStatus::Failure;
     }
 
     auto AudioSystemImpl_BopAudio::StopEvent(
@@ -456,7 +462,7 @@ namespace BopAudio
         auto* const soundBankFileName{ bopAudioFileNameAttrib->value() };
         auto* const implAudioFile{ azcreate(
             SATLAudioFileEntryData_BopAudio, (), Audio::AudioImplAllocator) };
-        implAudioFile->m_bankId = NamedResource{ soundBankFileName };
+        implAudioFile->m_bankId = ResourceRef{ soundBankFileName };
 
         fileEntryInfo->sFileName = soundBankFileName;
         fileEntryInfo->pImplData = implAudioFile;
@@ -510,7 +516,7 @@ namespace BopAudio
         auto* implAudioTriggerData{ azcreate(
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetImplTriggerId(NamedResource{ triggerName });
+        implAudioTriggerData->SetImplTriggerId(AudioEventId{ triggerName });
 
         return implAudioTriggerData;
     }

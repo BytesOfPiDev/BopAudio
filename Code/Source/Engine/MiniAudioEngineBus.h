@@ -1,9 +1,12 @@
 #pragma once
 
+#include <AzCore/JSON/document.h>
+
 #include "ATLEntityData.h"
 #include "AzCore/Interface/Interface.h"
-#include "AzCore/JSON/document.h"
 #include "AzCore/RTTI/RTTIMacros.h"
+
+#include "BopAudio/Util.h"
 #include "Engine/Id.h"
 
 struct ma_engine;
@@ -27,8 +30,8 @@ namespace BopAudio
         virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool = 0;
         [[nodiscard]] virtual auto CreateAudioObject(UniqueId const&) -> bool = 0;
         virtual void RemoveAudioObject(UniqueId audioObjectId) = 0;
-        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> AudioEventId = 0;
-        [[nodiscard]] virtual auto FindSoundBank(NamedResource const& resourceId) const
+        virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> AudioOutcome<void> = 0;
+        [[nodiscard]] virtual auto FindSoundBank(ResourceRef const& resourceId) const
             -> AZStd::shared_ptr<rapidjson::Document> = 0;
 
         virtual auto GetSoundEngine() -> ma_engine* = 0;

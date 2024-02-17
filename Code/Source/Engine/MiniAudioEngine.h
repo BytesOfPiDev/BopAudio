@@ -3,7 +3,9 @@
 #include "AzCore/XML/rapidxml.h"
 #include "AzCore/base.h"
 
+#include "BopAudio/Util.h"
 #include "Engine/AudioObject.h"
+#include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Sound.h"
 #include "Engine/SoundBank.h"
@@ -27,18 +29,19 @@ namespace BopAudio
         auto GetSoundEngine() -> ma_engine* override;
 
         auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
-            -> AudioEventId override;
+            -> AudioOutcome<void> override;
 
         [[nodiscard]] auto CreateAudioObject(UniqueId const&) -> bool override;
         void RemoveAudioObject(UniqueId audioObjectId) override;
 
-        [[nodiscard]] auto FindSoundBank(NamedResource const& resourceId) const
+        [[nodiscard]] auto FindSoundBank(ResourceRef const& resourceId) const
             -> AZStd::shared_ptr<rapidjson::Document> override;
 
     protected:
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);
 
         auto FindAudioObject(AudioObjectId audioObjectId) -> AudioObject*;
+        [[nodiscard]] auto CreateEvent(AudioEventId resourceId) const -> AudioOutcome<AudioEvent>;
         void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
 
     private:

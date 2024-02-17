@@ -1,5 +1,7 @@
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
+
 namespace BopAudio::XmlTags
 {
     // Xml Element Names
@@ -20,7 +22,7 @@ namespace BopAudio::XmlTags
 
 } // namespace BopAudio::XmlTags
 
-namespace BopAudioStrings
+namespace AudioStrings
 {
     // Project Folders
     static constexpr auto GameParametersFolder = "GameParameters";
@@ -37,25 +39,21 @@ namespace BopAudioStrings
     static constexpr auto StateGroupTag = "StateGroup";
     static constexpr auto ChildrenListTag = "ChildrenList";
 
-    static constexpr auto PlayTaskName = "Play";
-    static constexpr auto StopTaskName = "Stop";
+    // Json Tags
+    static constexpr auto TaskTag{ "Task" };
+    static constexpr auto EventPlayTag = "Play";
+    static constexpr auto EventStopTag = "Stop";
 
-} // namespace BopAudioStrings
+} // namespace AudioStrings
 
-namespace BopAudio::JsonKeys
+namespace JsonKeys
 {
-    static constexpr char BopAudioFile[] = "/BopAudioDocument";
-    static constexpr char SoundFileNames[] = "/BopAudioDocument/Sounds";
-    static constexpr char EventsObjectKey[]{ "/BopAudioDocument/Events" };
+    static constexpr AZ::IO::PathView SoundsKey_O = "/BopAudioDocument/Sounds";
+    static constexpr AZ::IO::PathView EventsKey_O{ "/BopAudioDocument/Events" };
 
-    static constexpr char EventGroupPlayKey[]{ "/Play" };
-    static constexpr char EventGroupPlayResourceKey[]{ "/Play/Resource" };
-    static constexpr char StopEventKey[]{ "/Stop" };
-    static constexpr char StopEventResourceKey[]{ "/Stop/Resource" };
-    static constexpr char EventTasksKey[]{ "/Tasks" };
-
-    static constexpr char PlayResourceKey[] = "/Play/Resource";
-} // namespace BopAudio::JsonKeys
+    static constexpr AZ::IO::PathView PlayResourceKey_V = "/Play/Resource";
+    static constexpr AZ::IO::PathView StopEventResourceKey_V{ "/Stop/Resource" };
+} // namespace JsonKeys
 
 namespace BopAudio
 {

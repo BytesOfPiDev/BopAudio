@@ -2,6 +2,7 @@
 
 #include "ATLEntityData.h"
 #include "AzCore/Name/Name.h"
+#include "BopAudio/Util.h"
 #include "Engine/AudioEvent.h"
 #include "Engine/Id.h"
 #include "Engine/SoundSource.h"
@@ -26,7 +27,7 @@ namespace BopAudio
      */
     class SoundBank
     {
-        using SoundAssetMap = AZStd::unordered_map<NamedResource, SoundSource>;
+        using SoundAssetMap = AZStd::unordered_map<ResourceRef, SoundSource>;
 
     public:
         AZ_DEFAULT_COPY_MOVE(SoundBank);
@@ -36,9 +37,14 @@ namespace BopAudio
         SoundBank(Audio::SATLAudioFileEntryInfo* fileEntryData);
         virtual ~SoundBank() = default;
 
-        [[nodiscard]] constexpr auto operator==(NamedResource const& resourceId) const
+        [[nodiscard]] constexpr auto operator==(ResourceRef const& resourceId) const
         {
             return m_id == resourceId;
+        }
+
+        [[nodiscard]] auto GetResourceId() const -> ResourceRef
+        {
+            return m_id;
         }
 
         [[nodiscard]] static auto LoadInitBank() -> AZ::Outcome<SoundBank, char const*>;
@@ -48,7 +54,7 @@ namespace BopAudio
         {
             return m_soundAssets;
         }
-        [[nodiscard]] auto GetSoundAsset(NamedResource const& soundName) const
+        [[nodiscard]] auto GetSoundAsset(ResourceRef const& soundName) const
             -> MiniAudio::SoundDataAsset;
 
         [[nodiscard]] auto GetDocument() const -> AZStd::shared_ptr<rapidjson::Document>
@@ -61,16 +67,18 @@ namespace BopAudio
             return !m_soundAssets.empty();
         };
 
-        auto CloneEvent(NamedResource resourceId) -> AZ::Outcome<AudioEvent, char const*>;
+        [[nodiscard]] auto CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEvent>;
+        [[nodiscard]] auto CloneEvent(ResourceRef const& resourceId) const
+            -> AudioOutcome<AudioEvent>;
 
     protected:
         auto LoadBuffer() -> bool;
         auto LoadSoundNames() -> bool;
         auto LoadSounds() -> bool;
-        auto LoadEvents() -> bool;
+        auto LoadEvents() -> AudioOutcome<void>;
 
     private:
-        NamedResource m_id{};
+        ResourceRef m_id{};
         SoundNames m_soundNames{};
 
         AZStd::optional<AZStd::vector<char>> m_optionalBuffer{};
@@ -79,6 +87,7 @@ namespace BopAudio
         AZ::Name m_soundBankName{};
         SoundAssetMap m_soundAssets{};
         AZStd::vector<AudioEvent> m_events{};
+        AudioEventIdContainer m_eventIds{};
         Audio::SATLAudioFileEntryInfo* m_fileEntryInfo{};
     };
 
@@ -92,6 +101,9 @@ namespace BopAudio
      */
     auto LoadSoundBankToBuffer(AZ::IO::Path soundBankFilePath)
         -> AZ::Outcome<AZStd::vector<char>, char const*>;
+
+    [[nodiscard]] auto LoadEventIds(rapidjson::Document const& doc)
+        -> AudioOutcome<AZStd::vector<AudioEventId>>;
 
     /*
      * Parses a buffer as a sound bank file and returns the sound names within

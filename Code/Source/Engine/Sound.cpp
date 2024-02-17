@@ -2,7 +2,6 @@
 
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/IO/Path/Path_fwd.h"
-#include "Clients/StringUtil.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "MiniAudio/MiniAudioBus.h"
@@ -19,7 +18,7 @@ namespace BopAudio
             m_soundName.GetCStr());
     }
 
-    auto CreateSoundByName(NamedResource const& soundName) -> SoundPtr
+    auto CreateSoundByName(ResourceRef const& soundName) -> SoundPtr
     {
         ma_engine* engine{ AudioEngineInterface::Get()->GetSoundEngine() };
         AZ_Error("CreateSoundByName", engine != nullptr, "Failed to get miniaudio sound engine!");
@@ -30,7 +29,7 @@ namespace BopAudio
             // soundbank directory. Anything else will result in failure.
             // TODO: Implement finding by numeric Id / hash
             auto const o3deProjectRelativePath{ AZ::IO::Path{ GetBanksRootPath() } /
-                                                ToCStr(soundName) };
+                                                soundName.GetCStr() };
 
             AZ::Name const resourceName{ o3deProjectRelativePath.Native() };
 
@@ -52,7 +51,7 @@ namespace BopAudio
             {
                 result = ma_sound_init_from_file(
                     AudioEngineInterface::Get()->GetSoundEngine(),
-                    ToCStr(soundName),
+                    soundName.GetCStr(),
                     flags,
                     nullptr,
                     nullptr,
