@@ -4,11 +4,11 @@
 #include "AzCore/base.h"
 
 #include "BopAudio/Util.h"
+#include "Clients/SoundBankAsset.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Sound.h"
-#include "Engine/SoundBank.h"
 
 namespace BopAudio
 {
@@ -22,8 +22,9 @@ namespace BopAudio
         MiniAudioEngine();
         ~MiniAudioEngine() override;
 
-        auto Initialize() -> bool override;
-        auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool override;
+        [[nodiscard]] auto Initialize() -> AudioOutcome<void> override;
+        [[nodiscard]] auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
+            -> NullOutcome override;
         auto Shutdown() -> bool override;
 
         auto GetSoundEngine() -> ma_engine* override;
@@ -34,9 +35,6 @@ namespace BopAudio
         [[nodiscard]] auto CreateAudioObject(UniqueId const&) -> bool override;
         void RemoveAudioObject(UniqueId audioObjectId) override;
 
-        [[nodiscard]] auto FindSoundBank(ResourceRef const& resourceId) const
-            -> AZStd::shared_ptr<rapidjson::Document> override;
-
     protected:
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);
 
@@ -45,8 +43,8 @@ namespace BopAudio
         void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
 
     private:
-        AZStd::optional<SoundBank> m_initSoundBank{};
-        AZStd::vector<SoundBank> m_soundBanks{};
+        AZStd::unique_ptr<SoundBankAsset> m_initSoundBank{};
+        AZStd::vector<AZStd::unique_ptr<SoundBankAsset>> m_soundBanks{};
 
         AZStd::vector<AudioObject> m_audioObjects{};
         AZStd::unordered_map<UniqueId, SoundInstance> m_soundCache{};

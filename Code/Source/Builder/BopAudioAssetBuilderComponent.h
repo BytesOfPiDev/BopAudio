@@ -2,20 +2,21 @@
 
 #include "AzCore/Component/Component.h"
 
-#include "Builder/BopAudioControlBuilderWorker.h"
+#include "Builder/AudioControlBuilderWorker.h"
+#include "Builder/AudioEventAssetBuilderWorker.h"
+#include "Builder/SoundBankAssetBuilderWorker.h"
 
 namespace BopAudio
 {
-
-    class BopAudioControlBuilderComponent : public AZ::Component
+    class BopAudioAssetBuilderComponent : public AZ::Component
     {
     public:
-        AZ_COMPONENT_DECL(BopAudioControlBuilderComponent);
+        AZ_COMPONENT(BopAudioAssetBuilderComponent, "{A8D75486-FC8B-4F61-8F61-DB78CD424264}");
 
         static void Reflect(AZ::ReflectContext* context);
 
-        BopAudioControlBuilderComponent();
-        ~BopAudioControlBuilderComponent() override;
+        BopAudioAssetBuilderComponent();
+        ~BopAudioAssetBuilderComponent() override;
 
         void Init() override;
         void Activate() override;
@@ -27,7 +28,14 @@ namespace BopAudio
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
+    protected:
+        void ConfigureSoundBankBuilder();
+        void ConfigureAudioEventBuilder();
+        void ConfigureAudioControlBuilder();
+
     private:
-        BopAudioControlBuilderWorker m_audioControlBuilder;
+        SoundBankAssetBuilderWorker m_bankBuilderWorker;
+        AudioEventAssetBuilderWorker m_eventBuilder;
+        AudioControlBuilderWorker m_audioControlBuilder;
     };
 } // namespace BopAudio

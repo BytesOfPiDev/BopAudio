@@ -10,6 +10,8 @@ namespace BopAudio
     template<typename T>
     using AudioOutcome = AZ::Outcome<T, AZStd::string>;
 
+    using NullOutcome = AudioOutcome<void>;
+
     /*
      * Returns just the name of a resource.
      *

@@ -40,7 +40,7 @@ namespace AudioStrings
     static constexpr auto ChildrenListTag = "ChildrenList";
 
     // Json Tags
-    static constexpr auto TaskTag{ "Task" };
+    static constexpr auto TasksTag{ "Tasks" };
     static constexpr auto EventPlayTag = "Play";
     static constexpr auto EventStopTag = "Stop";
 
@@ -57,7 +57,7 @@ namespace JsonKeys
 
 namespace BopAudio
 {
-    static constexpr char DocumentJsonSchema[] =
+    static constexpr auto DocumentJsonSchema =
         R"({
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",

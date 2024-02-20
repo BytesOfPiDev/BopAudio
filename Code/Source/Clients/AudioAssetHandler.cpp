@@ -4,24 +4,24 @@
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/Utils.h"
 
-#include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/SoundBankAsset.h"
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BopAudioAssetHandler, AZ::SystemAllocator); // NOLINT
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, AZ::SystemAllocator); // NOLINT
 
-    BopAudioAssetHandler::BopAudioAssetHandler()
+    SoundBankAssetHandler::SoundBankAssetHandler()
     {
         Register();
     }
 
-    BopAudioAssetHandler::~BopAudioAssetHandler()
+    SoundBankAssetHandler::~SoundBankAssetHandler()
     {
         Unregister();
     }
 
-    void BopAudioAssetHandler::Register()
+    void SoundBankAssetHandler::Register()
     {
         if (!AZ::Data::AssetManager::IsReady())
         {
@@ -34,11 +34,11 @@ namespace BopAudio
         }
 
         AZ::Data::AssetManager::Instance().RegisterHandler(
-            this, AZ::AzTypeInfo<AudioAsset>::Uuid());
-        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioAsset>::Uuid());
+            this, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
     }
 
-    void BopAudioAssetHandler::Unregister()
+    void SoundBankAssetHandler::Unregister()
     {
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
 
@@ -50,12 +50,12 @@ namespace BopAudio
         AZ::Data::AssetManager::Instance().UnregisterHandler(this);
     }
 
-    auto BopAudioAssetHandler::CreateAsset(
+    auto SoundBankAssetHandler::CreateAsset(
         AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
-        if (aztypeid_cmp(type, AZ::AzTypeInfo<AudioAsset>::Uuid()))
+        if (aztypeid_cmp(type, AZ::AzTypeInfo<SoundBankAsset>::Uuid()))
         {
-            return aznew AudioAsset{};
+            return aznew SoundBankAsset{};
         }
 
         AZ_Error("AudioAssetHandler", false,
@@ -63,13 +63,13 @@ namespace BopAudio
         return {};
     }
 
-    auto BopAudioAssetHandler::LoadAssetData(
+    auto SoundBankAssetHandler::LoadAssetData(
         AZ::Data::Asset<AZ::Data::AssetData> const& asset,
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult
     {
-        bool const assetLoaded =
-            AZ::Utils::LoadObjectFromStreamInPlace<AudioAsset>(*stream, *asset.GetAs<AudioAsset>());
+        bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<SoundBankAsset>(
+            *stream, *asset.GetAs<SoundBankAsset>());
 
         if (!assetLoaded)
         {
@@ -80,47 +80,48 @@ namespace BopAudio
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }
 
-    void BopAudioAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
+    void SoundBankAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
         delete ptr; // NOLINT
     }
 
-    void BopAudioAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    void SoundBankAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
-        assetTypes.push_back(AZ::AzTypeInfo<AudioAsset>::Uuid());
+        assetTypes.push_back(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
     }
 
-    auto BopAudioAssetHandler::GetAssetType() const -> AZ::Data::AssetType
+    auto SoundBankAssetHandler::GetAssetType() const -> AZ::Data::AssetType
     {
-        return AZ::AzTypeInfo<AudioAsset>::Uuid();
+        return AZ::AzTypeInfo<SoundBankAsset>::Uuid();
     }
 
-    void BopAudioAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
+    void SoundBankAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
-        return extensions.push_back(AudioAsset::FileExtension);
+        extensions.push_back(SoundBankAsset::ProductExtension);
+        extensions.push_back(SoundBankAsset::SourceExtension);
     }
 
-    auto BopAudioAssetHandler::GetAssetTypeDisplayName() const -> char const*
+    auto SoundBankAssetHandler::GetAssetTypeDisplayName() const -> char const*
     {
-        return "Steam Audio Asset";
+        return "SoundBank Asset";
     }
 
-    auto BopAudioAssetHandler::GetBrowserIcon() const -> char const*
+    auto SoundBankAssetHandler::GetBrowserIcon() const -> char const*
     {
         return {};
     }
 
-    auto BopAudioAssetHandler::GetGroup() const -> char const*
+    auto SoundBankAssetHandler::GetGroup() const -> char const*
     {
-        return AudioAsset::AssetGroup;
+        return SoundBankAsset::AssetGroup;
     }
 
-    auto BopAudioAssetHandler::GetComponentTypeId() const -> AZ::Uuid
+    auto SoundBankAssetHandler::GetComponentTypeId() const -> AZ::Uuid
     {
         return AZ::Uuid(BopAudioComponentTypeId);
     }
 
-    auto BopAudioAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool
+    auto SoundBankAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool
     {
         return false;
     }

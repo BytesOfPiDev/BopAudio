@@ -9,7 +9,7 @@ namespace BopAudio
     {
         for (AudioEvent& event : m_events)
         {
-            event.Execute(*this);
+            event(*this);
         };
     }
 

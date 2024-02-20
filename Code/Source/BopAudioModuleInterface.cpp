@@ -29,7 +29,7 @@ namespace BopAudio
             { BopAudioSystemComponent::CreateDescriptor(), BopAudioComponent::CreateDescriptor() });
     }
 
-    AZ::ComponentTypeList BopAudioModuleInterface::GetRequiredSystemComponents() const
+    auto BopAudioModuleInterface::GetRequiredSystemComponents() const -> AZ::ComponentTypeList
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<BopAudioSystemComponent>(),

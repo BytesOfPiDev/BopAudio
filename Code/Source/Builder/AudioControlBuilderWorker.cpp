@@ -1,4 +1,4 @@
-#include "Builder/BopAudioControlBuilderWorker.h"
+#include "Builder/AudioControlBuilderWorker.h"
 
 #include "ATLCommon.h"
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
@@ -12,12 +12,12 @@
 
 namespace BopAudio
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(BopAudioControlBuilderWorker);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(AudioControlBuilderWorker);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
-        BopAudioControlBuilderWorker,
+        AudioControlBuilderWorker,
         "BopAudioBuilserWorker",
         "{06B4A9AB-D205-4DAF-B36D-EEED181509B2}");
-    AZ_CLASS_ALLOCATOR_IMPL(BopAudioControlBuilderWorker, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(AudioControlBuilderWorker, AZ::SystemAllocator);
 
     namespace Internal
     {
@@ -456,7 +456,7 @@ namespace BopAudio
 
     } // namespace Internal
 
-    void BopAudioControlBuilderWorker::CreateJobs(
+    void AudioControlBuilderWorker::CreateJobs(
         AssetBuilderSDK::CreateJobsRequest const& request,
         AssetBuilderSDK::CreateJobsResponse& response)
     {
@@ -484,7 +484,7 @@ namespace BopAudio
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
-    void BopAudioControlBuilderWorker::ProcessJob(
+    void AudioControlBuilderWorker::ProcessJob(
         [[maybe_unused]] AssetBuilderSDK::ProcessJobRequest const& request,
         AssetBuilderSDK::ProcessJobResponse& response)
     {
@@ -521,11 +521,11 @@ namespace BopAudio
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }
 
-    void BopAudioControlBuilderWorker::ShutDown()
+    void AudioControlBuilderWorker::ShutDown()
     {
     }
 
-    auto BopAudioControlBuilderWorker::ParseProductDependencies(
+    auto AudioControlBuilderWorker::ParseProductDependencies(
         AssetBuilderSDK::ProcessJobRequest const& request,
         AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies,
         AssetBuilderSDK::ProductPathDependencySet& pathDependencies) -> bool
@@ -571,7 +571,7 @@ namespace BopAudio
         return true;
     }
 
-    void BopAudioControlBuilderWorker::ParseProductDependenciesFromXmlFile(
+    void AudioControlBuilderWorker::ParseProductDependenciesFromXmlFile(
         const AZ::rapidxml::xml_node<char>* node,
         AZStd::string const& fullPath,
         [[maybe_unused]] AZStd::string const& sourceFile,

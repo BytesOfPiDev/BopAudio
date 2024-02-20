@@ -3,7 +3,6 @@
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
-#include "AzFramework/Entity/EntityContext.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
 #include "IAudioInterfacesCommonData.h"
@@ -173,7 +172,6 @@ namespace BopAudio
         //////////////////////////////////////////////////////////////////////////
 
     private:
-        AZStd::unique_ptr<AzFramework::EntityContext> m_audioEntityContext{};
         static char const* const BopAudioImplSubPath;
         AZStd::string m_assetsPlatform;
         AZStd::string m_language{};

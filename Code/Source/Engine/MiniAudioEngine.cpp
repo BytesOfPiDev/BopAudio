@@ -1,17 +1,102 @@
 #include "Engine/MiniAudioEngine.h"
 
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/OpenMode.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include "AzCore/Console/ILogger.h"
+#include "AzFramework/IO/LocalFileIO.h"
 #include "MiniAudio/MiniAudioBus.h"
 
 #include "BopAudio/Util.h"
+#include "Clients/SoundBankAsset.h"
 #include "Engine/AudioEvent.h"
 #include "Engine/AudioObject.h"
+#include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
 
 namespace BopAudio
 {
+    namespace Internal
+    {
+        auto GetSoundBankAssetId(AZ::IO::PathView soundBankPath) -> AZ::Data::AssetId
+        {
+            auto result = decltype(GetSoundBankAssetId(soundBankPath)){};
+
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                result,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                soundBankPath.Native().data(),
+                AZ::AzTypeInfo<SoundBankAsset>::Uuid(),
+                false);
+
+            return result;
+        }
+
+        auto BuildBankCachePath(AZStd::string_view fileName) -> AZ::IO::Path
+        {
+            AZ::IO::Path builtPath{ AZ::Utils::GetProjectProductPathForPlatform() };
+            builtPath /= DefaultBanksPath;
+            builtPath /= fileName;
+
+            return builtPath;
+        }
+
+        auto LoadBankToMemory(AZ::IO::PathView absoluteBankPath) -> AZStd::vector<char>
+        {
+            // We can't use the asset manager to get the init soundbank because we're loaded early
+            // in O3DE's bootstrapping process. We use a file stream to get the file.
+            AZ::IO::LocalFileIO fs{};
+            AZ::IO::HandleType initBankFileHandle{};
+
+            auto const openResult = fs.Open(
+                absoluteBankPath.Native().data(), AZ::IO::OpenMode::ModeRead, initBankFileHandle);
+
+            if (openResult != AZ::IO::ResultCode::Success)
+            {
+                AZ_Error(
+                    "MiniAudioEngine",
+                    false,
+                    "Failed to open init soundbank file at '%s'",
+                    absoluteBankPath.Native().data());
+
+                return {};
+            }
+
+            AZ::u64 const bufferSize = [&]() -> decltype(bufferSize)
+            {
+                auto size{ decltype(bufferSize){} };
+                fs.Size(initBankFileHandle, size);
+
+                return size;
+            }();
+
+            AZStd::vector<char> tempBuffer(bufferSize);
+
+            auto const readResult =
+                fs.Read(initBankFileHandle, tempBuffer.data(), tempBuffer.size());
+            fs.Close(initBankFileHandle);
+
+            if (readResult != AZ::IO::ResultCode::Success)
+            {
+                AZ_Error(
+                    "MiniAudioEngine",
+                    false,
+                    "Failed to read init soundbank file at '%s'",
+                    absoluteBankPath.Native().data());
+
+                return {};
+            }
+
+            return tempBuffer; // TODO: Research C++ RVO
+        };
+    } // namespace Internal
     class AudioSystemImpl_BopAudio;
 
     MiniAudioEngine::MiniAudioEngine() = default;
@@ -24,25 +109,38 @@ namespace BopAudio
         AZLOG_INFO("Finished audio object cleanup.");
     }
 
-    auto MiniAudioEngine::Initialize() -> bool
+    auto MiniAudioEngine::Initialize() -> NullOutcome
     {
-        auto loadBankOutcome{ SoundBank::LoadInitBank() };
-        m_initSoundBank = loadBankOutcome ? loadBankOutcome.TakeValue() : nullptr;
-        if (!m_initSoundBank.has_value())
-        {
-            AZLOG_ERROR(
-                "The MiniAudioEngine failed to load the default soundbank. Reason: %s.",
-                loadBankOutcome.GetError());
+        AZ_Error(
+            "MiniAudioEngine",
+            AZ::Data::AssetManager::Instance().IsReady(),
+            "AssetManager isn't ready!");
 
-            return false;
+        AZ::IO::Path const initBankPath = Internal::BuildBankCachePath(InitBank);
+
+        auto buffer{ Internal::LoadBankToMemory(initBankPath) };
+
+        if (buffer.empty())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Failed to read init soundbank file at path '%s'", initBankPath.c_str()));
         }
 
-        return true;
+        m_initSoundBank.reset(
+            AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(buffer.data(), buffer.size()));
+
+        if (!m_initSoundBank)
+        {
+            return AZ::Failure("Failed to load the init bank");
+        }
+
+        return AZ::Success();
     }
 
     auto MiniAudioEngine::Shutdown() -> bool
     {
-        m_initSoundBank.reset();
+        m_soundBanks.clear();
+
         return true;
     }
 
@@ -51,16 +149,29 @@ namespace BopAudio
         return MiniAudio::MiniAudioInterface::Get()->GetSoundEngine();
     }
 
-    auto MiniAudioEngine::LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> bool
+    auto MiniAudioEngine::LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileInfo)
+        -> NullOutcome
     {
-        auto soundBank = SoundBank{ fileEntryInfo };
-        if (!soundBank.Load())
+        if (!fileInfo)
         {
-            return false;
+            return AZ::Failure("Argument is a null pointer.");
         }
 
-        m_soundBanks.push_back(soundBank);
-        return true;
+        AZStd::span<char> buffer{ static_cast<char*>(fileInfo->pFileData), fileInfo->nSize };
+
+        auto loadedBank = decltype(m_soundBanks)::node_type{
+            AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(buffer.data(), buffer.size())
+        };
+
+        if (loadedBank == nullptr)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Failed to load sound bank '%s' from pre-loaded buffer", fileInfo->sFileName));
+        }
+
+        m_soundBanks.emplace_back(AZStd::move(loadedBank));
+
+        return AZ::Success();
     }
 
     void MiniAudioEngine::LoadTrigger(AZ::rapidxml::xml_node<char>* triggerNode)
@@ -121,19 +232,6 @@ namespace BopAudio
         */
     }
 
-    auto MiniAudioEngine::FindSoundBank(ResourceRef const& resourceId) const
-        -> AZStd::shared_ptr<rapidjson::Document>
-    {
-        auto const foundIter = AZStd::ranges::find_if(
-            m_soundBanks,
-            [&resourceId](SoundBank const& soundBank)
-            {
-                return soundBank == resourceId;
-            });
-
-        return foundIter != AZStd::end(m_soundBanks) ? foundIter->GetDocument() : nullptr;
-    }
-
     auto MiniAudioEngine::FindAudioObject(AudioObjectId /*audioObjectId*/) -> AudioObject*
     {
         /*
@@ -159,8 +257,8 @@ namespace BopAudio
                 AZ_Info(
                     "MiniAudioEngine",
                     "CreateEvent checking sound bank: [%s]",
-                    soundBank.GetResourceId().GetCStr());
-                createEventOutcome = soundBank.CloneEvent(eventId);
+                    soundBank->GetResourceId().GetCStr());
+                createEventOutcome = soundBank->CloneEvent(eventId);
                 return createEventOutcome.IsSuccess();
             });
 

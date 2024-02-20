@@ -10,8 +10,15 @@ namespace BopAudio
     class SoundSource
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DEFAULT_COPY_MOVE(SoundSource);
+        AZ_TYPE_INFO_WITH_NAME_DECL(SoundSource);
+
         SoundSource() = default;
+        ~SoundSource() = default;
         SoundSource(AZ::IO::Path localPath);
+
+        static void Reflect(AZ::ReflectContext* context);
 
         [[nodiscard]] auto GetAsset() const -> MiniAudio::SoundDataAsset
         {

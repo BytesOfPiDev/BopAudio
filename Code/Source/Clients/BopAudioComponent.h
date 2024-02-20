@@ -4,9 +4,9 @@
 #include "AzCore/RTTI/ReflectContext.h"
 #include "AzCore/base.h"
 
-#include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioComponentBus.h"
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/SoundBankAsset.h"
 
 namespace BopAudio
 {
@@ -33,6 +33,6 @@ namespace BopAudio
         void Deactivate() override;
 
     private:
-        AZ::Data::Asset<AudioAsset> m_audioAsset{};
+        AZ::Data::Asset<SoundBankAsset> m_audioAsset{};
     };
 } // namespace BopAudio

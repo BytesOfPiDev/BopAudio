@@ -1,17 +1,19 @@
 
 set(FILES
-    Include/BopAudio/AudioAsset.h
 
     Source/BopAudioModuleInterface.cpp
     Source/BopAudioModuleInterface.h
     Source/Clients/BopAudioSystemComponent.cpp
     Source/Clients/BopAudioSystemComponent.h
 
-    Source/Clients/BopAudioComponent.cpp
-    Source/Clients/BopAudioComponent.h
-    Source/Clients/AudioAsset.cpp
     Source/Clients/AudioAssetHandler.cpp
     Source/Clients/AudioAssetHandler.h
+    Source/Clients/AudioEventAsset.cpp
+    Source/Clients/AudioEventAsset.h
+    Source/Clients/BopAudioComponent.cpp
+    Source/Clients/BopAudioComponent.h
+    Source/Clients/SoundBankAsset.cpp
+    Source/Clients/SoundBankAsset.h
 
     Source/Engine/Tasks/AudioTaskBase.h
     Source/Engine/Tasks/PlaySound.h
@@ -38,8 +40,8 @@ set(FILES
     Source/Engine/MiniAudioIncludes.h
     Source/Engine/Sound.cpp
     Source/Engine/Sound.h
-    Source/Engine/SoundBank.cpp
-    Source/Engine/SoundBank.h
+    Source/Engine/SoundBankUtil.cpp
+    Source/Engine/SoundBankUtil.h
     Source/Engine/SoundSource.cpp
     Source/Engine/SoundSource.h
 )

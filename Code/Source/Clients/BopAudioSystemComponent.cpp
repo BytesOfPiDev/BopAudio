@@ -6,8 +6,9 @@
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
 
-#include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioAssetHandler.h"
+#include "Clients/SoundBankAsset.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
 
@@ -20,7 +21,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AudioAsset::Reflect(context);
+        SoundBankAsset::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -68,10 +69,13 @@ namespace BopAudio
         {
             BopAudioInterface::Unregister(this);
         }
+
+        m_soundBankAssetHandler.Unregister();
     }
 
     void BopAudioSystemComponent::Init()
     {
+        m_soundBankAssetHandler.Register();
         m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
     }
 

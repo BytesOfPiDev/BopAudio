@@ -1,8 +1,8 @@
+#include "BopAudioModuleInterface.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "BopAudioEditorSystemComponent.h"
-#include "BopAudioModuleInterface.h"
-#include "Builder/BopAudioControlBuilderComponent.h"
+#include "Builder/BopAudioAssetBuilderComponent.h"
+#include "Tools/BopAudioEditorSystemComponent.h"
 
 void InitBopAudioResources()
 {
@@ -32,7 +32,7 @@ namespace BopAudio
             m_descriptors.insert(
                 m_descriptors.end(),
                 { BopAudioEditorSystemComponent::CreateDescriptor(),
-                  BopAudioControlBuilderComponent::CreateDescriptor() });
+                  BopAudioAssetBuilderComponent::CreateDescriptor() });
         }
 
         /**

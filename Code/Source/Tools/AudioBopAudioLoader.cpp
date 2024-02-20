@@ -1,18 +1,21 @@
 #include "Tools/AudioBopAudioLoader.h"
 
+#include <AzCore/JSON/document.h>
+#include <AzCore/Utils/Utils.h>
+
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
+#include "Clients/SoundBankAsset.h"
 #include "Engine/Id.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
-#include "Engine/SoundBank.h"
+#include "Engine/SoundBankUtil.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
-#include <rapidjson/document.h>
 
 namespace BopAudio
 {
@@ -182,7 +185,10 @@ namespace BopAudio
                     isLocalizedLoaded = true;
                 }
             }
-            else if (fileName.Extension() == SoundbankExtension && fileName != InitBank)
+            // HACK: Slapped together implementation for testing. Need to improve at some point.
+            else if (
+                (fileName.Extension() == SoundBankAsset::SourceExtension) &&
+                (fileName != InitBankSource))
             {
                 m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
                     AZStd::string{ fileName.Native() },
@@ -191,20 +197,34 @@ namespace BopAudio
                     nullptr,
                     subPath.Native()));
 
-                auto loadBufferOutcome{ LoadSoundBankToBuffer(AZ::IO::Path{ filePath }) };
-                AZ_Error(
-                    "AudioBopAudioLoader",
-                    loadBufferOutcome.IsSuccess(),
-                    "Failed to load buffer. Reason: [%s]",
-                    loadBufferOutcome.GetError());
+                AZ::IO::Path const absoluteBankPath = [&filePath]() -> decltype(absoluteBankPath)
+                {
+                    auto builtPath =
+                        decltype(absoluteBankPath){ AZ::Utils::GetProjectProductPathForPlatform() };
+                    builtPath /= filePath;
+
+                    return builtPath;
+                }();
+
+                auto loadBufferOutcome{ LoadSoundBankToBuffer(AZ::IO::Path{ absoluteBankPath }) };
+
+                if (!loadBufferOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "AudioBopAudioLoader",
+                        loadBufferOutcome.IsSuccess(),
+                        "Failed to load buffer. Reason: [%s]",
+                        loadBufferOutcome.GetError().c_str());
+
+                    continue;
+                }
 
                 auto buffer{ loadBufferOutcome.TakeValue() };
-
                 rapidjson::Document doc{};
                 doc.Parse(buffer.data(), buffer.size());
 
                 AZStd::ranges::for_each(
-                    GetSoundNamesFromSoundBankFile(AZ::IO::Path{ filePath }),
+                    GetSoundNamesFromSoundBankFile(AZ::IO::Path{ absoluteBankPath }),
                     [this, &isLocalized, &subPath](auto const& soundName)
                     {
                         m_audioSystemEditor->CreateControl(AudioControls::SControlDef(

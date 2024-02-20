@@ -25,7 +25,6 @@ namespace BopAudio
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(
             serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        m_audioEntityContext = AZStd::make_unique<AzFramework::EntityContext>(serializeContext);
 
         if (!assetsPlatformName.empty())
         {
@@ -125,15 +124,18 @@ namespace BopAudio
 
     auto AudioSystemImpl_BopAudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        if (!AudioEngineInterface::Get()->Initialize())
+        auto const initializeOutcome{ AudioEngineInterface::Get()->Initialize() };
+        if (!initializeOutcome.IsSuccess())
         {
-            AZ_Error("AudioSystemImpl_BopAudio", false, "Failed to initialize MiniAudioEngine!");
+            AZ_Error(
+                "AudioSystemImpl_MiniAudio",
+                false,
+                "Failed to initialize MiniAudioEngine! Reason: [%s]",
+                initializeOutcome.GetError().c_str());
+
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        m_audioEntityContext->InitContext();
-
-        AZLOG_INFO("MiniAudio SysSystem Implementation initialized.");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -141,7 +143,6 @@ namespace BopAudio
     {
         AudioEngineInterface::Get()->Shutdown();
 
-        m_audioEntityContext->DestroyContext();
         m_assetHandlers.clear();
 
         AZLOG_INFO("Bop Audio shutdown.");
@@ -402,7 +403,25 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: RegisterInMemoryFile.\n");
 
-        AudioEngineInterface::Get()->LoadSoundBank(audioFileEntry);
+        if (!audioFileEntry)
+        {
+            AZ_Error("AudioSystemImpl_MiniAudio", false, "Given audio file entry is nullptr");
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
+        if (auto const loadBankOutcome{
+                AudioEngineInterface::Get()->LoadSoundBank(audioFileEntry) };
+            !loadBankOutcome.IsSuccess())
+        {
+            AZ_Error(
+                "AudioSystemImpl_MiniAudio",
+                false,
+                "Failed to register in-memory file. Reason: [%s]",
+                loadBankOutcome.GetError().c_str());
+
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
         return Audio::EAudioRequestStatus::Success;
     }
 

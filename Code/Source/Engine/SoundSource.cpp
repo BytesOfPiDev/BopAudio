@@ -1,5 +1,6 @@
 #include "Engine/SoundSource.h"
 
+#include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Outcome/Outcome.h"
@@ -106,6 +107,22 @@ namespace BopAudio
 
     } // namespace Internal
 
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        SoundSource, "SoundSource", "{5779BE60-D6EE-4A6C-9C1E-5875675A2ED5}");
+    AZ_CLASS_ALLOCATOR_IMPL(SoundSource, Audio::AudioImplAllocator);
+
+    void SoundSource::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<SoundSource>()->Version(0);
+
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<SoundSource>("SoundSource", "");
+            }
+        }
+    }
     SoundSource::SoundSource(AZ::IO::Path localPath)
         : m_name{ localPath.Native() }
     {
