@@ -1,5 +1,6 @@
 #include "BopAudioSystemComponent.h"
 
+#include <AzCore/IO/FileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include "AzCore/Console/ILogger.h"
@@ -8,8 +9,11 @@
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioAssetHandler.h"
+#include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
+#include "Engine/Common_BopAudio.h"
+#include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
@@ -56,6 +60,7 @@ namespace BopAudio
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
+        : m_audioEventAssetHandler("Audio Event", "Audio Engine", AudioEventAsset::ProductExtension)
     {
         if (BopAudioInterface::Get() == nullptr)
         {
@@ -71,11 +76,15 @@ namespace BopAudio
         }
 
         m_soundBankAssetHandler.Unregister();
+        m_audioEventAssetHandler.Unregister();
     }
 
     void BopAudioSystemComponent::Init()
     {
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, DefaultBanksPath);
+
         m_soundBankAssetHandler.Register();
+        m_audioEventAssetHandler.Register();
         m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
     }
 

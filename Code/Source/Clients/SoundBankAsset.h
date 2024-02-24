@@ -2,13 +2,13 @@
 
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Asset/AssetSerializer.h"
-#include "Engine/AudioEvent.h"
-#include "Engine/SoundBankUtil.h"
-#include "Engine/SoundSource.h"
+#include "Clients/AudioEventAsset.h"
 #include "MiniAudio/SoundAsset.h"
 
+#include "BopAudio/Util.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
+#include "Engine/SoundSource.h"
 
 namespace BopAudio
 {
@@ -61,15 +61,15 @@ namespace BopAudio
             return m_events.empty() && m_soundSources.empty();
         };
 
-        [[nodiscard]] auto CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEvent>;
+        [[nodiscard]] auto CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEventAsset>;
         [[nodiscard]] auto CloneEvent(ResourceRef const& resourceId) const
-            -> AudioOutcome<AudioEvent>;
+            -> AudioOutcome<AudioEventAsset>;
 
     private:
         BankRef m_id{};
 
         AZStd::vector<SoundSource> m_soundSources{};
-        AZStd::vector<AudioEvent> m_events{};
+        AZStd::vector<AudioEventAsset> m_events{};
         AudioEventIdContainer m_eventIds{};
     };
 

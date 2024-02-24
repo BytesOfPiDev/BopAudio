@@ -5,6 +5,7 @@
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
@@ -15,6 +16,7 @@ namespace BopAudio
 
     void SoundBankAsset::Reflect(AZ::ReflectContext* context)
     {
+        AudioEventAsset::Reflect(context);
         AudioEventId::Reflect(context);
         BankRef::Reflect(context);
         ResourceRef::Reflect(context);
@@ -42,30 +44,13 @@ namespace BopAudio
 
     SoundBankAsset::SoundBankAsset() = default;
 
-    auto SoundBankAsset::CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEvent>
+    auto SoundBankAsset::CloneEvent(AudioEventId) const -> AudioOutcome<AudioEventAsset>
     {
-        auto const foundEventIter = AZStd::ranges::find_if(
-            m_events,
-            [&eventId](auto const& event)
-            {
-                AZ_Info(
-                    "SoundBank",
-                    "CloneEvent checking [Event: %s] for [Event: %s]",
-                    event.GetId().GetCStr(),
-                    eventId.GetCStr());
-                return event.GetId() == eventId;
-            });
-
-        if (foundEventIter != AZStd::end(m_events))
-        {
-            return AZ::Success(*foundEventIter);
-        }
-
-        return AZ::Failure(AZStd::string::format(
-            "Failed to find an event with the given event id: ['%s'].", eventId.GetCStr()));
+        return AZ::Failure("Unimplemented");
     }
 
-    auto SoundBankAsset::CloneEvent(ResourceRef const& resourceId) const -> AudioOutcome<AudioEvent>
+    auto SoundBankAsset::CloneEvent(ResourceRef const& resourceId) const
+        -> AudioOutcome<AudioEventAsset>
     {
         return CloneEvent(AudioEventId{ resourceId.GetAsPath().Filename().Native() });
     }

@@ -13,8 +13,8 @@
 #include "MiniAudio/MiniAudioBus.h"
 
 #include "BopAudio/Util.h"
+#include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
-#include "Engine/AudioEvent.h"
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
@@ -111,23 +111,18 @@ namespace BopAudio
 
     auto MiniAudioEngine::Initialize() -> NullOutcome
     {
-        AZ_Error(
-            "MiniAudioEngine",
-            AZ::Data::AssetManager::Instance().IsReady(),
-            "AssetManager isn't ready!");
-
         AZ::IO::Path const initBankPath = Internal::BuildBankCachePath(InitBank);
 
-        auto buffer{ Internal::LoadBankToMemory(initBankPath) };
+        auto const initBankBuffer{ Internal::LoadBankToMemory(initBankPath) };
 
-        if (buffer.empty())
+        if (initBankBuffer.empty())
         {
             return AZ::Failure(AZStd::string::format(
                 "Failed to read init soundbank file at path '%s'", initBankPath.c_str()));
         }
 
-        m_initSoundBank.reset(
-            AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(buffer.data(), buffer.size()));
+        m_initSoundBank.reset(AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(
+            initBankBuffer.data(), initBankBuffer.size()));
 
         if (!m_initSoundBank)
         {
@@ -202,7 +197,6 @@ namespace BopAudio
 
         if (auto createEventOutcome{ CreateEvent(activateTriggerRequest.m_triggerResource) })
         {
-            audioObject->AddEvent(createEventOutcome.TakeValue());
         }
         else
         {
@@ -247,25 +241,9 @@ namespace BopAudio
         return nullptr;
     }
 
-    auto MiniAudioEngine::CreateEvent(AudioEventId eventId) const -> AudioOutcome<AudioEvent>
+    auto MiniAudioEngine::CreateEvent(AudioEventId) const -> AudioOutcome<AudioEventAsset>
     {
-        AudioOutcome<AudioEvent> createEventOutcome{};
-        AZStd::ranges::find_if(
-            m_soundBanks,
-            [&eventId, &createEventOutcome](auto const& soundBank)
-            {
-                AZ_Info(
-                    "MiniAudioEngine",
-                    "CreateEvent checking sound bank: [%s]",
-                    soundBank->GetResourceId().GetCStr());
-                createEventOutcome = soundBank->CloneEvent(eventId);
-                return createEventOutcome.IsSuccess();
-            });
-
-        return createEventOutcome.IsSuccess()
-            ? createEventOutcome
-            : AZ::Failure("CreateEvent failed. Reason: ['%s']. Failed to find an event with the "
-                          "given resource id.");
+        return AZ::Failure("Unimplemented");
     }
 
     void MiniAudioEngine::PlaySound(ma_sound* soundInstance, AZ::Name const& soundName)

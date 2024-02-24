@@ -1,12 +1,11 @@
 #pragma once
 
-#include "AzCore/Math/Transform.h"
-#include "Engine/AudioEvent.h"
+#include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
 {
-    class AudioEvent;
+    class AudioEventAsset;
 
     class AudioObject
     {
@@ -35,14 +34,9 @@ namespace BopAudio
             return m_audioObjectId;
         }
 
-        void AddEvent(AudioEvent const& audioEvent);
-        auto AddEvent(AudioEventId eventResourceId) -> AudioOutcome<AudioEvent>;
-
     private:
         AudioObjectId m_audioObjectId{};
         AZ::Name m_name{};
-        AZStd::vector<AudioEvent> m_events{};
-        [[maybe_unused]] AZ::Transform m_transform{};
     };
 
 }; // namespace BopAudio

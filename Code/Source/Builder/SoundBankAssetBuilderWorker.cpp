@@ -2,17 +2,12 @@
 
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/Asset/AssetDataStream.h"
-#include "AzCore/Console/ILogger.h"
 #include "AzCore/StringFunc/StringFunc.h"
-#include "Engine/ConfigurationSettings.h"
 #include "rapidjson/document.h"
 
 #include "Clients/SoundBankAsset.h"
-#include "Engine/AudioEvent.h"
-#include "Engine/Common_BopAudio.h"
 #include "Engine/Id.h"
 #include "Engine/SoundBankUtil.h"
-#include <AzCore/Utils/Utils.h>
 
 namespace BopAudio
 {
@@ -49,47 +44,6 @@ namespace BopAudio
             });
 
         return sounds;
-    }
-
-    auto LoadEvents(rapidjson::Document const& doc) -> AudioOutcome<AudioEvents>
-    {
-        auto loadEventIdsOutcome{ LoadEventIds(doc) };
-        AudioEvents events{};
-
-        AZStd::vector<AudioEventId> eventIds = loadEventIdsOutcome.IsSuccess()
-            ? loadEventIdsOutcome.TakeValue()
-            : decltype(eventIds){};
-
-        AZ_Info(AssetBuilderSDK::InfoWindow, "There are [%zu] events.", eventIds.size());
-
-        AZ_Warning("LoadEvents", loadEventIdsOutcome.IsSuccess(), "No events found");
-
-        for (auto const& eventId : eventIds)
-        {
-            auto const eventPath{ AZ::IO::Path{ JsonKeys::EventsKey_O } / eventId.GetCStr() };
-
-            AZ_Info(
-                "LoadEvents",
-                "[SoundBank::LoadEvents] Attempting to create event: [%s].",
-                eventPath.c_str());
-
-            auto createOutcome{ AudioEvent::CreateFromSource(doc, eventPath) };
-
-            if (!createOutcome.IsSuccess())
-            {
-                AZ_Warning(
-                    "SoundBank",
-                    false,
-                    "Failed to create event from source. Reason: [%s]",
-                    createOutcome.GetError().c_str());
-
-                continue;
-            };
-
-            events.emplace_back(createOutcome.TakeValue());
-        }
-
-        return AZ::Success(AZStd::move(events));
     }
 
     void SoundBankAssetBuilderWorker::CreateJobs(
@@ -218,19 +172,6 @@ namespace BopAudio
         // Sound banks are referenced by their path relative to the DefaultBanksPath.
         soundBank.m_id = BankRef{ productPath.Native() };
         soundBank.m_soundSources = LoadSounds(doc);
-        soundBank.m_events = [&doc]() -> decltype(soundBank.m_events)
-        {
-            auto loadEventsOutcome{ LoadEvents(doc) };
-
-            AZ_Error(
-                AssetBuilderSDK::ErrorWindow,
-                loadEventsOutcome.IsSuccess(),
-                "An error occurred while loading events: [%s]",
-                loadEventsOutcome.GetError().c_str());
-
-            return loadEventsOutcome.IsSuccess() ? loadEventsOutcome.TakeValue()
-                                                 : decltype(soundBank.m_events){};
-        }();
 
         bool const successfullySaved = AZ::Utils::SaveObjectToFile<SoundBankAsset>(
             tempPath.c_str(), AZ::DataStream::ST_JSON, &soundBank);

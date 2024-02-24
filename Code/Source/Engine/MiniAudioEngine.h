@@ -39,7 +39,8 @@ namespace BopAudio
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);
 
         auto FindAudioObject(AudioObjectId audioObjectId) -> AudioObject*;
-        [[nodiscard]] auto CreateEvent(AudioEventId resourceId) const -> AudioOutcome<AudioEvent>;
+        [[nodiscard]] auto CreateEvent(AudioEventId resourceId) const
+            -> AudioOutcome<AudioEventAsset>;
         void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
 
     private:

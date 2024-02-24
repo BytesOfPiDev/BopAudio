@@ -109,7 +109,7 @@ namespace BopAudio
         builderDescriptor.m_name = "BopAudio AudioEvent Builder";
 
         builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(
-            R"((.*sounds\/bopaudio_project\/).*\.audioevent)",
+            R"((.*sounds\/bopaudio\/events\/).*\.audioeventsource)",
             AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
 
         builderDescriptor.m_busId = azrtti_typeid<AudioEventAssetBuilderWorker>();

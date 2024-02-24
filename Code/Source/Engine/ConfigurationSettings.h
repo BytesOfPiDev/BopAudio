@@ -4,6 +4,10 @@
 
 namespace BopAudio
 {
+
+    static constexpr auto BanksAlias = "@soundbanks@";
+    static constexpr auto ProjectAlias = "@audioproject@";
+
     static constexpr auto DefaultBanksPath = "sounds/bopaudio/";
     static constexpr auto DefaultBanksPattern = "sounds/bopaudio/**";
     static constexpr auto ExternalSourcesPath = "external";

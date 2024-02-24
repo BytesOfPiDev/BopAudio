@@ -14,9 +14,11 @@ namespace BopAudio
         void CreateJobs(
             AssetBuilderSDK::CreateJobsRequest const& request,
             AssetBuilderSDK::CreateJobsResponse& response) const;
+
         void ProcessJob(
             AssetBuilderSDK::ProcessJobRequest const& request,
             AssetBuilderSDK::ProcessJobResponse& response) const;
+
         void ShutDown() override
         {
             m_isShuttingDown = true;

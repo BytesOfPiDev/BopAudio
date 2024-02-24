@@ -65,6 +65,7 @@ namespace BopAudio
         AZStd::unique_ptr<Audio::AudioSystemImplementation> m_audioSystemImpl;
         AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
         SoundBankAssetHandler m_soundBankAssetHandler;
+        AudioEventAssetHandler m_audioEventAssetHandler;
     };
 
 } // namespace BopAudio
