@@ -3,6 +3,7 @@
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/XML/rapidxml.h"
 
+#include "Clients/AudioEventAsset.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 
 namespace BopAudio
@@ -22,6 +23,7 @@ namespace BopAudio
             AZ::IO::PathView const rootFolder, AZ::IO::PathView subPath, bool isLocalized);
         void LoadControlsInFolder(AZStd::string_view const folderPath);
         void LoadControl(AZ::rapidxml::xml_node<char> const* xmlNode);
+        void LoadControl(AudioEventAsset const& audioEventAsset);
 
         void ExtractControlsFromXML(
             const AZ::rapidxml::xml_node<char>* xmlNode,

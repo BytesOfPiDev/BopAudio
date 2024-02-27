@@ -2,18 +2,17 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/base.h>
 
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
 #include "Clients/SoundBankAsset.h"
-#include "Engine/Id.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
-#include "Engine/SoundBankUtil.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
 
@@ -27,8 +26,11 @@ namespace BopAudio
         LoadControlsInFolder(
             AZ::IO::FixedMaxPath{ audioProjectFullPath / AudioStrings::GameParametersFolder }
                 .Native());
-        LoadControlsInFolder(
-            AZ::IO::FixedMaxPath{ audioProjectFullPath / AudioStrings::EventsFolder }.Native());
+
+        auto const eventsPath{ AZ::IO::Path{} / AZ::Utils::GetProjectProductPathForPlatform() /
+                               SoundEventRefBase };
+
+        LoadControlsInFolder(eventsPath.Native());
         LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
@@ -49,7 +51,34 @@ namespace BopAudio
             }
             else
             {
-                AZ_TracePrintf("AudioBopAudioLoader", "Loading Xml from '%s'.", filePath.c_str());
+                if (AZ::StringFunc::Equal(
+                        filePath.Extension().Native(), AudioEventAsset::ProductExtension))
+                {
+                    AZ_Info(
+                        "AudioBopAudioLoader",
+                        "Loading AudioEventAsset from '%s'",
+                        filePath.c_str());
+
+                    AZStd::unique_ptr<AudioEventAsset> audioEventAsset{
+                        AZ::Utils::LoadObjectFromFile<AudioEventAsset>(filePath.c_str())
+                    };
+
+                    if (!audioEventAsset)
+                    {
+                        AZ_Error(
+                            "AudioBopAudioLoader",
+                            false,
+                            "Failed to load audio event at path '%s'",
+                            filePath.c_str());
+
+                        continue;
+                    }
+
+                    LoadControl(*audioEventAsset);
+                    continue;
+                }
+
+                AZ_Trace("AudioBopAudioLoader", "Loading Xml from '%s'.", filePath.c_str());
 
                 Audio::ScopedXmlLoader xmlFileLoader(filePath.Native());
                 if (!xmlFileLoader.HasError())
@@ -69,7 +98,7 @@ namespace BopAudio
 
         ExtractControlsFromXML(
             xmlNode,
-            BopAudioControlType::Trigger,
+            BopAudioControlType::Event,
             AudioStrings::EventTag,
             AudioStrings::NameAttribute);
         ExtractControlsFromXML(
@@ -132,6 +161,12 @@ namespace BopAudio
         }
     }
 
+    void AudioBopAudioLoader::LoadControl(AudioEventAsset const& audioEventAsset)
+    {
+        m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
+            audioEventAsset.GetId().GetCStr(), BopAudioControlType::Event));
+    }
+
     void AudioBopAudioLoader::ExtractControlsFromXML(
         AZ::rapidxml::xml_node<char> const* xmlNode,
         BopAudioControlType type,
@@ -187,11 +222,11 @@ namespace BopAudio
             }
             // HACK: Slapped together implementation for testing. Need to improve at some point.
             else if (
-                (fileName.Extension() == SoundBankAsset::SourceExtension) &&
+                (fileName.Extension() == SoundBankAsset::ProductExtension) &&
                 (fileName != InitBankSource))
             {
                 m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                    AZStd::string{ fileName.Native() },
+                    AZStd::string{ fileName.Stem().String() },
                     BopAudioControlType::SoundBank,
                     isLocalized,
                     nullptr,
@@ -205,65 +240,6 @@ namespace BopAudio
 
                     return builtPath;
                 }();
-
-                auto loadBufferOutcome{ LoadSoundBankToBuffer(AZ::IO::Path{ absoluteBankPath }) };
-
-                if (!loadBufferOutcome.IsSuccess())
-                {
-                    AZ_Error(
-                        "AudioBopAudioLoader",
-                        loadBufferOutcome.IsSuccess(),
-                        "Failed to load buffer. Reason: [%s]",
-                        loadBufferOutcome.GetError().c_str());
-
-                    continue;
-                }
-
-                auto buffer{ loadBufferOutcome.TakeValue() };
-                rapidjson::Document doc{};
-                doc.Parse(buffer.data(), buffer.size());
-
-                AZStd::ranges::for_each(
-                    GetSoundNamesFromSoundBankFile(AZ::IO::Path{ absoluteBankPath }),
-                    [this, &isLocalized, &subPath](auto const& soundName)
-                    {
-                        m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                            soundName.GetCStr(),
-                            BopAudioControlType::Trigger,
-                            isLocalized,
-                            nullptr,
-                            subPath.Native()));
-
-                        AZ_Info(
-                            "AudioBopAudioLoader",
-                            "Created control for sound '%s'.\n",
-                            soundName.GetCStr());
-                    });
-
-                auto loadEventResourcesOutcome{ LoadEventIds(doc) };
-                AZ_Error(
-                    "AudioBopAudioLoader",
-                    loadEventResourcesOutcome.IsSuccess(),
-                    "Failed to load event ids. File: [%s] | Reason: [%s]",
-                    filePath.c_str(),
-                    loadEventResourcesOutcome.GetError().c_str());
-
-                AZStd::ranges::for_each(
-                    loadEventResourcesOutcome.GetValueOr(AudioEventIdContainer{}),
-                    [this, &isLocalized, &subPath](auto const& eventResource)
-                    {
-                        m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                            eventResource.GetCStr(),
-                            BopAudioControlType::Trigger,
-                            isLocalized,
-                            nullptr,
-                            subPath.Native()));
-
-                        AZ_Info(
-                            "AudioBopAudioLoader",
-                            "Created control for event '%s'.\n",
-                            eventResource.GetCStr());
-                    });
             }
         }
     }

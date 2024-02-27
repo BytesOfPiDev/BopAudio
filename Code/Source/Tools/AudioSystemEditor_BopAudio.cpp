@@ -5,6 +5,7 @@
 #include "AzCore/Utils/Utils.h"
 #include "AzCore/std/smart_ptr/make_shared.h"
 #include "AzCore/std/string/conversions.h"
+#include "Engine/ConfigurationSettings.h"
 #include "IAudioConnection.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemControl.h"
@@ -19,7 +20,7 @@ namespace BopAudio
     {
         if (tag == XmlTags::TriggerTag)
         {
-            return BopAudioControlType::Trigger;
+            return BopAudioControlType::Event;
         }
         else if (tag == XmlTags::RtpcTag)
         {
@@ -50,7 +51,7 @@ namespace BopAudio
     {
         switch (type)
         {
-        case BopAudioControlType::Trigger:
+        case BopAudioControlType::Event:
             return XmlTags::TriggerTag;
         case BopAudioControlType::Rtpc:
             return XmlTags::RtpcTag;
@@ -165,7 +166,7 @@ namespace BopAudio
     {
         switch (type)
         {
-        case BopAudioControlType::Trigger:
+        case BopAudioControlType::Event:
             return AudioControls::eACET_TRIGGER;
             /*
                 case BopAudioControlType::Rtpc:
@@ -190,7 +191,7 @@ namespace BopAudio
         switch (atlControlType)
         {
         case AudioControls::eACET_TRIGGER:
-            return BopAudioControlType::Trigger;
+            return BopAudioControlType::Event;
         case AudioControls::eACET_RTPC:
             return BopAudioControlType::Rtpc;
         case AudioControls::eACET_SWITCH:
@@ -476,7 +477,7 @@ namespace BopAudio
                     return connectionNode;
                 }
 
-            case BopAudioControlType::Trigger:
+            case BopAudioControlType::Event:
                 [[fallthrough]];
             case BopAudioControlType::AuxBus:
                 {
@@ -525,7 +526,7 @@ namespace BopAudio
     {
         switch (type)
         {
-        case BopAudioControlType::Trigger:
+        case BopAudioControlType::Event:
             return ":/BopAudio/trigger_icon.svg";
         default:
             return {};
@@ -545,7 +546,7 @@ namespace BopAudio
     auto AudioSystemEditor_BopAudio::GetDataPath() const -> AZ::IO::FixedMaxPath
     {
         auto projectPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectPath() };
-        return (projectPath / "sounds" / "bopaudio_project");
+        return (projectPath / DefaultProjectPath);
     }
 
     void AudioSystemEditor_BopAudio::ConnectionRemoved(AudioControls::IAudioSystemControl* control)

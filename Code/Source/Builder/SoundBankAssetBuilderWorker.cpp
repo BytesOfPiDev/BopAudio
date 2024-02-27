@@ -107,7 +107,6 @@ namespace BopAudio
 
         AZStd::vector<char> const soundBankBuffer = [&request]() -> decltype(soundBankBuffer)
         {
-            AZ_Warning(AssetBuilderSDK::InfoWindow, false, "Loading buffer...");
             auto loadBufferOutcome{ LoadSoundBankToBuffer(
                 AZ::IO::Path{ request.m_fullPath.c_str() }) };
 

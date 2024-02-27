@@ -1,6 +1,7 @@
 #include "BopAudioSystemComponent.h"
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include "AzCore/Console/ILogger.h"
@@ -81,7 +82,26 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
-        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, DefaultBanksPath);
+        AZ::IO::Path const banksProductPath = []() -> decltype(banksProductPath)
+        {
+            auto builtPath{ decltype(banksProductPath){
+                AZ::Utils::GetProjectProductPathForPlatform() } };
+
+            builtPath /= DefaultBanksPath;
+            return builtPath;
+        }();
+
+        AZ::IO::Path const eventsProductPath = []() -> decltype(eventsProductPath)
+        {
+            auto builtPath{ decltype(banksProductPath){
+                AZ::Utils::GetProjectProductPathForPlatform() } };
+
+            builtPath /= SoundEventRefBase;
+            return builtPath;
+        }();
+
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksProductPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsProductPath.c_str());
 
         m_soundBankAssetHandler.Register();
         m_audioEventAssetHandler.Register();

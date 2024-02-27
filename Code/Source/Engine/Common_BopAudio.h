@@ -26,7 +26,7 @@ namespace AudioStrings
 {
     // Project Folders
     static constexpr auto GameParametersFolder = "GameParameters";
-    static constexpr auto EventsFolder = "Events";
+    static constexpr auto EventsFolder = "events";
 
     // Xml Tags
     static constexpr auto EventTag = "Event";

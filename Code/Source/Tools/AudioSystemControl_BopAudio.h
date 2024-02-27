@@ -11,7 +11,7 @@ namespace BopAudio
         BopAudioControlType,
         AudioControls::TImplControlType,
         (Invalid, 0),
-        (Trigger, AUDIO_BIT(0)),
+        (Event, AUDIO_BIT(0)),
         (Rtpc, AUDIO_BIT(1)),
         (Switch, AUDIO_BIT(2)),
         (AuxBus, AUDIO_BIT(3)),

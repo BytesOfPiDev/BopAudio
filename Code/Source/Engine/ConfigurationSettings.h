@@ -6,10 +6,11 @@ namespace BopAudio
 {
 
     static constexpr auto BanksAlias = "@soundbanks@";
+    static constexpr auto EventsAlias = "@audioevents@";
     static constexpr auto ProjectAlias = "@audioproject@";
 
-    static constexpr auto DefaultBanksPath = "sounds/bopaudio/";
-    static constexpr auto DefaultBanksPattern = "sounds/bopaudio/**";
+    static constexpr auto DefaultBanksPath = "sounds/bopaudio";
+    static constexpr auto DefaultProjectPath = DefaultBanksPath;
     static constexpr auto ExternalSourcesPath = "external";
     static constexpr auto ConfigFile = "bopaudio_config.json";
     static constexpr auto SoundbankExtension = ".soundbank";

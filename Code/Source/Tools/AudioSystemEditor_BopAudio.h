@@ -1,9 +1,9 @@
 #pragma once
 
-#include <ACETypes.h>
-#include <IAudioConnection.h>
-#include <IAudioSystemControl.h>
-#include <IAudioSystemEditor.h>
+#include "ACETypes.h"
+#include "IAudioConnection.h"
+#include "IAudioSystemControl.h"
+#include "IAudioSystemEditor.h"
 
 #include "Tools/AudioBopAudioLoader.h"
 

@@ -1,20 +1,20 @@
 #include "Engine/SoundBankUtil.h"
 
-#include <AzCore/IO/OpenMode.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/JSON/rapidjson.h>
-#include <AzFramework/IO/LocalFileIO.h>
 #include <rapidjson/document.h>
 
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
+#include "AzCore/IO/OpenMode.h"
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/Outcome/Outcome.h"
-#include "Engine/DocumentReader.h"
+#include "AzFramework/IO/LocalFileIO.h"
 
 #include "Engine/Common_BopAudio.h"
+#include "Engine/DocumentReader.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
@@ -152,7 +152,7 @@ namespace BopAudio
 
         if (!soundsObjectValue)
         {
-            AZLOG_WARN("No sounds found at ['%s'].", JsonKeys::SoundsKey_O.Native().data());
+            AZLOG_INFO("No sounds found at ['%s'].", JsonKeys::SoundsKey_O.Native().data());
             return {};
         }
 
