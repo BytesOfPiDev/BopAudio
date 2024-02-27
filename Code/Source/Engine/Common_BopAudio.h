@@ -53,8 +53,8 @@ namespace JsonKeys
     static constexpr AZ::IO::PathView EventDocNameKey_S{ "/EventDocument/Name" };
     static constexpr AZ::IO::PathView EventDocTasksKey_A{ "/EventDocument/Tasks" };
 
-    static constexpr AZ::IO::PathView PlayResourceKey_V = "/Play/Resource";
-    static constexpr AZ::IO::PathView StopEventResourceKey_V{ "/Stop/Resource" };
+    static constexpr AZ::IO::PathView PlayResourceName = "/Resource";
+    static constexpr AZ::IO::PathView StopEventResourceName{ "/Resource" };
 } // namespace JsonKeys
 
 namespace BopAudio

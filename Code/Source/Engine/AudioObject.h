@@ -10,7 +10,9 @@ namespace BopAudio
     class AudioObject
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL;
         AZ_DISABLE_COPY(AudioObject);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioObject);
 
         AudioObject() = default;
         AudioObject(AZStd::string_view objectName)

@@ -194,15 +194,20 @@ namespace BopAudio
             audioObject = &newAudioObject;
         }
 
-        if (auto createEventOutcome{ CreateEvent(activateTriggerRequest.m_triggerResource) })
-        {
-        }
-        else
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Failed to create event with resource ['%s'].",
-                activateTriggerRequest.m_triggerResource.GetCStr()));
-        }
+        AudioEventAsset const& eventAsset = *activateTriggerRequest.m_eventAsset.Get();
+        eventAsset(*audioObject);
+
+        /*
+              if (auto createEventOutcome{ CreateEvent(activateTriggerRequest.m_triggerResource) })
+              {
+              }
+              else
+              {
+                  return AZ::Failure(AZStd::string::format(
+                      "Failed to create event with resource ['%s'].",
+                      activateTriggerRequest.m_triggerResource.GetCStr()));
+              }
+              */
 
         return AZ::Success();
     }

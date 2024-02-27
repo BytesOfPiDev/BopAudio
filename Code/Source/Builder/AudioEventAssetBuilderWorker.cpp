@@ -1,6 +1,5 @@
 #include "Builder/AudioEventAssetBuilderWorker.h"
 
-#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include <rapidjson/stringbuffer.h>
@@ -11,17 +10,17 @@
 #include "AzCore/EBus/EBus.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/OpenMode.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
 #include "AzCore/Utils/Utils.h"
+#include "AzCore/std/iterator/move_iterator.h"
 #include "AzFramework/IO/LocalFileIO.h"
 
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
-#include "Engine/AudioEvent.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/Id.h"
-#include "Engine/Tasks/PlaySound.h"
-#include "Engine/Tasks/StopSound.h"
+#include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
 
 namespace BopAudio
@@ -32,10 +31,72 @@ namespace BopAudio
 
         AZ_HAS_MEMBER(RunMember, operator(), void, (AudioObjectId));
 
-        using Task = AZStd::variant<PlaySoundTask, StopSoundTask>;
-        using TaskContainer = AZStd::fixed_vector<Task, MaxTasks>;
+        auto BuildTaskMember(rapidjson::Document::Member const& taskMember) -> AZStd::any
+        {
+            AZStd::string const outputBuffer = [&taskMember]() -> decltype(outputBuffer)
+            {
+                rapidjson::StringBuffer tempBuffer{};
+                auto writer{ rapidjson::Writer(tempBuffer) };
 
-        AZ_ENUM_CLASS(TaskType, Play, Stop);
+                taskMember.value.Accept(writer);
+
+                return { tempBuffer.GetString(), tempBuffer.GetSize() };
+            }();
+
+            AZ_Info(
+                AssetBuilderSDK::InfoWindow,
+                "\tBuilding Task with buffer: \n%s",
+                outputBuffer.data());
+
+            AZStd::string const taskType{ taskMember.name.GetString() };
+
+            AZ_Info(AssetBuilderSDK::InfoWindow, "\tTask Type: %s", taskType.c_str());
+
+            AZStd::any task{};
+            TaskFactoryBus::EventResult(
+                task, AZ::Crc32(taskType), &TaskFactoryRequests::Create, outputBuffer);
+
+            AZ_Info(
+                AssetBuilderSDK::InfoWindow,
+                "\tTask Handlers: %zu.",
+                TaskFactoryBus::GetTotalNumOfEventHandlers());
+
+            if (task.empty())
+            {
+                AZ_Info(AssetBuilderSDK::InfoWindow, "\tTask not created.");
+            }
+            else
+            {
+                AZ_Info(AssetBuilderSDK::InfoWindow, "\tTask created.");
+            }
+
+            return task;
+        }
+
+        auto BuildTaskGroup(rapidjson::Document::ConstObject const& taskGroup) -> TaskContainer
+        {
+            AZ_Info(AssetBuilderSDK::InfoWindow, "Building Task Group");
+
+            auto tasks = TaskContainer{};
+
+            AZStd::ranges::for_each(
+                taskGroup,
+                [&tasks](auto const& taskMember)
+                {
+                    AZ_Info(AssetBuilderSDK::InfoWindow, "\tBuilding a task member.");
+                    AZStd::any builtTask{ BuildTaskMember(taskMember) };
+
+                    if (!builtTask.is<Task>())
+                    {
+                        AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Error creating Task");
+                        return;
+                    }
+
+                    tasks.push_back(AZStd::any_cast<Task>(builtTask));
+                });
+
+            return AZStd::move(tasks);
+        }
 
     } // namespace Internal
 
@@ -206,9 +267,8 @@ namespace BopAudio
 
         auto tasksArray{ tasksKeyVal->GetArray() };
 
-        AZ::IO::Path const taskBasePath{ "/" };
-
         AZStd::vector<AudioOutcome<rapidjson::Document::ConstObject>> taskGroups{};
+
         // Get the task groups
         AZStd::ranges::transform(
             tasksArray.begin(),
@@ -228,55 +288,23 @@ namespace BopAudio
 
         AZ_Info(AssetBuilderSDK::InfoWindow, "Finished getting task groups");
 
-        static constexpr auto buildTaskMember =
-            [](rapidjson::Document::Member const& taskMember) -> AZStd::any
-        {
-            AZStd::string const outputBuffer = []() -> decltype(outputBuffer)
-            {
-                AZStd::string tempBuffer{};
-                auto writer{ rapidjson::Writer(tempBuffer) };
-
-                return tempBuffer;
-            }();
-
-            AZStd::any task{};
-            TaskFactoryBus::EventResult(
-                task,
-                AZ::Crc32(taskMember.name.GetString()),
-                &TaskFactoryRequests::Create,
-                outputBuffer);
-
-            return task;
-        };
-
-        static constexpr auto buildTaskGroup =
-            [](rapidjson::Document::ConstObject const& taskGroup) -> AZStd::vector<AZStd::any>
-        {
-            AZ_Info(AssetBuilderSDK::InfoWindow, "Building Task Group");
-            auto tasks = AZStd::vector<AZStd::any>{};
-            AZStd::ranges::for_each(
-                taskGroup,
-                [](auto const& taskMember)
-                {
-                    AZ_Info(AssetBuilderSDK::InfoWindow, "\tBuilding a task member.");
-                    buildTaskMember(taskMember);
-                });
-
-            return AZStd::move(tasks);
-        };
-
         // Build the task groups
-        AZStd::vector<AZStd::any> taskobjects{};
+        TaskContainer tasks{};
         AZStd::ranges::for_each(
             taskGroups,
-            [&taskobjects](AudioOutcome<rapidjson::Document::ConstObject> const& taskGroup)
+            [&tasks](AudioOutcome<rapidjson::Document::ConstObject> const& taskGroup)
             {
                 if (!taskGroup.IsSuccess())
                 {
                     AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Invalid Task Group. Skipping.");
                     return;
                 }
-                taskobjects.emplace_back(buildTaskGroup(taskGroup.GetValue()));
+                auto builtTasks = Internal::BuildTaskGroup(taskGroup.GetValue());
+
+                tasks.insert(
+                    tasks.end(),
+                    AZStd::move_iterator(builtTasks.begin()),
+                    AZStd::move_iterator(builtTasks.end()));
             });
 
         AZ::IO::Path const absProductPath = [absSourcePath, &request]() -> decltype(absProductPath)
@@ -290,6 +318,7 @@ namespace BopAudio
         AudioEventAsset event{};
 
         event.m_id = AudioEventId{ absProductPath.Filename().Stem().String() };
+        event.m_tasks = tasks;
 
         bool const successfullySaved = AZ::Utils::SaveObjectToFile<AudioEventAsset>(
             absProductPath.c_str(), AZ::DataStream::ST_JSON, &event);

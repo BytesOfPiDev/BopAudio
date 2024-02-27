@@ -5,12 +5,15 @@
 
 #include "Builder/AudioEventAssetBuilderWorker.h"
 #include "Builder/SoundBankAssetBuilderWorker.h"
+#include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
 {
 
     void BopAudioAssetBuilderComponent::Reflect(AZ::ReflectContext* context)
     {
+        PlaySoundTask::Reflect(context);
+
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BopAudioAssetBuilderComponent, AZ::Component>()->Version(0)->Attribute(
@@ -34,6 +37,8 @@ namespace BopAudio
 
     void BopAudioAssetBuilderComponent::Activate()
     {
+        m_taskFactories.push_back(PlaySoundTask::CreateFactory());
+
         ConfigureAudioControlBuilder();
         ConfigureAudioEventBuilder();
         ConfigureSoundBankBuilder();
@@ -44,6 +49,8 @@ namespace BopAudio
         m_bankBuilderWorker.BusDisconnect();
         m_audioControlBuilder.BusDisconnect();
         m_eventBuilder.BusDisconnect();
+
+        m_taskFactories.clear();
     }
 
     void BopAudioAssetBuilderComponent::GetProvidedServices(

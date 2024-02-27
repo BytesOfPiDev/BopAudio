@@ -1,5 +1,9 @@
 #pragma once
 
+#include <AzCore/JSON/document.h>
+#include <AzCore/JSON/pointer.h>
+
+#include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/TaskBus.h"
@@ -10,19 +14,19 @@ namespace BopAudio
 
     struct PlaySoundTask : public AudioTaskBase<PlaySoundTask>
     {
-        void operator()(AudioObject&)
+        AZ_TYPE_INFO_WITH_NAME_DECL(PlaySoundTask);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static auto CreateFactory() -> AZStd::unique_ptr<TaskFactoryRequests>;
+
+        void operator()(AudioObject&) const
         {
-            AZ_Info("PlaySoundTask", "Play: [%]", m_resourceToPlay.GetCStr());
+            AZ_Info("PlaySoundTask", "Play: [%s]", m_resourceToPlay.GetCStr());
         }
 
         ResourceRef m_resourceToPlay;
     };
 
-    class PlayTaskFactory : public TaskFactoryBus::Handler
-    {
-        [[nodiscard]] auto Create(AZStd::span<char const>) const -> AZStd::any override
-        {
-            return {};
-        };
-    };
 } // namespace BopAudio

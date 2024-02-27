@@ -1,10 +1,9 @@
 #pragma once
 
-#include "AzCore/Console/ILogger.h"
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include "AzCore/IO/Path/Path.h"
+#include "AzCore/RTTI/ReflectContext.h"
+#include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/SerializeContext.h"
 
 #include "AzCore/Name/Name.h"
 #include "AzCore/std/containers/vector.h"

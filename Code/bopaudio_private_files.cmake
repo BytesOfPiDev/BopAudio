@@ -6,17 +6,21 @@ set(FILES
     Source/Clients/BopAudioSystemComponent.cpp
     Source/Clients/BopAudioSystemComponent.h
 
-    Source/Clients/AudioAssetHandler.cpp
-    Source/Clients/AudioAssetHandler.h
     Source/Clients/AudioEventAsset.cpp
     Source/Clients/AudioEventAsset.h
+    Source/Clients/AudioEventAssetHandler.cpp
+    Source/Clients/AudioEventAssetHandler.h
     Source/Clients/BopAudioComponent.cpp
     Source/Clients/BopAudioComponent.h
     Source/Clients/SoundBankAsset.cpp
     Source/Clients/SoundBankAsset.h
+    Source/Clients/SoundBankAssetHandler.cpp
+    Source/Clients/SoundBankAssetHandler.h
 
     Source/Engine/Tasks/AudioTaskBase.h
+    Source/Engine/Tasks/Common.h
     Source/Engine/Tasks/PlaySound.h
+    Source/Engine/Tasks/PlaySound.cpp
     Source/Engine/Tasks/StopSound.h
     Source/Engine/Tasks/TaskBus.h
 

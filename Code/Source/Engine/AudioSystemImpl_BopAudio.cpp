@@ -5,6 +5,7 @@
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngine.h"
 #include "Engine/MiniAudioEngineBus.h"
@@ -15,6 +16,10 @@
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Asset/AssetSystemTypes.h>
 
 namespace BopAudio
 {
@@ -280,11 +285,42 @@ namespace BopAudio
             return Audio::EAudioRequestStatus::Failure;
         }
 
+        AZ::IO::Path eventAssetPath{ EventsAlias };
+        eventAssetPath /= implTriggerData->GeImplTriggerId().GetAsPath();
+        eventAssetPath.ReplaceExtension(AudioEventAsset::ProductExtension);
+
+        AZ::Data::AssetId eventAssetId{};
+
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            eventAssetId,
+            &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
+            eventAssetPath.c_str(),
+            AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
+            false);
+
+        auto eventAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
+            eventAssetId, AZ::Data::AssetLoadBehavior::PreLoad) };
+
+        eventAsset.QueueLoad();
+        eventAsset.BlockUntilLoadComplete();
+
+        AZ_Info(
+            "AudioSystemImpl_MiniAudio",
+            "AssetStatus: %i",
+            static_cast<int>(eventAsset.GetStatus()));
+
+        if (eventAsset->GetStatus() == AZ::Data::AssetData::AssetStatus::Error)
+        {
+            AZ_Error("AudioSystemImpl_MiniAudio", false, "Failed to load audio event.");
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
         ActivateTriggerRequest activateTriggerRequest{};
         activateTriggerRequest.m_triggerResource = implTriggerData->GeImplTriggerId();
         activateTriggerRequest.m_audioObjectId =
             implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
         activateTriggerRequest.m_eventId = implEventData->m_triggerId;
+        activateTriggerRequest.m_eventAsset = AZStd::move(eventAsset);
 
         // The engine activates the appropriate trigger, along with the associated events, then
         // returns the Id of the newly activated event.

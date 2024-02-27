@@ -1,16 +1,17 @@
 #include "Tools/AudioBopAudioLoader.h"
 
 #include <AzCore/JSON/document.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzCore/base.h>
 
 #include "AudioFileUtils.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
-#include "Clients/SoundBankAsset.h"
+#include "AzCore/Serialization/Utils.h"
+#include "AzCore/Utils/Utils.h"
+
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
+#include "Clients/SoundBankAsset.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Tools/AudioSystemControl_BopAudio.h"

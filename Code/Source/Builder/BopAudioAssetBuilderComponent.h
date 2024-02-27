@@ -5,6 +5,7 @@
 #include "Builder/AudioControlBuilderWorker.h"
 #include "Builder/AudioEventAssetBuilderWorker.h"
 #include "Builder/SoundBankAssetBuilderWorker.h"
+#include "Engine/Tasks/TaskBus.h"
 
 namespace BopAudio
 {
@@ -34,6 +35,8 @@ namespace BopAudio
         void ConfigureAudioControlBuilder();
 
     private:
+        AZStd::vector<AZStd::unique_ptr<TaskFactoryRequests>> m_taskFactories;
+
         SoundBankAssetBuilderWorker m_bankBuilderWorker;
         AudioEventAssetBuilderWorker m_eventBuilder;
         AudioControlBuilderWorker m_audioControlBuilder;

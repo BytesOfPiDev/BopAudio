@@ -2,12 +2,13 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
-#include <AzCore/RTTI/TypeInfoSimple.h>
 
+#include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Outcome/Outcome.h"
-#include "AzFramework/Asset/GenericAssetHandler.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
 
 #include "Engine/Id.h"
+#include "Engine/Tasks/Common.h"
 
 namespace BopAudio
 {
@@ -25,6 +26,7 @@ namespace BopAudio
 
         static constexpr auto SourceExtension{ ".audioeventsource" };
         static constexpr auto ProductExtension{ ".audioevent" };
+        static constexpr auto AssetGroup = "Sound";
         static constexpr auto AssetSubId = 1u;
 
         /*
@@ -47,16 +49,16 @@ namespace BopAudio
             return m_id.IsValid() && (m_id.ToName() == resourceId.ToName());
         }
 
-        void operator()(AudioObject& audioObject);
+        void operator()(AudioObject& audioObject) const;
 
     protected:
-        auto Execute(AudioObject& audioObject) -> AZ::Outcome<void, char const*>;
+        auto Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>;
 
     private:
         AudioEventId m_id{};
+        TaskContainer m_tasks{};
     };
 
     using AudioEvents = AZStd::vector<AudioEventAsset>;
-    using AudioEventAssetHandler = AzFramework::GenericAssetHandler<AudioEventAsset>;
 
 } // namespace BopAudio

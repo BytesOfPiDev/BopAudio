@@ -1,15 +1,18 @@
-#include "AudioAssetHandler.h"
+#include "SoundBankAssetHandler.h"
+
+#include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
-#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/Utils.h"
 
-#include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/SoundBankAsset.h"
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, AZ::SystemAllocator); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        SoundBankAssetHandler, "SoundBankAssetHandler", "{3F1E6E35-4791-4A6A-81B7-D57DAF82E761}");
+
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, Audio::AudioImplAllocator, AZ::AssetTypeInfo);
 
     SoundBankAssetHandler::SoundBankAssetHandler()
     {
@@ -26,7 +29,7 @@ namespace BopAudio
         if (!AZ::Data::AssetManager::IsReady())
         {
             AZ_Error(
-                "BopAudioAssetHandler",
+                "SoundBankAssetHandler",
                 false,
                 "The Asset Manager isn't ready. It is required in order to "
                 "handle assets.");
@@ -35,6 +38,7 @@ namespace BopAudio
 
         AZ::Data::AssetManager::Instance().RegisterHandler(
             this, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+
         AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
     }
 
@@ -58,7 +62,7 @@ namespace BopAudio
             return aznew SoundBankAsset{};
         }
 
-        AZ_Error("AudioAssetHandler", false,
+        AZ_Error("SoundBankAssetHandler", false,
                  "The type requested is not supported."); // NOLINT
         return {};
     }
@@ -73,7 +77,7 @@ namespace BopAudio
 
         if (!assetLoaded)
         {
-            AZ_Error("AudioAssetHandler", false, "Failed to load asset."); // NOLINT
+            AZ_Error("SoundBankAssetHandler", false, "Failed to load asset.");
             return AZ::Data::AssetHandler::LoadResult::Error;
         }
 
@@ -82,7 +86,7 @@ namespace BopAudio
 
     void SoundBankAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
     {
-        delete ptr; // NOLINT
+        delete ptr;
     }
 
     void SoundBankAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
@@ -118,7 +122,7 @@ namespace BopAudio
 
     auto SoundBankAssetHandler::GetComponentTypeId() const -> AZ::Uuid
     {
-        return AZ::Uuid(BopAudioComponentTypeId);
+        return {};
     }
 
     auto SoundBankAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool

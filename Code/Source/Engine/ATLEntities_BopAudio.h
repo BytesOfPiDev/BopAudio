@@ -10,7 +10,6 @@
 
 namespace BopAudio
 {
-
     template<typename T>
     static auto NumericIdToName(T id) -> AZ::Name
     {

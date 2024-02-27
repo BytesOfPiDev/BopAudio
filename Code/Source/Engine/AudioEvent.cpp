@@ -14,10 +14,16 @@ namespace BopAudio
                 ->Version(0)
                 ->Field("Id", &AudioEvent::m_id)
                 ->Field("Data", &AudioEvent::m_internalData);
+
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
                 editContext->Class<AudioEvent>("AudioEvent", "");
             }
         }
+    }
+
+    AudioEvent::AudioEvent(AZ::Data::Asset<AudioEventAsset> eventAsset)
+        : m_eventAsset{ AZStd::move(eventAsset) }
+    {
     }
 } // namespace BopAudio

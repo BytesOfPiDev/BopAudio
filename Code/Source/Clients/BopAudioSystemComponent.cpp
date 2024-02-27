@@ -1,19 +1,17 @@
 #include "BopAudioSystemComponent.h"
 
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzFramework/Platform/PlatformDefaults.h>
-
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/PlatformId/PlatformDefaults.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
+#include "AzCore/Utils/Utils.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "Clients/AudioAssetHandler.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
+#include "Clients/SoundBankAssetHandler.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
-#include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
 
@@ -61,7 +59,6 @@ namespace BopAudio
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
-        : m_audioEventAssetHandler("Audio Event", "Audio Engine", AudioEventAsset::ProductExtension)
     {
         if (BopAudioInterface::Get() == nullptr)
         {
@@ -130,7 +127,7 @@ namespace BopAudio
     auto BopAudioSystemComponent::Initialize() -> bool
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
-            AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+            AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
         m_audioSystemImpl =
             AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
