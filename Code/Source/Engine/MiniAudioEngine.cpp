@@ -9,11 +9,14 @@
 #include "AzCore/Serialization/Utils.h"
 #include "AzCore/Utils/Utils.h"
 #include "AzFramework/IO/LocalFileIO.h"
+#include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/MiniAudioBus.h"
 
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
+#include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
@@ -179,45 +182,31 @@ namespace BopAudio
     auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
         -> AudioOutcome<void>
     {
-        // We need an audio object to activate the trigger/event on. The request should have
-        // provided one.
-        auto* audioObject{ FindAudioObject(activateTriggerRequest.m_audioObjectId) };
-        // For now, we'll create the audio object if it doesn't already exist, but emit a warning.
-        if (!audioObject)
+        if (activateTriggerRequest.m_audioControlId == INVALID_AUDIO_CONTROL_ID)
         {
-            AZ_Warning(
-                "MiniAudioEngine",
-                false,
-                "The given audio object does not exist, so we had to create it.");
-
-            auto& newAudioObject = m_audioObjects.emplace_back();
-            audioObject = &newAudioObject;
+            return AZ::Failure("Invalid audio control provided");
         }
 
-        AudioEventAsset const& eventAsset = *activateTriggerRequest.m_eventAsset.Get();
-        eventAsset(*audioObject);
+        if (activateTriggerRequest.m_owner == nullptr)
+        {
+            return AZ::Failure("Invalid event owner provided.");
+        }
 
-        /*
-              if (auto createEventOutcome{ CreateEvent(activateTriggerRequest.m_triggerResource) })
-              {
-              }
-              else
-              {
-                  return AZ::Failure(AZStd::string::format(
-                      "Failed to create event with resource ['%s'].",
-                      activateTriggerRequest.m_triggerResource.GetCStr()));
-              }
-              */
+        AudioEventNotificationBus::Event(
+            EventNotificationIdType(
+                activateTriggerRequest.m_audioControlId, activateTriggerRequest.m_owner),
+            &AudioEventNotifications::ReportEventStarted,
+            EventStartedData{});
 
         return AZ::Success();
     }
 
-    auto MiniAudioEngine::CreateAudioObject(UniqueId const&) -> bool
+    auto MiniAudioEngine::CreateAudioObject(Audio::TAudioObjectID) -> bool
     {
         return true;
     }
 
-    void MiniAudioEngine::RemoveAudioObject(UniqueId /*audioObjectId*/)
+    void MiniAudioEngine::RemoveAudioObject(Audio::TAudioObjectID /*audioObjectId*/)
     {
         /*
               AZStd::remove_if(

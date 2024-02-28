@@ -9,6 +9,7 @@
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Sound.h"
+#include "IAudioInterfacesCommonData.h"
 
 namespace BopAudio
 {
@@ -32,8 +33,8 @@ namespace BopAudio
         auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
             -> AudioOutcome<void> override;
 
-        [[nodiscard]] auto CreateAudioObject(UniqueId const&) -> bool override;
-        void RemoveAudioObject(UniqueId audioObjectId) override;
+        [[nodiscard]] auto CreateAudioObject(Audio::TAudioObjectID) -> bool override;
+        void RemoveAudioObject(Audio::TAudioObjectID) override;
 
     protected:
         void LoadTrigger(AZ::rapidxml::xml_node<char>*);

@@ -191,4 +191,12 @@ namespace BopAudio
         AZStd::unordered_map<ResourceRef, SoundInstance> m_sounds{};
     };
 
+    struct EventStartedData
+    {
+    };
+
+    struct EventFinishedData
+    {
+    };
+
 } // namespace BopAudio

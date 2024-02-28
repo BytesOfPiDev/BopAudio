@@ -204,7 +204,7 @@ namespace BopAudio
 
         auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
-        AudioEngineInterface::Get()->RemoveAudioObject(implOldObjectData->GetInstanceId());
+        AudioEngineInterface::Get()->RemoveAudioObject(implOldObjectData->GetAtlAudioObjectId());
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -268,62 +268,25 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: ActivateTrigger");
 
-        auto* const implTriggerData{ static_cast<SATLTriggerImplData_BopAudio const*>(
-            triggerData) };
+        [[maybe_unused]] auto* const implTriggerData{
+            static_cast<SATLTriggerImplData_BopAudio const*>(triggerData)
+        };
         auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(
             audioObjectData) };
         auto* const implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        AZ_Warning(
-            "AudioSystemImpl_BopAudio",
-            implAudioObjectData != nullptr,
-            "Received nullptr for the audio object!");
+        AZ_Warning("ASI", implAudioObjectData != nullptr, "Received nullptr for the audio object!");
 
         if (!implEventData)
         {
-            AZ_Error("AudioSystemImpl_BopAudio", false, "Received nullptr for the event data!");
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        AZ::IO::Path eventAssetPath{ EventsAlias };
-        eventAssetPath /= implTriggerData->GeImplTriggerId().GetAsPath();
-        eventAssetPath.ReplaceExtension(AudioEventAsset::ProductExtension);
-
-        AZ::Data::AssetId eventAssetId{};
-
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            eventAssetId,
-            &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-            eventAssetPath.c_str(),
-            AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
-            false);
-
-        auto eventAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
-            eventAssetId, AZ::Data::AssetLoadBehavior::PreLoad) };
-
-        eventAsset.QueueLoad();
-        eventAsset.BlockUntilLoadComplete();
-
-        AZ_Info(
-            "AudioSystemImpl_MiniAudio",
-            "AssetStatus: %i",
-            static_cast<int>(eventAsset.GetStatus()));
-
-        if (eventAsset->GetStatus() == AZ::Data::AssetData::AssetStatus::Error)
-        {
-            AZ_Error("AudioSystemImpl_MiniAudio", false, "Failed to load audio event.");
+            AZ_Error("ASI", false, "Received nullptr for the event data!");
             return Audio::EAudioRequestStatus::Failure;
         }
 
         ActivateTriggerRequest activateTriggerRequest{};
-        activateTriggerRequest.m_triggerResource = implTriggerData->GeImplTriggerId();
-        activateTriggerRequest.m_audioObjectId =
-            implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
-        activateTriggerRequest.m_eventId = implEventData->m_triggerId;
-        activateTriggerRequest.m_eventAsset = AZStd::move(eventAsset);
+        activateTriggerRequest.m_owner = eventData->m_owner;
+        activateTriggerRequest.m_audioControlId = eventData->m_triggerId;
 
-        // The engine activates the appropriate trigger, along with the associated events, then
-        // returns the Id of the newly activated event.
         auto const activateOutcome{ AudioEngineInterface::Get()->ActivateTrigger(
             activateTriggerRequest) };
 
@@ -333,11 +296,7 @@ namespace BopAudio
             "MiniAudioEngine failed to activate a trigger. Reason: '[%s]'.",
             activateOutcome.GetError().c_str());
 
-        // We'll need to save the Id if we want to control the event prior to it ending on its own.
-        // implEventData->SetImplEventId(implEventId);
-
-        return activateOutcome.IsSuccess() ? Audio::EAudioRequestStatus::Success
-                                           : Audio::EAudioRequestStatus::Failure;
+        return Audio::EAudioRequestStatus::Success;
     }
 
     auto AudioSystemImpl_BopAudio::StopEvent(
@@ -632,29 +591,28 @@ namespace BopAudio
         azdestroy(oldEnvironmentImplData, Audio::AudioImplAllocator);
     }
 
-    auto AudioSystemImpl_BopAudio::NewGlobalAudioObjectData(Audio::TAudioObjectID const objectId)
+    auto AudioSystemImpl_BopAudio::NewGlobalAudioObjectData(Audio::TAudioObjectID const atlObjectId)
         -> Audio::IATLAudioObjectData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewGlobalAudioObjectData. [objectId: %llu].", objectId);
-        return {};
+        AZLOG(ASI_BopAudio, "BopAudio: NewGlobalAudioObjectData. [objectId: %llu].", atlObjectId);
+        return azcreate(SATLAudioObjectData_BopAudio, (atlObjectId), Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_BopAudio::NewAudioObjectData(Audio::TAudioObjectID const atlObjectId)
         -> Audio::IATLAudioObjectData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioObjectData. [objectId: %llu].", atlObjectId);
+        if (!AudioEngineInterface::Get()->CreateAudioObject(atlObjectId))
+        {
+            AZ_Error("ASI", false, "Failed to create new audio object data");
+            return nullptr;
+        }
 
-        auto implAudioObjectData{ azcreate(
-            SATLAudioObjectData_BopAudio, (atlObjectId), Audio::AudioImplAllocator) };
-
-        return implAudioObjectData;
+        return azcreate(SATLAudioObjectData_BopAudio, (atlObjectId), Audio::AudioImplAllocator);
     }
 
     void AudioSystemImpl_BopAudio::DeleteAudioObjectData(
         Audio::IATLAudioObjectData* const oldObjectData)
     {
-        AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioObjectData.");
-
         azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_BopAudio);
     }
 
