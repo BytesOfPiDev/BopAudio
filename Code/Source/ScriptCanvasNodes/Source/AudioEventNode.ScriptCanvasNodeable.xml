@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="AudioEventNode.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="AutoGen/ScriptCanvasNodeable.xsd">
+
+  <Class Name="AudioEventNode"
+    QualifiedName="ScriptCanvas::Nodes::AudioEventNode"
+    PreferredClassName="AudioEventNode"
+    Category="BopAudio Nodes"
+    Namespace="ScriptCanvas"
+    Description="Simple Script Canvas node example">
+
+    <Input Name="In" OutputName="Out" Description="Entry point into the node" />
+
+  </Class>
+</ScriptCanvas>
