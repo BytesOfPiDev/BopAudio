@@ -4,13 +4,22 @@
   xsi:noNamespaceSchemaLocation="AutoGen/ScriptCanvasNodeable.xsd">
 
   <Class Name="AudioEventNode"
-    QualifiedName="ScriptCanvas::Nodes::AudioEventNode"
-    PreferredClassName="AudioEventNode"
+    QualifiedName="BopAudio::Nodes::AudioEventNode"
+    PreferredClassName="Audio Event"
     Category="BopAudio Nodes"
-    Namespace="ScriptCanvas"
-    Description="Simple Script Canvas node example">
+    Namespace="BopAudio"
+    Description="">
 
-    <Input Name="In" OutputName="Out" Description="Entry point into the node" />
+    <Input Name="In" OutputName="Out" Description="Entry point into the node">
+      <Parameter Name="Target Entity" Type="AZ::EntityId" Description="" />
+      <Parameter Name="Audio Control" Type="AZStd::string" Description="" />
+    </Input>
+
+    <Output
+      Name="TriggerStarted" Description="" />
+
+    <Output
+      Name="TriggerFinished" Description="" />
 
   </Class>
 </ScriptCanvas>

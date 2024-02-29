@@ -60,5 +60,5 @@ namespace BopAudio
     };
 
     using AudioEvents = AZStd::vector<AudioEventAsset>;
-
+    using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
 } // namespace BopAudio

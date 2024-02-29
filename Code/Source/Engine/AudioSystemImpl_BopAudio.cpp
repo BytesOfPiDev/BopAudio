@@ -289,55 +289,76 @@ namespace BopAudio
         eventAssetPath /= implTriggerData->GeImplTriggerId().GetAsPath();
         eventAssetPath.ReplaceExtension(AudioEventAsset::ProductExtension);
 
-        AZ::Data::AssetId eventAssetId{};
+        AZ::Data::AssetId const eventAssetId = [&eventAssetPath]() -> decltype(eventAssetId)
+        {
+            AZ::Data::AssetId foundAssetId{};
 
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            eventAssetId,
-            &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-            eventAssetPath.c_str(),
-            AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
-            false);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                foundAssetId,
+                &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
+                eventAssetPath.c_str(),
+                AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
+                false);
 
-        auto eventAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
-            eventAssetId, AZ::Data::AssetLoadBehavior::PreLoad) };
+            return foundAssetId;
+        }();
 
-        eventAsset.QueueLoad();
-        eventAsset.BlockUntilLoadComplete();
+        AZ_Warning(
+            "AudioSystemImpl_MiniAudio",
+            eventAssetId.IsValid(),
+            "Failed to find audio event at path '%s'",
+            eventAssetPath.c_str());
+
+        AZ::Data::Asset<AudioEventAsset> eventAsset = [&eventAssetId]() -> decltype(eventAsset)
+        {
+            auto foundAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
+                eventAssetId, AZ::Data::AssetLoadBehavior::PreLoad) };
+
+            return foundAsset;
+        }();
+
+        AZ_Warning(
+            "AudioSystemImpl_MiniAudio",
+            eventAssetId.IsValid() && eventAsset.IsReady(),
+            "Failed to load asset found at path '%s'",
+            eventAssetPath.c_str());
 
         AZ_Info(
             "AudioSystemImpl_MiniAudio",
             "AssetStatus: %i",
             static_cast<int>(eventAsset.GetStatus()));
 
-        if (eventAsset->GetStatus() == AZ::Data::AssetData::AssetStatus::Error)
+        if (eventAsset.IsReady())
         {
-            AZ_Error("AudioSystemImpl_MiniAudio", false, "Failed to load audio event.");
-            return Audio::EAudioRequestStatus::Failure;
+            eventAsset.QueueLoad();
+            eventAsset.BlockUntilLoadComplete();
+
+            ActivateTriggerRequest activateTriggerRequest{};
+            activateTriggerRequest.m_triggerResource = implTriggerData->GeImplTriggerId();
+            activateTriggerRequest.m_audioObjectId =
+                implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
+            activateTriggerRequest.m_eventId = implEventData->m_triggerId;
+            activateTriggerRequest.m_eventAsset = AZStd::move(eventAsset);
+
+            // The engine activates the appropriate trigger, along with the associated events, then
+            // returns the Id of the newly activated event.
+            auto const activateOutcome{ AudioEngineInterface::Get()->ActivateTrigger(
+                activateTriggerRequest) };
+
+            AZ_Error(
+                "AudioSystemImpl_BopAudio",
+                activateOutcome.IsSuccess(),
+                "MiniAudioEngine failed to activate a trigger. Reason: '[%s]'.",
+                activateOutcome.GetError().c_str());
+
+            // We'll need to save the Id if we want to control the event prior to it ending on its
+            // own. implEventData->SetImplEventId(implEventId);
+
+            return activateOutcome.IsSuccess() ? Audio::EAudioRequestStatus::Success
+                                               : Audio::EAudioRequestStatus::Failure;
         }
 
-        ActivateTriggerRequest activateTriggerRequest{};
-        activateTriggerRequest.m_triggerResource = implTriggerData->GeImplTriggerId();
-        activateTriggerRequest.m_audioObjectId =
-            implAudioObjectData ? implAudioObjectData->GetImplAudioObjectId() : AudioObjectId{};
-        activateTriggerRequest.m_eventId = implEventData->m_triggerId;
-        activateTriggerRequest.m_eventAsset = AZStd::move(eventAsset);
-
-        // The engine activates the appropriate trigger, along with the associated events, then
-        // returns the Id of the newly activated event.
-        auto const activateOutcome{ AudioEngineInterface::Get()->ActivateTrigger(
-            activateTriggerRequest) };
-
-        AZ_Error(
-            "AudioSystemImpl_BopAudio",
-            activateOutcome.IsSuccess(),
-            "MiniAudioEngine failed to activate a trigger. Reason: '[%s]'.",
-            activateOutcome.GetError().c_str());
-
-        // We'll need to save the Id if we want to control the event prior to it ending on its own.
-        // implEventData->SetImplEventId(implEventId);
-
-        return activateOutcome.IsSuccess() ? Audio::EAudioRequestStatus::Success
-                                           : Audio::EAudioRequestStatus::Failure;
+        return Audio::EAudioRequestStatus::Success;
     }
 
     auto AudioSystemImpl_BopAudio::StopEvent(
