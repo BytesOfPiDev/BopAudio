@@ -8,6 +8,7 @@
 
 #include "BopAudio/Util.h"
 #include "Engine/Id.h"
+#include "IAudioInterfacesCommonData.h"
 
 struct ma_engine;
 
@@ -29,8 +30,9 @@ namespace BopAudio
 
         [[nodiscard]] virtual auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
             -> NullOutcome = 0;
-        [[nodiscard]] virtual auto CreateAudioObject(UniqueId const&) -> bool = 0;
-        virtual void RemoveAudioObject(UniqueId audioObjectId) = 0;
+        [[nodiscard]] virtual auto CreateAudioObject(Audio::TAudioObjectID audioObjectId)
+            -> bool = 0;
+        virtual void RemoveAudioObject(Audio::TAudioObjectID audioObjectId) = 0;
         virtual auto ActivateTrigger(ActivateTriggerRequest const&) -> AudioOutcome<void> = 0;
 
         virtual auto GetSoundEngine() -> ma_engine* = 0;

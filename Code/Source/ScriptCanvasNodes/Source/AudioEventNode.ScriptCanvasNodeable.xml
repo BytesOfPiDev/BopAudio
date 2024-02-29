@@ -8,18 +8,19 @@
     PreferredClassName="Audio Event"
     Category="BopAudio Nodes"
     Namespace="BopAudio"
-    Description="">
+    Description=""
+    Uuid="{C2A01796-17F6-418B-8D89-6BFCBB10C4BD}">
 
     <Input Name="In" OutputName="Out" Description="Entry point into the node">
       <Parameter Name="Target Entity" Type="AZ::EntityId" Description="" />
-      <Parameter Name="Audio Control" Type="AZStd::string" Description="" />
+      <Parameter Name="Control Name" Type="AZStd::string" Description="" />
     </Input>
 
     <Output
-      Name="TriggerStarted" Description="" />
+      Name="EventStarted" Description="" />
 
     <Output
-      Name="TriggerFinished" Description="" />
+      Name="EventFinished" Description="" />
 
   </Class>
 </ScriptCanvas>

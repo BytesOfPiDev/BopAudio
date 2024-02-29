@@ -15,7 +15,6 @@ REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasNodesObject);
 
 namespace BopAudio::Nodes
 {
-
     void AudioEventNode::OnDeactivate()
     {
         Nodeable::OnDeactivate();
@@ -35,6 +34,8 @@ namespace BopAudio::Nodes
             return;
         }
 
+        m_controlOwner = targetEntity;
+
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
             m_targetControl = audioSystem->GetAudioTriggerID(controlName.c_str());
@@ -51,9 +52,7 @@ namespace BopAudio::Nodes
             return;
         }
 
-        m_triggerOwner = Audio::TriggerNotificationIdType(targetEntity);
-
-        Audio::AudioTriggerNotificationBus::Handler::BusConnect(m_triggerOwner);
+        Audio::AudioTriggerNotificationBus::Handler::BusConnect(m_controlOwner);
 
         AZLOG(
             LOG_AudioEventNode,
@@ -61,19 +60,19 @@ namespace BopAudio::Nodes
             static_cast<AZ::u64>(targetEntity));
     }
 
-    void AudioEventNode::ReportTriggerStarted([[maybe_unused]] Audio::TAudioControlID triggerId)
+    void AudioEventNode::ReportTriggerStarted(Audio::TAudioControlID triggerId)
     {
         if (triggerId == m_targetControl)
         {
-            CallTriggerStarted();
+            CallEventStarted();
         }
     }
 
-    void AudioEventNode::ReportTriggerFinished([[maybe_unused]] Audio::TAudioControlID triggerId)
+    void AudioEventNode::ReportTriggerFinished(Audio::TAudioControlID triggerId)
     {
         if (triggerId == m_targetControl)
         {
-            CallTriggerFinished();
+            CallEventFinished();
         }
     }
 } // namespace BopAudio::Nodes

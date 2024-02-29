@@ -8,7 +8,6 @@
 #include <Source/AudioEventNode.generated.h>
 
 #include "AzCore/Memory/SystemAllocator.h"
-#include "Clients/AudioEventAsset.h"
 #include "IAudioSystem.h"
 
 namespace BopAudio::Nodes
@@ -19,11 +18,7 @@ namespace BopAudio::Nodes
     {
     public:
         AZ_CLASS_ALLOCATOR(AudioEventNode, AZ::SystemAllocator);
-        AZ_DISABLE_COPY_MOVE(AudioEventNode);
         SCRIPTCANVAS_NODE(AudioEventNode);
-
-        AudioEventNode() = default;
-        ~AudioEventNode() override = default;
 
     protected:
         void OnDeactivate() override;
@@ -34,7 +29,6 @@ namespace BopAudio::Nodes
 
     private:
         Audio::TAudioControlID m_targetControl{};
-        Audio::TriggerNotificationIdType m_triggerOwner{};
-        AudioEventAssetDataPtr m_eventAsset{};
+        Audio::TriggerNotificationIdType m_controlOwner{};
     };
 } // namespace BopAudio::Nodes
