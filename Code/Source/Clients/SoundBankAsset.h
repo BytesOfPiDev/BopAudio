@@ -3,6 +3,7 @@
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Asset/AssetSerializer.h"
 #include "Clients/AudioEventAsset.h"
+#include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/SoundAsset.h"
 
 #include "BopAudio/Util.h"
@@ -15,6 +16,7 @@ namespace BopAudio
     class SoundBankAsset : public AZ::Data::AssetData
     {
         friend class SoundBankAssetBuilderWorker;
+        friend class SoundBankAssetHandler;
         using SoundAssetMap = AZStd::unordered_map<ResourceRef, SoundSource>;
 
     public:
@@ -56,21 +58,29 @@ namespace BopAudio
         [[nodiscard]] auto GetSoundAsset(ResourceRef const& soundName) const
             -> MiniAudio::SoundDataAsset;
 
+        [[nodiscard]] auto GetEventAssets() const
+            -> AZStd::span<AZ::Data::Asset<AudioEventAsset> const>
+        {
+            return m_events;
+        }
+
         [[nodiscard]] auto IsEmpty() const -> bool
         {
             return m_events.empty() && m_soundSources.empty();
         };
 
-        [[nodiscard]] auto CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEventAsset>;
-        [[nodiscard]] auto CloneEvent(ResourceRef const& resourceId) const
-            -> AudioOutcome<AudioEventAsset>;
+    protected:
+        void MapControlToEvent(Audio::TAudioControlID controlId, AudioEventId eventId)
+        {
+            m_controlToEventMap[controlId] = AZStd::move(eventId);
+        }
 
     private:
         BankRef m_id{};
 
         AZStd::vector<SoundSource> m_soundSources{};
-        AZStd::vector<AudioEventAsset> m_events{};
-        AudioEventIdContainer m_eventIds{};
+        AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_events{};
+        AZStd::map<Audio::TAudioControlID, AudioEventId> m_controlToEventMap{};
     };
 
     using AudioAssetVector = AZStd::vector<AZ::Data::Asset<SoundBankAsset>>;

@@ -4,19 +4,24 @@
 #include <AzCore/JSON/document.h>
 
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/Outcome/Outcome.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 
+#include "Engine/AudioEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/Common.h"
+#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
-
     class AudioObject;
-    class AudioEventAsset : public AZ::Data::AssetData
+
+    class AudioEventAsset
+        : public AZ::Data::AssetData
+        , public MiniAudioEventRequestBus::Handler
     {
         friend class AudioEventAssetBuilderWorker;
+        friend class AudioEventAssetHandler;
+        friend class MiniAudioEngine;
 
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -33,32 +38,51 @@ namespace BopAudio
          * Default constructor.
          *
          * TODO: Make protected after figuring out how to serialize classes with protected
+         * constructor.
          */
-        AudioEventAsset() = default;
-        ~AudioEventAsset() override = default;
+        AudioEventAsset();
+        ~AudioEventAsset() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] auto GetId() const -> AudioEventId
+        [[nodiscard]] auto GetEventName() const -> AZ::Name
+        {
+            return m_name;
+        }
+
+        [[nodiscard]] auto GetEventId() const -> AudioEventId
         {
             return m_id;
         }
 
-        [[nodiscard]] auto IsResource(ResourceRef const& resourceId) const -> bool
-        {
-            return m_id.IsValid() && (m_id.ToName() == resourceId.ToName());
-        }
-
         void operator()(AudioObject& audioObject) const;
 
+        [[nodiscard]] auto GetTasks() const -> TaskContainer const&
+        {
+            return m_tasks;
+        }
+
     protected:
-        auto Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>;
+        [[nodiscard]] auto GetEventState() const -> AudioEventState override
+        {
+            return m_eventState;
+        }
+
+        [[nodiscard]] auto TryStartEvent(AudioObject& obj) -> bool override;
+        [[nodiscard]] auto TryStopEvent(AudioObject& obj) -> bool override;
+
+        void RegisterAudioEvent();
+
+        void UnregisterAudioEvent();
 
     private:
         AudioEventId m_id{};
+        AZ::Name m_name{};
         TaskContainer m_tasks{};
+        MiniAudio::SoundDataAssetVector m_dependentSounds{};
+        AudioEventState m_eventState{};
     };
 
-    using AudioEvents = AZStd::vector<AudioEventAsset>;
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
+    using AudioEventAssets = AZStd::vector<AudioEventAssetDataPtr>;
 } // namespace BopAudio

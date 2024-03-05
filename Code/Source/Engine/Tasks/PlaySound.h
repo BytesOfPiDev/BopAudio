@@ -3,7 +3,9 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
 
+#include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
+
 #include "Engine/Id.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/TaskBus.h"
@@ -21,12 +23,9 @@ namespace BopAudio
 
         static auto CreateFactory() -> AZStd::unique_ptr<TaskFactoryRequests>;
 
-        void operator()(AudioObject&) const
-        {
-            AZ_Info("PlaySoundTask", "Play: [%s]", m_resourceToPlay.GetCStr());
-        }
+        void operator()(AudioObject&) const;
 
-        ResourceRef m_resourceToPlay;
+        SoundRef m_resourceToPlay{};
     };
 
 } // namespace BopAudio

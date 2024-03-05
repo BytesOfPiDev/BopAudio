@@ -1,6 +1,7 @@
 #include "Engine/AudioObject.h"
 
 #include "AudioAllocators.h"
+#include "AzCore/std/parallel/atomic.h"
 
 namespace BopAudio
 {
@@ -9,8 +10,25 @@ namespace BopAudio
 
     AZ_CLASS_ALLOCATOR_IMPL(AudioObject, Audio::AudioImplAllocator);
 
+    static auto GetNextAudioObjectId() -> AudioObjectId
+    {
+        static AZStd::atomic_uint32_t NextAudioObjectId{ 1 };
+        return NextAudioObjectId++;
+    }
+
+    AudioObject::AudioObject()
+        : m_audioObjectId{ GetNextAudioObjectId() }
+    {
+    }
+
     void AudioObject::Update(float)
     {
+    }
+
+    void AudioObject::PlaySound(SoundInstance&& soundInstance)
+    {
+        m_sound = AZStd::move(soundInstance);
+        m_sound.Play();
     }
 
 } // namespace BopAudio

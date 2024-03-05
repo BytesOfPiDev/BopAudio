@@ -1,54 +1,57 @@
 #pragma once
 
-#include "AzCore/XML/rapidxml.h"
 #include "AzCore/base.h"
+#include "IAudioInterfacesCommonData.h"
 
 #include "BopAudio/Util.h"
-#include "Clients/SoundBankAsset.h"
+#include "Clients/AudioEventAsset.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
-#include "Engine/Sound.h"
-#include "IAudioInterfacesCommonData.h"
+#include "Engine/SoundSource.h"
 
 namespace BopAudio
 {
-    class AudioSystemImpl_BopAudio;
-
     class MiniAudioEngine final : public AudioEngineInterface::Registrar
     {
     public:
         AZ_DISABLE_COPY_MOVE(MiniAudioEngine);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_TYPE_INFO_WITH_NAME_DECL(MiniAudioEngine);
 
         MiniAudioEngine();
         ~MiniAudioEngine() override;
 
         [[nodiscard]] auto Initialize() -> AudioOutcome<void> override;
-        [[nodiscard]] auto LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileEntryInfo)
+        [[nodiscard]] auto RegisterFile(RegisterFileData const&) -> NullOutcome override;
+        [[nodiscard]] auto Shutdown() -> bool override;
+
+        [[nodiscard]] auto GetSoundEngine() -> ma_engine* override;
+
+        [[nodiscard]] auto StartEvent(StartEventData const& activateTriggerRequest)
             -> NullOutcome override;
-        auto Shutdown() -> bool override;
 
-        auto GetSoundEngine() -> ma_engine* override;
-
-        auto ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
-            -> AudioOutcome<void> override;
-
-        [[nodiscard]] auto CreateAudioObject(Audio::TAudioObjectID) -> bool override;
-        void RemoveAudioObject(Audio::TAudioObjectID) override;
+        [[nodiscard]] auto CreateAudioObject() -> AudioObjectId override;
+        void RemoveAudioObject(AudioObjectId targetAudioObjectId) override;
 
     protected:
-        void LoadTrigger(AZ::rapidxml::xml_node<char>*);
+        void LoadSounds();
+        void LoadEvents();
 
-        auto FindAudioObject(AudioObjectId audioObjectId) -> AudioObject*;
-        [[nodiscard]] auto CreateEvent(AudioEventId resourceId) const
-            -> AudioOutcome<AudioEventAsset>;
-        void PlaySound(ma_sound* soundInstance, AZ::Name const& soundName);
+        auto StopEvent(AudioEventId eventId) -> bool override;
+
+        [[nodiscard]] auto FindAudioObject(AudioObjectId targetAudioObjectId) -> AudioObject*;
+        auto LoadSound(SoundRef const& resourceRef) -> NullOutcome override;
 
     private:
-        AZStd::unique_ptr<SoundBankAsset> m_initSoundBank{};
-        AZStd::vector<AZStd::unique_ptr<SoundBankAsset>> m_soundBanks{};
+        static constexpr auto MaxAudioObjects{ 4096 };
+        AudioObject m_globalObject{};
+        AZStd::fixed_vector<AudioObject, MaxAudioObjects> m_audioObjects{};
 
-        AZStd::vector<AudioObject> m_audioObjects{};
-        AZStd::unordered_map<UniqueId, SoundInstance> m_soundCache{};
+        AZStd::map<Audio::TAudioControlID, AZ::Data::Asset<AudioEventAsset>> m_controlEventMap{};
+        AZStd::unordered_set<Audio::TAudioSourceId> m_loadedSources{};
+        AZStd::unordered_map<SoundRef, AZStd::unique_ptr<SoundSource>> m_soundSourceMap{};
+
+        AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_eventAssets{};
     };
 } // namespace BopAudio

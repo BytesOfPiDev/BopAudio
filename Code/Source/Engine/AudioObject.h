@@ -2,6 +2,7 @@
 
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
+#include "Engine/Sound.h"
 
 namespace BopAudio
 {
@@ -14,9 +15,7 @@ namespace BopAudio
         AZ_DISABLE_COPY(AudioObject);
         AZ_TYPE_INFO_WITH_NAME_DECL(AudioObject);
 
-        AudioObject() = default;
-        AudioObject(AZStd::string_view objectName)
-            : m_name{ objectName } {};
+        AudioObject();
         ~AudioObject() = default;
 
         constexpr auto operator==(AudioObjectId instanceId) -> bool
@@ -36,9 +35,11 @@ namespace BopAudio
             return m_audioObjectId;
         }
 
+        void PlaySound(SoundInstance&& soundInstance);
+
     private:
+        SoundInstance m_sound{};
         AudioObjectId m_audioObjectId{};
-        AZ::Name m_name{};
     };
 
 }; // namespace BopAudio
@@ -50,7 +51,7 @@ namespace AZStd
     {
         inline auto operator()(BopAudio::AudioObject const& soundObject) const -> size_t
         {
-            return soundObject.GetId().GetHash();
+            return static_cast<size_t>(soundObject.GetId());
         }
     };
 } // namespace AZStd

@@ -16,6 +16,13 @@ namespace BopAudio
 
     SoundBankAssetHandler::SoundBankAssetHandler()
     {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset,
+            AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::AddExtension, SoundBankAsset::ProductExtension);
+
         Register();
     }
 
@@ -55,7 +62,7 @@ namespace BopAudio
     }
 
     auto SoundBankAssetHandler::CreateAsset(
-        AZ::Data::AssetId const& id, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
+        AZ::Data::AssetId const& /*id*/, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
         if (aztypeid_cmp(type, AZ::AzTypeInfo<SoundBankAsset>::Uuid()))
         {
@@ -70,7 +77,7 @@ namespace BopAudio
     auto SoundBankAssetHandler::LoadAssetData(
         AZ::Data::Asset<AZ::Data::AssetData> const& asset,
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-        AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult
+        AZ::Data::AssetFilterCB const& /*assetLoadFilterCB*/) -> AZ::Data::AssetHandler::LoadResult
     {
         bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<SoundBankAsset>(
             *stream, *asset.GetAs<SoundBankAsset>());
@@ -125,7 +132,8 @@ namespace BopAudio
         return {};
     }
 
-    auto SoundBankAssetHandler::CanCreateComponent(AZ::Data::AssetId const& assetId) const -> bool
+    auto SoundBankAssetHandler::CanCreateComponent(AZ::Data::AssetId const& /*assetId*/) const
+        -> bool
     {
         return false;
     }

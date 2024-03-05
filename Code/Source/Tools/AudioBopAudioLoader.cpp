@@ -28,10 +28,7 @@ namespace BopAudio
             AZ::IO::FixedMaxPath{ audioProjectFullPath / AudioStrings::GameParametersFolder }
                 .Native());
 
-        auto const eventsPath{ AZ::IO::Path{} / AZ::Utils::GetProjectProductPathForPlatform() /
-                               SoundEventRefBase };
-
-        LoadControlsInFolder(eventsPath.Native());
+        LoadControlsInFolder(EventsAlias);
         LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
@@ -75,7 +72,7 @@ namespace BopAudio
                         continue;
                     }
 
-                    LoadControl(*audioEventAsset);
+                    LoadControl(*audioEventAsset, filePath.Filename().Stem().String());
                     continue;
                 }
 
@@ -162,10 +159,10 @@ namespace BopAudio
         }
     }
 
-    void AudioBopAudioLoader::LoadControl(AudioEventAsset const& audioEventAsset)
+    void AudioBopAudioLoader::LoadControl(AudioEventAsset const&, AZStd::string_view eventName)
     {
-        m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-            audioEventAsset.GetId().GetCStr(), BopAudioControlType::Event));
+        m_audioSystemEditor->CreateControl(
+            AudioControls::SControlDef(eventName, BopAudioControlType::Event));
     }
 
     void AudioBopAudioLoader::ExtractControlsFromXML(

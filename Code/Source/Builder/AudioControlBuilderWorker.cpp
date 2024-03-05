@@ -15,7 +15,7 @@ namespace BopAudio
     AZ_RTTI_NO_TYPE_INFO_IMPL(AudioControlBuilderWorker);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioControlBuilderWorker,
-        "BopAudioBuilserWorker",
+        "MaAudioControlBuilderWorker",
         "{06B4A9AB-D205-4DAF-B36D-EEED181509B2}");
     AZ_CLASS_ALLOCATOR_IMPL(AudioControlBuilderWorker, AZ::SystemAllocator);
 
@@ -257,7 +257,7 @@ namespace BopAudio
                             // the BopAudio sounds folder to get relative path
                             // to the bank from the @products@ alias and push
                             // that into the list of banks referenced.
-                            AZStd::string soundsPrefix = DefaultBanksPath;
+                            AZStd::string soundsPrefix = BanksAlias;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 
                             bopFileNode = bopFileNode->next_sibling(XmlTags::BopFileTag);
@@ -344,7 +344,7 @@ namespace BopAudio
                             bopAudioFileNode->first_attribute(XmlTags::NameAttribute);
                         if (libraryNameAttr)
                         {
-                            AZStd::string soundsPrefix = DefaultBanksPath;
+                            AZStd::string soundsPrefix = BanksAlias;
                             banksReferenced.emplace_back(soundsPrefix + libraryNameAttr->value());
                         }
                         else

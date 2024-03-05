@@ -1,7 +1,12 @@
 #include "Engine/Tasks/PlaySound.h"
 
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
+
 #include "AudioAllocators.h"
+#include "Engine/AudioObject.h"
 #include "Engine/Common_BopAudio.h"
+#include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
 
@@ -16,7 +21,7 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<PlaySoundTask>()->Version(0)->Field(
+            serialize->Class<PlaySoundTask>()->Version(4)->Field(
                 "TargetResource", &PlaySoundTask::m_resourceToPlay);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -24,6 +29,34 @@ namespace BopAudio
                 editContext->Class<PlaySoundTask>("PlaySoundTask", "");
             }
         }
+    }
+
+    void PlaySoundTask::operator()(AudioObject& audioObject) const
+    {
+        if (!AudioEngineInterface::Get()->LoadSound(m_resourceToPlay))
+        {
+            AZ_Error(
+                "PlaySoundTask", false, "Failed to load sound '%s'", m_resourceToPlay.GetCStr());
+
+            return;
+        }
+
+        auto soundToPlay = SoundInstance(m_resourceToPlay);
+        if (!soundToPlay.IsValid())
+        {
+            AZ_Error(
+                "PlaySoundTask",
+                false,
+                "Failed to create sound instance with resource '%s'",
+                m_resourceToPlay.GetCStr());
+
+            return;
+        }
+
+        soundToPlay.SetVolume(1.0f);
+        audioObject.PlaySound(AZStd::move(soundToPlay));
+
+        AZ_Info("PlaySoundTask", "Play: [%s]", m_resourceToPlay.GetCStr());
     }
 
     class PlayTaskFactory : public TaskFactoryBus::Handler
@@ -34,7 +67,7 @@ namespace BopAudio
 
         PlayTaskFactory()
         {
-            BusConnect(AZ_CRC_CE("Play"));
+            TaskFactoryBus::Handler::BusConnect(AZ_CRC_CE("Play"));
         }
 
         ~PlayTaskFactory() override = default;
@@ -80,7 +113,7 @@ namespace BopAudio
                 return {};
             }
 
-            task.m_resourceToPlay = ResourceRef{ resourceValue->GetString() };
+            task.m_resourceToPlay = SoundRef{ resourceValue->GetString() };
 
             return AZStd::any{ Task{ task } };
         };

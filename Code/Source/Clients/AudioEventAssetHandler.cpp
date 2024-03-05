@@ -18,6 +18,13 @@ namespace BopAudio
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset,
+            AZ::AzTypeInfo<AudioEventAsset>::Uuid());
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::AddExtension, AudioEventAsset::ProductExtension);
+
         Register();
     }
 
@@ -35,6 +42,7 @@ namespace BopAudio
                 false,
                 "The Asset Manager isn't ready. It is required in order to "
                 "handle assets.");
+
             return;
         }
 
@@ -66,7 +74,7 @@ namespace BopAudio
 
         AZ_Error("AudioEventAssetHandler", false, "The type requested is not supported.");
 
-        return {};
+        return nullptr;
     }
 
     auto AudioEventAssetHandler::LoadAssetData(
@@ -74,14 +82,18 @@ namespace BopAudio
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         AZ::Data::AssetFilterCB const& /*assetLoadFilterCB*/) -> AZ::Data::AssetHandler::LoadResult
     {
-        bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(
-            *stream, *asset.GetAs<AudioEventAsset>());
+        auto& audioEventAsset{ *asset.GetAs<AudioEventAsset>() };
+
+        bool const assetLoaded =
+            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, audioEventAsset);
 
         if (!assetLoaded)
         {
             AZ_Error("AudioEventAssetHandler", false, "Failed to load asset.");
             return AZ::Data::AssetHandler::LoadResult::Error;
         }
+
+        audioEventAsset.RegisterAudioEvent();
 
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }

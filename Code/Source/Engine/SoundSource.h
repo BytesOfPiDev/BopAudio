@@ -14,11 +14,27 @@ namespace BopAudio
         AZ_DEFAULT_COPY_MOVE(SoundSource);
         AZ_TYPE_INFO_WITH_NAME_DECL(SoundSource);
 
-        SoundSource() = default;
-        ~SoundSource() = default;
+        SoundSource();
+        ~SoundSource();
+        SoundSource(SoundRef soundResourceRef);
         SoundSource(AZ::IO::Path localPath);
 
         static void Reflect(AZ::ReflectContext* context);
+
+        [[nodiscard]] explicit constexpr operator size_t() const
+        {
+            return m_soundRef.GetHash();
+        }
+
+        [[nodiscard]] constexpr auto operator==(SoundSource const& other) const
+        {
+            return m_soundRef == other.m_soundRef;
+        }
+
+        [[nodiscard]] constexpr auto operator!=(SoundSource const& other) const
+        {
+            return !((*this) == other);
+        }
 
         [[nodiscard]] auto GetAsset() const -> MiniAudio::SoundDataAsset
         {
@@ -27,18 +43,22 @@ namespace BopAudio
 
         auto Load() -> AZ::Outcome<void, char const*>;
 
-        constexpr auto IsReady() -> bool
+        [[nodiscard]] constexpr auto IsReady() const -> bool
         {
             return m_soundAsset.IsReady();
         }
 
-        [[nodiscard]] auto GetResourceId() const -> ResourceRef
+        [[nodiscard]] auto GetResourceId() const -> SoundRef
         {
-            return ResourceRef{ m_name };
+            return m_soundRef;
         };
 
+    protected:
+        auto RegisterSound() -> bool;
+
     private:
-        AZ::Name m_name;
-        MiniAudio::SoundDataAsset m_soundAsset;
+        SoundRef m_soundRef{};
+        MiniAudio::SoundDataAsset m_soundAsset{};
+        bool m_registered{};
     };
 } // namespace BopAudio

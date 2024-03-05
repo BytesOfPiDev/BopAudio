@@ -23,7 +23,7 @@ namespace BopAudio
             AZ::IO::PathView const rootFolder, AZ::IO::PathView subPath, bool isLocalized);
         void LoadControlsInFolder(AZStd::string_view const folderPath);
         void LoadControl(AZ::rapidxml::xml_node<char> const* xmlNode);
-        void LoadControl(AudioEventAsset const& audioEventAsset);
+        void LoadControl(AudioEventAsset const& audioEventAsset, AZStd::string_view eventName);
 
         void ExtractControlsFromXML(
             const AZ::rapidxml::xml_node<char>* xmlNode,

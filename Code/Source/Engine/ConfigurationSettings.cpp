@@ -1,10 +1,10 @@
 #include "Engine/ConfigurationSettings.h"
-#include <AzCore/IO/Path/Path.h>
+
+#include "AzCore/IO/Path/Path.h"
 
 namespace BopAudio
 {
-
-    static AZ::IO::PathView s_configuredBanksPath = DefaultBanksPath; // NOLINT
+    static AZ::IO::PathView s_configuredBanksPath = BanksAlias;
 
     auto GetBanksRootPath() -> AZ::IO::PathView
     {

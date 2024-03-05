@@ -85,7 +85,7 @@ namespace BopAudio
         builderDescriptor.m_name = "BopAudio SoundBank Builder";
 
         builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(
-            R"((.*sounds\/bopaudio\/).*\.soundbankdata)",
+            R"((.*sounds\/bopaudio\/banks\/).*\.soundbankdata)",
             AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
 
         builderDescriptor.m_busId = azrtti_typeid<SoundBankAssetBuilderWorker>();

@@ -22,6 +22,27 @@ namespace BopAudio
         AudioEvent(AZ::Data::Asset<AudioEventAsset> eventAsset);
         ~AudioEvent() = default;
 
+    protected:
+        [[nodiscard]] constexpr auto operator==(AudioEvent const& otherEvent) const
+        {
+            return m_id == otherEvent.m_id;
+        }
+
+        [[nodiscard]] constexpr auto operator!=(AudioEvent const& otherEvent) const
+        {
+            return !((*this) == otherEvent);
+        }
+
+        [[nodiscard]] constexpr auto operator<(AudioEvent const& otherEvent) const
+        {
+            return m_id < otherEvent.m_id;
+        }
+
+        [[nodiscard]] constexpr auto operator>(AudioEvent const& otherEvent) const
+        {
+            return m_id > otherEvent.m_id;
+        }
+
     private:
         /*
          * The reference/id/name of this event.
@@ -47,7 +68,6 @@ namespace BopAudio
          */
         [[maybe_unused]] Audio::EAudioEventState m_eventState{};
 
-    private:
         AZ::Data::Asset<AudioEventAsset> m_eventAsset{};
     };
 } // namespace BopAudio

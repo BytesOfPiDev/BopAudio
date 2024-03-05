@@ -2,26 +2,27 @@
 
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
+#include "MiniAudio/SoundAsset.h"
+
+#include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
     class MiniAudioEngine;
 
-    class AudioSystemImpl_BopAudio : public Audio::AudioSystemImplementation
+    class AudioSystemImpl_miniaudio : public Audio::AudioSystemImplementation
     {
         friend MiniAudioEngine;
 
     public:
-        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_BopAudio);
-        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_BopAudio);
+        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_miniaudio);
+        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_miniaudio);
 
-        explicit AudioSystemImpl_BopAudio(AZStd::string_view assetsPlatformName);
-        ~AudioSystemImpl_BopAudio() override;
+        explicit AudioSystemImpl_miniaudio(AZStd::string_view assetsPlatformName);
+        ~AudioSystemImpl_miniaudio() override;
 
         void SetPaths();
 
@@ -178,12 +179,9 @@ namespace BopAudio
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
-        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
-        AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
-
         AZ::IO::Path m_soundBankFolder{};
         AZ::IO::Path m_localizedSoundBankFolder{};
 
-        AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
+        AZStd::unordered_map<Audio::TAudioSourceId, MiniAudio::SoundDataAsset> m_sourceAssetMap{};
     };
 } // namespace BopAudio

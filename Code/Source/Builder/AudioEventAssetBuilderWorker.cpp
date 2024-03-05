@@ -15,11 +15,11 @@
 #include "AzCore/Utils/Utils.h"
 #include "AzCore/std/iterator/move_iterator.h"
 #include "AzFramework/IO/LocalFileIO.h"
+#include "IAudioSystem.h"
 
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Common_BopAudio.h"
-#include "Engine/Id.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
 
@@ -27,9 +27,7 @@ namespace BopAudio
 {
     namespace Internal
     {
-        static constexpr auto BuildAudioEventJobKey = "Build AudioEvent";
-
-        AZ_HAS_MEMBER(RunMember, operator(), void, (AudioObjectId));
+        static constexpr auto BuildAudioEventJobKey = "Build Audio Event";
 
         auto BuildTaskMember(rapidjson::Document::Member const& taskMember) -> AZStd::any
         {
@@ -315,9 +313,13 @@ namespace BopAudio
             return path;
         }();
 
-        AudioEventAsset event{};
+        auto const newId = absProductPath.Filename().Stem().String();
 
-        event.m_id = AudioEventId{ absProductPath.Filename().Stem().String() };
+        AudioEventAsset event{};
+        event.m_id = Audio::AudioStringToID<Audio::TAudioControlID>(newId.c_str());
+
+        AZ_Info(AssetBuilderSDK::InfoWindow, "AudioEvent: %s | Id: %zu", newId.c_str(), event.m_id);
+
         event.m_tasks = tasks;
 
         bool const successfullySaved = AZ::Utils::SaveObjectToFile<AudioEventAsset>(

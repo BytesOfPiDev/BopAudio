@@ -10,26 +10,27 @@
 
 namespace BopAudio
 {
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, Audio::AudioImplAllocator);
     AZ_RTTI_NO_TYPE_INFO_IMPL(SoundBankAsset, AZ::Data::AssetData);
     AZ_TYPE_INFO_WITH_NAME_IMPL(SoundBankAsset, "SoundBankAsset", SoundBankAssetTypeId);
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, Audio::AudioImplAllocator);
 
     void SoundBankAsset::Reflect(AZ::ReflectContext* context)
     {
+        ResourceRefBase::Reflect(context);
         AudioEventAsset::Reflect(context);
-        AudioEventId::Reflect(context);
-        BankRef::Reflect(context);
-        ResourceRef::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->Class<ResourceRef, ResourceRefBase>()->Version(1);
+            serialize->Class<BankRef, ResourceRefBase>()->Version(1);
+            serialize->Class<SoundRef, ResourceRefBase>()->Version(1);
+
             serialize->Class<SoundBankAsset, AZ::Data::AssetData>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Id", &SoundBankAsset::m_id)
                 ->Field("Sounds", &SoundBankAsset::m_soundSources);
 
             serialize->RegisterGenericType<AZ::Data::Asset<SoundBankAsset>>();
-            serialize->RegisterGenericType<AudioEventId>();
             serialize->RegisterGenericType<AZStd::vector<BankRef>>();
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -43,16 +44,5 @@ namespace BopAudio
     }
 
     SoundBankAsset::SoundBankAsset() = default;
-
-    auto SoundBankAsset::CloneEvent(AudioEventId) const -> AudioOutcome<AudioEventAsset>
-    {
-        return AZ::Failure("Unimplemented");
-    }
-
-    auto SoundBankAsset::CloneEvent(ResourceRef const& resourceId) const
-        -> AudioOutcome<AudioEventAsset>
-    {
-        return CloneEvent(AudioEventId{ resourceId.GetAsPath().Filename().Native() });
-    }
 
 } // namespace BopAudio
