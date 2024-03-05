@@ -54,6 +54,11 @@ namespace BopAudio
         {
         }
 
+        [[nodiscard]] explicit constexpr operator size_t() const
+        {
+            return m_name.GetHash();
+        }
+
         constexpr auto operator==(TaggedResource const& other) const -> bool
         {
             return m_name == other.m_name;
@@ -63,6 +68,11 @@ namespace BopAudio
         {
             return m_name == resourceName;
         };
+
+        constexpr auto operator<(Self const& other) const -> bool
+        {
+            return m_name < other.m_name;
+        }
 
         [[nodiscard]] auto ToName() const -> AZ::Name
         {
@@ -185,7 +195,7 @@ namespace BopAudio
     };
 
     using UniqueId = TaggedId<>;
-    using AudioObjectId = TaggedId<AudioObjectTag>;
+    using AudioObjectId = AZ::u32;
 
     template<typename T, typename = void>
     struct HasTagMember : AZStd::false_type

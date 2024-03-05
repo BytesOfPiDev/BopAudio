@@ -17,12 +17,14 @@ namespace BopAudio
     static constexpr auto InitBank = "init.soundbank";
     static constexpr auto InitBankSource = "init.soundbankdata";
 
-    static constexpr AZ::IO::PathView SoundBankRefBase{ DefaultBanksPath };
-    static constexpr AZ::IO::PathView SoundEventRefBase{ "sounds/bopaudio/events" };
-    static constexpr AZ::IO::PathView SoundGraphRefBase{ "sounds/bopaudio/graphs" };
+    static constexpr AZ::IO::PathView EventsPath{ "sounds/bopaudio/events" };
 
     auto GetBanksRootPath() -> AZ::IO::PathView;
     void SetBanksRootPath(AZ::IO::PathView banksRootPath);
+
+    static constexpr auto DefaultAudioChannels = 2;
+    static constexpr auto DefaultSampleRate = 48000;
+    static constexpr auto DefaultBitsPerSample = 16;
 
     class ConfigurationSettings
     {

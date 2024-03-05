@@ -49,6 +49,8 @@ namespace BopAudio
     void BopAudioSystemComponent::GetRequiredServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("AssetCatalogService"));
         required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
@@ -93,7 +95,7 @@ namespace BopAudio
             auto builtPath{ decltype(banksProductPath){
                 AZ::Utils::GetProjectProductPathForPlatform() } };
 
-            builtPath /= SoundEventRefBase;
+            builtPath /= EventsPath;
             return builtPath;
         }();
 

@@ -2,11 +2,12 @@
 
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
+#include "MiniAudio/SoundAsset.h"
+
+#include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
@@ -178,12 +179,9 @@ namespace BopAudio
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
-        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers{};
-        AZStd::vector<AZStd::unique_ptr<SATLEventData_BopAudio>> m_audioEvents{};
-
         AZ::IO::Path m_soundBankFolder{};
         AZ::IO::Path m_localizedSoundBankFolder{};
 
-        AZStd::unordered_map<AZ::Name, AZStd::vector<char>> m_fileData{};
+        AZStd::unordered_map<Audio::TAudioSourceId, MiniAudio::SoundDataAsset> m_sourceAssetMap{};
     };
 } // namespace BopAudio

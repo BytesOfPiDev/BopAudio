@@ -18,6 +18,13 @@ namespace BopAudio
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset,
+            AZ::AzTypeInfo<AudioEventAsset>::Uuid());
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequests::AddExtension, AudioEventAsset::ProductExtension);
+
         Register();
     }
 
@@ -35,6 +42,7 @@ namespace BopAudio
                 false,
                 "The Asset Manager isn't ready. It is required in order to "
                 "handle assets.");
+
             return;
         }
 

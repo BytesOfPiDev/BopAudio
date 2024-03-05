@@ -9,14 +9,17 @@
 
 #include "Engine/Id.h"
 #include "Engine/Tasks/Common.h"
+#include "IAudioInterfacesCommonData.h"
+#include "IAudioSystem.h"
+#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
-
     class AudioObject;
     class AudioEventAsset : public AZ::Data::AssetData
     {
         friend class AudioEventAssetBuilderWorker;
+        friend class AudioEventAssetHandler;
 
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -51,12 +54,23 @@ namespace BopAudio
 
         void operator()(AudioObject& audioObject) const;
 
+        [[nodiscard]] constexpr auto GetControlId() const -> Audio::TAudioObjectID
+        {
+            return Audio::AudioStringToID<Audio::TAudioControlID>(m_id.GetCStr());
+        }
+
+        [[nodiscard]] auto GetTasks() const -> TaskContainer const&
+        {
+            return m_tasks;
+        }
+
     protected:
         auto Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>;
 
     private:
         AudioEventId m_id{};
         TaskContainer m_tasks{};
+        MiniAudio::SoundDataAssetVector m_dependentSounds{};
     };
 
     using AudioEvents = AZStd::vector<AudioEventAsset>;

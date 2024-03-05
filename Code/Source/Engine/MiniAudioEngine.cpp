@@ -1,15 +1,18 @@
 #include "Engine/MiniAudioEngine.h"
 
+#include "AudioFileUtils.h"
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/OpenMode.h"
-#include "AzCore/Serialization/Utils.h"
+#include "AzCore/Interface/Interface.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/Utils/Utils.h"
 #include "AzFramework/IO/LocalFileIO.h"
 #include "IAudioInterfacesCommonData.h"
+#include "IAudioSystem.h"
 #include "MiniAudio/MiniAudioBus.h"
 
 #include "BopAudio/Util.h"
@@ -22,43 +25,62 @@
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
+#include <AzCore/Outcome/Outcome.h>
 
 namespace BopAudio
 {
     namespace Internal
     {
-        auto GetSoundBankAssetId(AZ::IO::PathView soundBankPath) -> AZ::Data::AssetId
+        auto LoadSoundBankByAssetId(AZ::Data::AssetId const& soundBankAssetId)
+            -> AudioOutcome<AZ::Data::Asset<SoundBankAsset>>
         {
-            auto result = decltype(GetSoundBankAssetId(soundBankPath)){};
+            if (!AZ::Data::AssetManager::IsReady())
+            {
+                AZ_Error(
+                    "LoadSoundBankByAssetId",
+                    AZ::Data::AssetManager::IsReady(),
+                    "Asset Manager isn't ready!");
 
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                result,
-                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                soundBankPath.Native().data(),
-                AZ::AzTypeInfo<SoundBankAsset>::Uuid(),
-                false);
+                return {};
+            }
 
-            return result;
+            return AZ::Data::AssetManager::Instance().GetAsset<SoundBankAsset>(
+                soundBankAssetId, AZ::Data::AssetLoadBehavior::Default);
         }
 
-        auto BuildBankCachePath(AZStd::string_view fileName) -> AZ::IO::Path
+        auto LoadSoundBankByAssetId(AZ::IO::PathView soundBankPath)
+            -> AudioOutcome<AZ::Data::Asset<SoundBankAsset>>
         {
-            AZ::IO::Path builtPath{ AZ::Utils::GetProjectProductPathForPlatform() };
-            builtPath /= DefaultBanksPath;
-            builtPath /= fileName;
+            auto const soundBankAssetId{ FindAssetId(
+                soundBankPath, AZ::AzTypeInfo<SoundBankAsset>::Uuid()) };
 
-            return builtPath;
+            if (!soundBankAssetId.IsValid())
+            {
+                return AZ::Failure(AZStd::string::format(
+                    "Failed to find the asset id for asset at '%s'",
+                    soundBankPath.Native().data()));
+            }
+
+            return LoadSoundBankByAssetId(soundBankAssetId);
         }
 
-        auto LoadBankToMemory(AZ::IO::PathView absoluteBankPath) -> AZStd::vector<char>
+        auto BuildBankProductPath(AZStd::string_view filename) -> AZ::IO::Path
         {
-            // We can't use the asset manager to get the init soundbank because we're loaded early
-            // in O3DE's bootstrapping process. We use a file stream to get the file.
+            return GetBankCachePath() / filename;
+        }
+
+        auto BuildBankProjectPath(AZ::IO::PathView filename) -> AZ::IO::Path
+        {
+            return AZ::IO::Path{ AZ::Utils::GetProjectPath() } / filename;
+        }
+
+        auto LoadBankToBuffer(AZ::IO::PathView absoluteBankPath) -> AZStd::vector<char>
+        {
             AZ::IO::LocalFileIO fs{};
-            AZ::IO::HandleType initBankFileHandle{};
+            AZ::IO::HandleType bankFileHandle{};
 
             auto const openResult = fs.Open(
-                absoluteBankPath.Native().data(), AZ::IO::OpenMode::ModeRead, initBankFileHandle);
+                absoluteBankPath.Native().data(), AZ::IO::OpenMode::ModeRead, bankFileHandle);
 
             if (openResult != AZ::IO::ResultCode::Success)
             {
@@ -74,16 +96,15 @@ namespace BopAudio
             AZ::u64 const bufferSize = [&]() -> decltype(bufferSize)
             {
                 auto size{ decltype(bufferSize){} };
-                fs.Size(initBankFileHandle, size);
+                fs.Size(bankFileHandle, size);
 
                 return size;
             }();
 
             AZStd::vector<char> tempBuffer(bufferSize);
 
-            auto const readResult =
-                fs.Read(initBankFileHandle, tempBuffer.data(), tempBuffer.size());
-            fs.Close(initBankFileHandle);
+            auto const readResult = fs.Read(bankFileHandle, tempBuffer.data(), tempBuffer.size());
+            fs.Close(bankFileHandle);
 
             if (readResult != AZ::IO::ResultCode::Success)
             {
@@ -93,10 +114,10 @@ namespace BopAudio
                     "Failed to read init soundbank file at '%s'",
                     absoluteBankPath.Native().data());
 
-                return {};
+                tempBuffer.clear();
             }
 
-            return tempBuffer; // TODO: Research C++ RVO
+            return tempBuffer;
         };
     } // namespace Internal
     class AudioSystemImpl_BopAudio;
@@ -113,30 +134,23 @@ namespace BopAudio
 
     auto MiniAudioEngine::Initialize() -> NullOutcome
     {
-        AZ::IO::Path const initBankPath = Internal::BuildBankCachePath(InitBank);
+        AZ_Error(
+            "MiniAudioEngine", AZ::Data::AssetManager::IsReady(), "Asset Manager isn't ready!");
 
-        auto const initBankBuffer{ Internal::LoadBankToMemory(initBankPath) };
+        LoadEvents();
 
-        if (initBankBuffer.empty())
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Failed to read init soundbank file at path '%s'", initBankPath.c_str()));
-        }
-
-        m_initSoundBank.reset(AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(
-            initBankBuffer.data(), initBankBuffer.size()));
-
-        if (!m_initSoundBank)
-        {
-            return AZ::Failure("Failed to load the init bank");
-        }
+        static constexpr auto example_one{ "dlg/soldierintro.ogg.miniaudio" };
+        auto example_one_source{ AZStd::make_unique<SoundSource>(example_one) };
+        example_one_source->Load();
+        m_soundSourceMap[ResourceRef{ example_one }] = AZStd::move(example_one_source);
 
         return AZ::Success();
     }
 
     auto MiniAudioEngine::Shutdown() -> bool
     {
-        m_soundBanks.clear();
+        m_controlEventMap.clear();
+        m_audioObjects.clear();
 
         return true;
     }
@@ -146,51 +160,123 @@ namespace BopAudio
         return MiniAudio::MiniAudioInterface::Get()->GetSoundEngine();
     }
 
-    auto MiniAudioEngine::LoadSoundBank(Audio::SATLAudioFileEntryInfo* const fileInfo)
-        -> NullOutcome
+    auto MiniAudioEngine::RegisterFile(RegisterFileData const& fileData) -> NullOutcome
     {
-        if (!fileInfo)
-        {
-            return AZ::Failure("Argument is a null pointer.");
-        }
-
-        AZStd::span<char> buffer{ static_cast<char*>(fileInfo->pFileData), fileInfo->nSize };
-
-        auto loadedBank = decltype(m_soundBanks)::node_type{
-            AZ::Utils::LoadObjectFromBuffer<SoundBankAsset>(buffer.data(), buffer.size())
-        };
-
-        if (loadedBank == nullptr)
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Failed to load sound bank '%s' from pre-loaded buffer", fileInfo->sFileName));
-        }
-
-        m_soundBanks.emplace_back(AZStd::move(loadedBank));
+        AZ_Warning(
+            "MiniAudioEngine",
+            false,
+            "RegisterFile(filename: '%s') is not yet implemented",
+            fileData.m_fileName.data());
 
         return AZ::Success();
     }
 
-    void MiniAudioEngine::LoadTrigger(AZ::rapidxml::xml_node<char>* triggerNode)
+    void MiniAudioEngine::LoadSounds()
     {
-        if (!triggerNode)
+        auto* const audioSystem{ AZ::Interface<Audio::IAudioSystem>::Get() };
+
+        if (!audioSystem)
         {
             return;
         }
+
+        AZ::IO::Path const banksProductPath = GetBankCachePath();
+        auto foundFiles = Audio::FindFilesInPath(banksProductPath.c_str(), "*.miniaudio");
+
+        AZStd::ranges::for_each(
+            foundFiles,
+            [this](auto const& sourceFilename)
+            {
+                Audio::SAudioInputConfig inputConfig{};
+                inputConfig.m_autoUnloadFile = true;
+                inputConfig.m_sourceFilename = sourceFilename.c_str();
+                inputConfig.m_sourceType = Audio::AudioInputSourceType::WavFile;
+                inputConfig.m_numChannels = DefaultAudioChannels;
+                inputConfig.m_bitsPerSample = DefaultBitsPerSample;
+                inputConfig.m_sampleType = Audio::AudioInputSampleType::Float;
+                inputConfig.m_autoUnloadFile = true;
+
+                Audio::TAudioSourceId sourceId =
+                    AZ::Interface<Audio::IAudioSystem>::Get()->CreateAudioSource(inputConfig);
+
+                m_loadedSources.insert(sourceId);
+                // Audio::SAudioSourceInfo audioData{};
+            });
     }
 
-    auto MiniAudioEngine::ActivateTrigger(ActivateTriggerRequest const& activateTriggerRequest)
-        -> AudioOutcome<void>
+    void MiniAudioEngine::LoadEvents()
     {
-        if (activateTriggerRequest.m_audioControlId == INVALID_AUDIO_CONTROL_ID)
+        auto const foundFiles{ Audio::FindFilesInPath(EventsAlias, "*.audioevent") };
+
+        AZStd::ranges::transform(
+            foundFiles,
+            AZStd::inserter(m_eventAssets, m_eventAssets.end()),
+            [](auto const& filepath) -> decltype(m_eventAssets)::value_type
+            {
+                AZ::Data::AssetId eventAssetId{};
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    eventAssetId,
+                    &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
+                    filepath.c_str(),
+                    AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
+                    true);
+
+                auto audioEventAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
+                    eventAssetId, AZ::Data::AssetLoadBehavior::Default) };
+
+                audioEventAsset.BlockUntilLoadComplete();
+
+                AZ_Warning(
+                    "MiniAudioEngine",
+                    audioEventAsset.IsError(),
+                    "Failed to queue load event asset '%s'",
+                    filepath.c_str());
+
+                AZ_Error(
+                    "MiniAudioEngine",
+                    audioEventAsset.IsReady(),
+                    "Failed to load asset '%s'",
+                    filepath.c_str());
+
+                return { audioEventAsset->GetId(), audioEventAsset };
+            });
+    }
+
+    auto MiniAudioEngine::ActivateTrigger(ActivateEventData const& activateTriggerRequest)
+        -> NullOutcome
+    {
+        auto const foundEvent{ m_eventAssets.find(activateTriggerRequest.m_audioEventId) };
+
+        if (foundEvent == AZStd::end(m_eventAssets))
         {
-            return AZ::Failure("Invalid audio control provided");
+            return AZ::Failure("Unable to find an AudioEvent with the given id");
         }
 
-        if (activateTriggerRequest.m_owner == nullptr)
+        auto const eventAsset{ FindAudioEvent(activateTriggerRequest.m_audioEventId) };
+
+        if (!eventAsset.IsReady())
         {
-            return AZ::Failure("Invalid event owner provided.");
+            return AZ::Failure("The asset isn't ready - it should have already been pre-loaded");
         }
+
+        AudioObject* const audioObj = [&activateTriggerRequest, this]() -> decltype(audioObj)
+        {
+            auto targetAudioObject{ FindAudioObject(activateTriggerRequest.m_audioObjectId) };
+
+            return targetAudioObject ? targetAudioObject : &m_globalObject;
+        }();
+        if (!audioObj)
+        {
+            return AZ::Failure("Failed to find an audio object with the given id");
+        }
+
+        static constexpr auto executeEventOnObject = [](AudioEventAsset& eventAsset,
+                                                        AudioObject& audioObject) -> void
+        {
+            eventAsset(audioObject);
+        };
+
+        executeEventOnObject(*eventAsset, *audioObj);
 
         AudioEventNotificationBus::Event(
             EventNotificationIdType(
@@ -201,61 +287,57 @@ namespace BopAudio
         return AZ::Success();
     }
 
-    auto MiniAudioEngine::CreateAudioObject(Audio::TAudioObjectID) -> bool
+    auto MiniAudioEngine::CreateAudioObject() -> AudioObjectId
     {
-        return true;
+        return m_audioObjects.emplace_back().GetId();
     }
 
-    void MiniAudioEngine::RemoveAudioObject(Audio::TAudioObjectID /*audioObjectId*/)
+    void MiniAudioEngine::RemoveAudioObject(AudioObjectId targetAudioObjectId)
     {
-        /*
-              AZStd::remove_if(
-                  m_audioObjects.begin(),
-                  m_audioObjects.end(),
-                  [audioObjectId](auto const& audioObject) -> bool
-                  {
-                      return audioObject == audioObjectId;
-                  });
-        */
+        AZStd::remove_if(
+            AZStd::move_iterator(m_audioObjects.begin()),
+            AZStd::move_iterator(m_audioObjects.end()),
+            [targetAudioObjectId](auto const& audioObject) -> bool
+            {
+                return audioObject.GetId() == targetAudioObjectId;
+            });
     }
 
-    auto MiniAudioEngine::FindAudioObject(AudioObjectId /*audioObjectId*/) -> AudioObject*
+    auto MiniAudioEngine::FindAudioEvent(AudioEventId targetAudioEventId)
+        -> AZ::Data::Asset<AudioEventAsset>
     {
-        /*
-              auto iter = AZStd::ranges::find_if(
-                  m_audioObjects,
-                  [&audioObjectId](auto const& audioObject) -> bool
-                  {
-                      return audioObjectId == audioObject.GetUniqueId();
-                  });
+        auto foundEventIter{ m_eventAssets.find(targetAudioEventId) };
 
-              return iter != AZStd::end(m_audioObjects) ? &(*iter) : nullptr;
-        */
-        return nullptr;
+        return (foundEventIter != AZStd::end(m_eventAssets))
+            ? foundEventIter->second
+            : decltype(m_eventAssets)::mapped_type{};
     }
 
-    auto MiniAudioEngine::CreateEvent(AudioEventId) const -> AudioOutcome<AudioEventAsset>
+    auto MiniAudioEngine::FindAudioObject(AudioObjectId targetAudioObjectId) -> AudioObject*
     {
-        return AZ::Failure("Unimplemented");
+        auto iter = AZStd::ranges::find_if(
+            m_audioObjects,
+            [&targetAudioObjectId](auto const& audioObject) -> bool
+            {
+                return audioObject.GetId() == targetAudioObjectId;
+            });
+
+        return (iter != AZStd::end(m_audioObjects)) ? iter : nullptr;
     }
 
-    void MiniAudioEngine::PlaySound(ma_sound* soundInstance, AZ::Name const& soundName)
+    auto MiniAudioEngine::LoadSound(ResourceRef const& resourceRef) -> NullOutcome
     {
-        auto result = ma_sound_seek_to_pcm_frame(soundInstance, 0);
+        if (m_soundSourceMap.contains(resourceRef))
+        {
+            return AZ::Success();
+        }
 
-        AZ_Error(
-            "MiniAudioEngine",
-            result == MA_SUCCESS,
-            "Failed to seek audio frame on sound: '%s'.",
-            soundName.GetCStr());
+        // auto source{ AZStd::make_unique<SoundSource>(resourceRef) };
+        // source->Load();
 
-        result = ma_sound_start(soundInstance);
+        // m_soundSourceMap[resourceRef] = AZStd::move(source);
 
-        AZ_Error(
-            "MiniAudioEngine",
-            result == MA_SUCCESS,
-            "Failed to start sound: '%s'.",
-            soundName.GetCStr());
+        return AZ::Failure("dunno");
     }
 
 } // namespace BopAudio

@@ -134,7 +134,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::miniaudio
                 3rdParty::stb_vorbis
                 AZ::AzToolsFramework
-                AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::AudioSystem.API
                 Gem::AudioSystem.Editor.API
@@ -175,9 +174,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-################################################################################
+# ###############################################################################
 # Tests
-################################################################################
+# ###############################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests

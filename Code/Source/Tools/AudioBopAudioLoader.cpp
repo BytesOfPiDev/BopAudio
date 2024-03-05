@@ -29,7 +29,7 @@ namespace BopAudio
                 .Native());
 
         auto const eventsPath{ AZ::IO::Path{} / AZ::Utils::GetProjectProductPathForPlatform() /
-                               SoundEventRefBase };
+                               EventsPath };
 
         LoadControlsInFolder(eventsPath.Native());
         LoadSoundBanks(GetBanksRootPath(), "", false);

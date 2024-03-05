@@ -1,6 +1,10 @@
 #include "Engine/Tasks/PlaySound.h"
 
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
+
 #include "AudioAllocators.h"
+#include "Engine/AudioObject.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
@@ -24,6 +28,24 @@ namespace BopAudio
                 editContext->Class<PlaySoundTask>("PlaySoundTask", "");
             }
         }
+    }
+
+    void PlaySoundTask::operator()(AudioObject& audioObject) const
+    {
+        auto soundToPlay = SoundInstance(m_resourceToPlay);
+        if (!soundToPlay.IsValid())
+        {
+            AZ_Error(
+                "PlaySoundTask",
+                false,
+                "Failed to create sound instance with resource '%s'",
+                m_resourceToPlay.GetCStr());
+
+            return;
+        }
+        audioObject.PlaySound(AZStd::move(soundToPlay));
+
+        AZ_Info("PlaySoundTask", "Play: [%s]", m_resourceToPlay.GetCStr());
     }
 
     class PlayTaskFactory : public TaskFactoryBus::Handler

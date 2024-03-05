@@ -70,6 +70,7 @@ namespace BopAudio
             [[maybe_unused]] float estimatedDuration) = 0;
         virtual void ReportEventStarted(EventStartedData const&) = 0;
         virtual void ReportEventFinished(EventFinishedData const&) = 0;
+        virtual void ReportPreTryStart() = delete;
     };
 
     struct AudioEventNotificationBusTraits : public AZ::EBusTraits

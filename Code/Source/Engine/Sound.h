@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AzCore/Name/Name.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioIncludes.h"
 
@@ -13,13 +12,9 @@ namespace BopAudio
         AZ_DISABLE_COPY(SoundDeleter);
 
         SoundDeleter() = default;
-        SoundDeleter(AZ::Name soundName)
-            : m_soundName(AZStd::move(soundName)){};
         ~SoundDeleter() = default;
 
         void operator()(ma_sound* ptr);
-
-        AZ::Name m_soundName{};
     };
 
     using SoundPtr = std::unique_ptr<ma_sound, SoundDeleter>;
@@ -31,28 +26,28 @@ namespace BopAudio
 
         SoundInstance() = default;
         ~SoundInstance() = default;
-        SoundInstance(ResourceRef soundName)
-            : m_name{ AZStd::move(soundName) } {};
+        SoundInstance(ResourceRef const& soundName);
 
-        [[nodiscard]] auto GetSoundName() const -> ResourceRef
+        [[nodiscard]] constexpr auto IsValid() const
         {
-            return m_name;
+            return m_isValid;
         }
 
-        auto Load() -> bool;
+        void Play(int beginPcmFrame = 0);
+        constexpr void SetVolume(float volume)
+        {
+            m_volume = volume;
+        }
 
-        [[nodiscard]] auto GetData() const -> ma_sound*
-        {
-            return m_sound.get();
-        }
-        [[nodiscard]] auto GetData() -> ma_sound*
-        {
-            return m_sound.get();
-        }
+    protected:
+        void InitSound();
 
     private:
-        ResourceRef m_name{};
+        AZStd::string m_resourceRef{};
         SoundPtr m_sound{};
+        bool m_isValid{};
+
+        float m_volume{};
     };
 
 } // namespace BopAudio

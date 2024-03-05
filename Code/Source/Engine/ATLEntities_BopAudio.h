@@ -37,6 +37,10 @@ namespace BopAudio
         }
 
         constexpr void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
+        constexpr void SetImplAudioObjectId(AudioObjectId implAudioObjectId)
+        {
+            m_implAudioObjectId = implAudioObjectId;
+        }
 
         [[nodiscard]] constexpr auto GetImplAudioObjectId() const -> AudioObjectId
         {
@@ -84,7 +88,7 @@ namespace BopAudio
             m_implAudioObjectId = implAudioObjectIde;
         }
 
-        [[nodiscard]] auto GeImplTriggerId() const -> AudioEventId
+        [[nodiscard]] auto GetImplTriggerId() const -> AudioEventId
         {
             return m_audioEventResourceId;
         }
