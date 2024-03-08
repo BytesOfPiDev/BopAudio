@@ -7,10 +7,8 @@
 #include "AzCore/std/smart_ptr/unique_ptr.h"
 
 #include "Engine/Id.h"
-#include "Engine/Sound.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/TaskBus.h"
-#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {

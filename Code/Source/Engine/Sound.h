@@ -22,11 +22,16 @@ namespace BopAudio
     class SoundInstance
     {
     public:
-        AZ_DISABLE_COPY(SoundInstance);
-
         SoundInstance() = default;
         ~SoundInstance() = default;
-        SoundInstance(ResourceRef const& soundName);
+
+        SoundInstance(SoundRef const& soundName);
+
+        SoundInstance(SoundInstance const&);
+        SoundInstance(SoundInstance&&);
+
+        auto operator=(SoundInstance const&) -> SoundInstance&;
+        auto operator=(SoundInstance&&) -> SoundInstance&;
 
         [[nodiscard]] constexpr auto IsValid() const
         {
@@ -34,6 +39,7 @@ namespace BopAudio
         }
 
         void Play(int beginPcmFrame = 0);
+
         constexpr void SetVolume(float volume)
         {
             m_volume = volume;
@@ -43,7 +49,7 @@ namespace BopAudio
         void InitSound();
 
     private:
-        AZStd::string m_resourceRef{};
+        SoundRef m_resourceRef{};
         SoundPtr m_sound{};
         bool m_isValid{};
 

@@ -11,16 +11,16 @@ namespace BopAudio
         ma_sound_uninit(ptr);
     }
 
-    SoundInstance::SoundInstance(ResourceRef const& soundName)
+    SoundInstance::SoundInstance(SoundRef const& soundName)
         : m_resourceRef{ soundName.GetCStr() }
         , m_sound{ new ma_sound }
+        , m_volume{ 1.0f }
     {
-        InitSound();
-    };
+        if (!soundName.IsValid())
+        {
+            m_sound = nullptr;
+        }
 
-    void SoundInstance::InitSound()
-    {
-        AZ_Info("SoundInstance", "InitSound with name: '%s'", m_resourceRef.c_str());
         ma_uint32 const flags = MA_SOUND_FLAG_DECODE;
 
         ma_result const soundInitResult = ma_sound_init_from_file(
@@ -35,6 +35,56 @@ namespace BopAudio
         {
             m_sound = nullptr;
         }
+    };
+
+    SoundInstance::SoundInstance(SoundInstance const& other)
+        : m_resourceRef{ AZStd::move(other.m_resourceRef) }
+        , m_sound{ new ma_sound }
+        , m_volume{ other.m_volume }
+        , m_isValid{ other.m_isValid }
+    {
+        auto* const engine{ ma_sound_get_engine(other.m_sound.get()) };
+        ma_sound_flags flags{ MA_SOUND_FLAG_DECODE };
+        ma_result initResult{ ma_sound_init_copy(
+            engine, other.m_sound.get(), flags, nullptr, m_sound.get()) };
+
+        m_isValid = { initResult == MA_SUCCESS };
+    }
+
+    SoundInstance::SoundInstance(SoundInstance&& other)
+        : m_resourceRef{ AZStd::move(other.m_resourceRef) }
+        , m_sound(AZStd::move(other.m_sound))
+        , m_volume{ other.m_volume }
+        , m_isValid{ other.m_isValid }
+    {
+        other.m_isValid = false;
+    }
+
+    auto SoundInstance::operator=(SoundInstance const& other) -> SoundInstance&
+    {
+        auto* engine{ ma_sound_get_engine(other.m_sound.get()) };
+        m_sound.reset(new ma_sound);
+
+        ma_sound_flags flags{ MA_SOUND_FLAG_DECODE };
+        ma_sound_init_copy(engine, other.m_sound.get(), flags, nullptr, m_sound.get());
+
+        m_resourceRef = other.m_resourceRef;
+        m_volume = other.m_volume;
+        m_isValid = other.m_isValid;
+
+        return *this;
+    }
+
+    auto SoundInstance::operator=(SoundInstance&& other) -> SoundInstance&
+    {
+        m_resourceRef = AZStd::move(other.m_resourceRef);
+        m_sound = AZStd::move(other.m_sound);
+        m_volume = other.m_volume;
+        m_isValid = other.m_isValid;
+
+        other.m_isValid = false;
+
+        return *this;
     }
 
     void SoundInstance::Play(int beginPcmFrame)
@@ -46,6 +96,7 @@ namespace BopAudio
             AZ_Error("SoundInstance", false, "Cannot play invalid sound instance");
             return;
         }
+
         ma_sound_seek_to_pcm_frame(m_sound.get(), beginPcmFrame);
         ma_sound_set_volume(m_sound.get(), m_volume);
         ma_sound_start(m_sound.get());

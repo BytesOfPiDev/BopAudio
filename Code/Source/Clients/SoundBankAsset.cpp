@@ -19,6 +19,7 @@ namespace BopAudio
         AudioEventAsset::Reflect(context);
         AudioEventId::Reflect(context);
         BankRef::Reflect(context);
+        SoundRef::Reflect(context);
         ResourceRef::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -29,7 +30,6 @@ namespace BopAudio
                 ->Field("Sounds", &SoundBankAsset::m_soundSources);
 
             serialize->RegisterGenericType<AZ::Data::Asset<SoundBankAsset>>();
-            serialize->RegisterGenericType<AudioEventId>();
             serialize->RegisterGenericType<AZStd::vector<BankRef>>();
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -43,16 +43,5 @@ namespace BopAudio
     }
 
     SoundBankAsset::SoundBankAsset() = default;
-
-    auto SoundBankAsset::CloneEvent(AudioEventId) const -> AudioOutcome<AudioEventAsset>
-    {
-        return AZ::Failure("Unimplemented");
-    }
-
-    auto SoundBankAsset::CloneEvent(ResourceRef const& resourceId) const
-        -> AudioOutcome<AudioEventAsset>
-    {
-        return CloneEvent(AudioEventId{ resourceId.GetAsPath().Filename().Native() });
-    }
 
 } // namespace BopAudio

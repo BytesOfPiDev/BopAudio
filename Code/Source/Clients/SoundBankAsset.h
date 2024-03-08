@@ -69,10 +69,6 @@ namespace BopAudio
             return m_events.empty() && m_soundSources.empty();
         };
 
-        [[nodiscard]] auto CloneEvent(AudioEventId eventId) const -> AudioOutcome<AudioEventAsset>;
-        [[nodiscard]] auto CloneEvent(ResourceRef const& resourceId) const
-            -> AudioOutcome<AudioEventAsset>;
-
     protected:
         void MapControlToEvent(Audio::TAudioControlID controlId, AudioEventId eventId)
         {

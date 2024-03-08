@@ -228,7 +228,7 @@ namespace BopAudio
 
                 AZ_Warning(
                     "MiniAudioEngine",
-                    audioEventAsset.IsError(),
+                    !audioEventAsset.IsError(),
                     "Failed to queue load event asset '%s'",
                     filepath.c_str());
 

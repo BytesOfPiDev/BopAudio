@@ -28,8 +28,7 @@ namespace BopAudio
     void AudioObject::PlaySound(SoundInstance&& soundInstance)
     {
         m_sound = AZStd::move(soundInstance);
-        m_sound.SetVolume(1.0f);
-        m_sound.Play(0);
+        m_sound.Play();
     }
 
 } // namespace BopAudio

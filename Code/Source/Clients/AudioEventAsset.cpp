@@ -2,6 +2,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include "AudioAllocators.h"
 
@@ -36,8 +37,6 @@ namespace BopAudio
 
     auto AudioEventAsset::Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>
     {
-        AZ_Error("AudioEventAsset", false, "Unimplemented");
-
         AZStd::ranges::for_each(
             m_tasks,
             [&audioObject](Task const& taskVariant)
@@ -49,8 +48,7 @@ namespace BopAudio
                     },
                     taskVariant);
             });
-
-        return AZ::Failure("Unimplemented");
+        return AZ::Success();
     }
 
     void AudioEventAsset::operator()(AudioObject& audioObject) const

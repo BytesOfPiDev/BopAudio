@@ -16,7 +16,7 @@ namespace BopAudio
 
         SoundSource();
         ~SoundSource();
-        SoundSource(ResourceRef const& soundResourceRef);
+        SoundSource(SoundRef const& soundResourceRef);
         SoundSource(AZ::IO::Path localPath);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -48,16 +48,16 @@ namespace BopAudio
             return m_soundAsset.IsReady();
         }
 
-        [[nodiscard]] auto GetResourceId() const -> ResourceRef
+        [[nodiscard]] auto GetResourceId() const -> SoundRef
         {
-            return ResourceRef{ m_name };
+            return m_name;
         };
 
     protected:
         auto RegisterSound() -> bool;
 
     private:
-        AZ::Name m_name{};
+        SoundRef m_name{};
         MiniAudio::SoundDataAsset m_soundAsset{};
         bool m_registered{};
     };

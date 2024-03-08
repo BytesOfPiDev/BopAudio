@@ -18,7 +18,7 @@ namespace BopAudio
     struct AudioTriggerTag{};
     struct InstanceTag{};
     struct UserEventTag{};
-    struct SoundAssetTag{  };
+    struct SoundTag{  };
     struct SoundBankTag{ static constexpr AZ::IO::PathView RefPath{DefaultBanksPath}; };
     /* clang-format on */
 
@@ -45,14 +45,10 @@ namespace BopAudio
         ~TaggedResource() = default;
 
         explicit TaggedResource(AZStd::string_view resourceName)
-            : m_name{ resourceName }
-        {
-        }
+            : m_name{ resourceName } {};
 
         explicit TaggedResource(AZ::Name resourceName)
-            : m_name{ AZStd::move(resourceName) }
-        {
-        }
+            : m_name{ AZStd::move(resourceName) } {};
 
         [[nodiscard]] explicit constexpr operator size_t() const
         {
@@ -99,21 +95,6 @@ namespace BopAudio
             return m_name.IsEmpty() ? AZ::IO::PathView{} : m_name.GetStringView();
         }
 
-        /*
-         * Represents the reference's "filename" (not necessarily an actual file).
-         *
-         * e.g. "/sounds/dragons/thomas_the_tank" -> "thomas_the_tank"
-         * e.g. "/sounds/dragons/thomas_the_tank.alt" -> "thomas_the_tank.alt"
-         *
-         * @returns The reference's nickname (aka filename)
-         *
-         * @note A view is returned, so do not cache it without instantiating a hard-copy.
-         */
-        [[nodiscard]] constexpr auto GetNickName() const -> AZStd::string_view
-        {
-            return AZ::IO::PathView{ m_name.GetStringView() }.Filename().Native();
-        }
-
         [[nodiscard]] constexpr auto IsValid() const -> bool
         {
             return !m_name.IsEmpty();
@@ -126,30 +107,21 @@ namespace BopAudio
     template<typename Tag>
     void TaggedResource<Tag>::Reflect(AZ::ReflectContext* context)
     {
-        using ThisType = TaggedResource<Tag>;
+        using Self = TaggedResource<Tag>;
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<ThisType>()->Field("Id", &TaggedResource<Tag>::m_name);
+            serialize->Class<Self>()->Field("Id", &TaggedResource<Tag>::m_name);
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<ThisType>("TaggedResource", "");
+                editContext->Class<Self>("TaggedResource", "");
             }
         }
     }
 
-    /*
-     * A textual reference to a resource.
-     *
-     * In regards to this particular type, a resource can be literally anything. It can refer to
-     * something 'physical', such a sound file on disk, or something more 'abstract', such as a
-     * particular instance of a sound file in memory.
-     *
-     * While there are no restrictions on what it can be referenced, it is intended to be reference
-     * a 'resource' that can be instantiated for use.
-     */
     using ResourceRef = TaggedResource<>;
 
-    using SoundRef = TaggedResource<SoundAssetTag>;
+    using SoundRef = TaggedResource<SoundTag>;
+    AZ_TYPE_INFO_SPECIALIZE(SoundRef, "{B7499ED6-F58E-4487-9D0B-60CA56B4ED60}");
 
     using BankRef = TaggedResource<SoundBankTag>;
     AZ_TYPE_INFO_SPECIALIZE(BankRef, "{7AB9C911-22D9-4BC9-8C7F-9D7B31BF8282}");

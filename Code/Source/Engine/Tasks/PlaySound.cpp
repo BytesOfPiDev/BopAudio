@@ -32,7 +32,7 @@ namespace BopAudio
 
     void PlaySoundTask::operator()(AudioObject& audioObject) const
     {
-        auto soundToPlay = SoundInstance(m_resourceToPlay);
+        auto soundToPlay = SoundInstance(SoundRef{ m_resourceToPlay.GetCStr() });
         if (!soundToPlay.IsValid())
         {
             AZ_Error(
@@ -43,6 +43,8 @@ namespace BopAudio
 
             return;
         }
+
+        soundToPlay.SetVolume(1.0f);
         audioObject.PlaySound(AZStd::move(soundToPlay));
 
         AZ_Info("PlaySoundTask", "Play: [%s]", m_resourceToPlay.GetCStr());

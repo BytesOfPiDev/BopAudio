@@ -29,13 +29,13 @@ namespace BopAudio
             MiniAudio::SoundDataAsset soundAsset{ assetManager.GetAsset<MiniAudio::SoundAsset>(
                 assetId, AZ::Data::AssetLoadBehavior::PreLoad) };
 
+            soundAsset.BlockUntilLoadComplete();
+
             if (soundAsset.IsError())
             {
                 AZ_Error("SoundSource", false, "Failed to find sound asset");
                 return {};
             }
-
-            soundAsset.BlockUntilLoadComplete();
 
             if (!soundAsset.IsReady())
             {
@@ -50,11 +50,10 @@ namespace BopAudio
 
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         SoundSource, "SoundSource", "{5779BE60-D6EE-4A6C-9C1E-5875675A2ED5}");
+
     AZ_CLASS_ALLOCATOR_IMPL(SoundSource, Audio::AudioImplAllocator);
 
-    SoundSource::SoundSource()
-    {
-    }
+    SoundSource::SoundSource() = default;
 
     SoundSource::~SoundSource()
     {
@@ -75,7 +74,7 @@ namespace BopAudio
         }
     }
 
-    SoundSource::SoundSource(ResourceRef const& soundResourceRef)
+    SoundSource::SoundSource(SoundRef const& soundResourceRef)
         : m_name{ soundResourceRef.ToName() }
     {
     }
