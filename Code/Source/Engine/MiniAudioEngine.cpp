@@ -119,7 +119,7 @@ namespace BopAudio
             return tempBuffer;
         };
     } // namespace Internal
-    class AudioSystemImpl_BopAudio;
+    class AudioSystemImpl_miniaudio;
 
     MiniAudioEngine::MiniAudioEngine() = default;
 

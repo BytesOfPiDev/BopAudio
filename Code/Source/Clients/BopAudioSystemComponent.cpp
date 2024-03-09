@@ -132,7 +132,7 @@ namespace BopAudio
             AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
         m_audioSystemImpl =
-            AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
+            AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
         if (m_audioSystemImpl)
         {
             Audio::SystemRequest::Initialize initRequest;

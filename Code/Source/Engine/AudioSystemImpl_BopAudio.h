@@ -13,16 +13,16 @@ namespace BopAudio
 {
     class MiniAudioEngine;
 
-    class AudioSystemImpl_BopAudio : public Audio::AudioSystemImplementation
+    class AudioSystemImpl_miniaudio : public Audio::AudioSystemImplementation
     {
         friend MiniAudioEngine;
 
     public:
-        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_BopAudio);
-        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_BopAudio);
+        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_miniaudio);
+        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_miniaudio);
 
-        explicit AudioSystemImpl_BopAudio(AZStd::string_view assetsPlatformName);
-        ~AudioSystemImpl_BopAudio() override;
+        explicit AudioSystemImpl_miniaudio(AZStd::string_view assetsPlatformName);
+        ~AudioSystemImpl_miniaudio() override;
 
         void SetPaths();
 
