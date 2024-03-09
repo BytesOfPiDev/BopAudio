@@ -38,7 +38,7 @@ namespace BopAudio
         [[nodiscard]] virtual auto ActivateTrigger(ActivateEventData const&) -> NullOutcome = 0;
 
         [[nodiscard]] virtual auto GetSoundEngine() -> ma_engine* = 0;
-        virtual auto LoadSound(ResourceRef const& resourceRef) -> NullOutcome = 0;
+        virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;
     };
 
     using AudioEngineInterface = AZ::Interface<AudioEngineRequests>;

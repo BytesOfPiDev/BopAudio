@@ -36,6 +36,7 @@ namespace BopAudio
          * Default constructor.
          *
          * TODO: Make protected after figuring out how to serialize classes with protected
+         * constructor.
          */
         AudioEventAsset() = default;
         ~AudioEventAsset() override = default;
@@ -47,7 +48,7 @@ namespace BopAudio
             return m_id;
         }
 
-        [[nodiscard]] auto IsResource(ResourceRef const& resourceId) const -> bool
+        [[nodiscard]] auto IsSameResourceAs(ResourceRef const& resourceId) const -> bool
         {
             return m_id.IsValid() && (m_id.ToName() == resourceId.ToName());
         }
@@ -73,6 +74,6 @@ namespace BopAudio
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
     };
 
-    using AudioEvents = AZStd::vector<AudioEventAsset>;
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
+    using AudioEventAssets = AZStd::vector<AudioEventAssetDataPtr>;
 } // namespace BopAudio

@@ -17,13 +17,15 @@ namespace BopAudio
     void SoundBankAsset::Reflect(AZ::ReflectContext* context)
     {
         AudioEventAsset::Reflect(context);
-        AudioEventId::Reflect(context);
-        BankRef::Reflect(context);
-        SoundRef::Reflect(context);
         ResourceRef::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->RegisterGenericType<BankRef>();
+            serialize->RegisterGenericType<SoundRef>();
+            serialize->RegisterGenericType<ResourceRef>();
+            serialize->RegisterGenericType<AudioEventId>();
+
             serialize->Class<SoundBankAsset, AZ::Data::AssetData>()
                 ->Version(1)
                 ->Field("Id", &SoundBankAsset::m_id)

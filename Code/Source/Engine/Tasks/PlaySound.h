@@ -25,7 +25,7 @@ namespace BopAudio
 
         void operator()(AudioObject&) const;
 
-        ResourceRef m_resourceToPlay{};
+        SoundRef m_resourceToPlay{};
     };
 
 } // namespace BopAudio

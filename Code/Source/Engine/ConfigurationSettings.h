@@ -9,6 +9,7 @@ namespace BopAudio
     static constexpr auto ProjectAlias = "@audioproject@";
 
     static constexpr auto DefaultBanksPath = "sounds/bopaudio";
+    static constexpr auto SoundSourcePath = "sounds/bopaudio/data";
     static constexpr auto DefaultProjectPath = DefaultBanksPath;
     static constexpr auto ExternalSourcesPath = "external";
     static constexpr auto ConfigFile = "bopaudio_config.json";

@@ -25,7 +25,6 @@
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
-#include <AzCore/Outcome/Outcome.h>
 
 namespace BopAudio
 {
@@ -138,11 +137,6 @@ namespace BopAudio
             "MiniAudioEngine", AZ::Data::AssetManager::IsReady(), "Asset Manager isn't ready!");
 
         LoadEvents();
-
-        static constexpr auto example_one{ "dlg/soldierintro.ogg.miniaudio" };
-        auto example_one_source{ AZStd::make_unique<SoundSource>(example_one) };
-        example_one_source->Load();
-        m_soundSourceMap[ResourceRef{ example_one }] = AZStd::move(example_one_source);
 
         return AZ::Success();
     }
@@ -325,17 +319,17 @@ namespace BopAudio
         return (iter != AZStd::end(m_audioObjects)) ? iter : nullptr;
     }
 
-    auto MiniAudioEngine::LoadSound(ResourceRef const& resourceRef) -> NullOutcome
+    auto MiniAudioEngine::LoadSound(SoundRef const& resourceRef) -> NullOutcome
     {
         if (m_soundSourceMap.contains(resourceRef))
         {
             return AZ::Success();
         }
 
-        // auto source{ AZStd::make_unique<SoundSource>(resourceRef) };
-        // source->Load();
+        auto source{ AZStd::make_unique<SoundSource>(resourceRef) };
+        source->Load();
 
-        // m_soundSourceMap[resourceRef] = AZStd::move(source);
+        m_soundSourceMap[resourceRef] = AZStd::move(source);
 
         return AZ::Failure("dunno");
     }

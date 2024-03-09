@@ -12,21 +12,13 @@
 namespace BopAudio
 {
     /* clang-format off */
-    struct AudioEventTag{ static constexpr AZ::IO::PathView RefPath{"sounds/bopaudio/events"}; };
-    struct AudioObjectTag{};
-    struct AudioTaskTag{};
-    struct AudioTriggerTag{};
-    struct InstanceTag{};
-    struct UserEventTag{};
-    struct SoundTag{  };
+    struct AudioEventTag{ static constexpr AZ::IO::PathView RefPath{EventsPath}; };
+    struct SoundTag{ static constexpr AZ::IO::PathView RefPath{SoundSourcePath}; };
     struct SoundBankTag{ static constexpr AZ::IO::PathView RefPath{DefaultBanksPath}; };
     /* clang-format on */
 
     template<typename Tag>
     class TaggedResource;
-
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(
-        TaggedResource, , "{F10E4E0B-AABF-4927-9EE5-87CF82A398E0}", AZ_TYPE_INFO_CLASS);
 
     template<typename Tag = void>
     class TaggedResource
@@ -38,8 +30,7 @@ namespace BopAudio
 
     public:
         AZ_DEFAULT_COPY_MOVE(TaggedResource);
-
-        static void Reflect(AZ::ReflectContext* context);
+        AZ_TYPE_INFO(TaggedResource, "{AE00E464-11C7-42FC-80FB-CD8CD43C4779}");
 
         TaggedResource() = default;
         ~TaggedResource() = default;
@@ -49,6 +40,18 @@ namespace BopAudio
 
         explicit TaggedResource(AZ::Name resourceName)
             : m_name{ AZStd::move(resourceName) } {};
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serialize->Class<Self>()->Field("Id", &Self::m_name);
+                if (AZ::EditContext* editContext = serialize->GetEditContext())
+                {
+                    editContext->Class<Self>("TaggedResource", "");
+                }
+            }
+        }
 
         [[nodiscard]] explicit constexpr operator size_t() const
         {
@@ -90,11 +93,6 @@ namespace BopAudio
             return m_name.GetHash();
         }
 
-        [[nodiscard]] constexpr auto GetAsPath() const -> AZ::IO::PathView
-        {
-            return m_name.IsEmpty() ? AZ::IO::PathView{} : m_name.GetStringView();
-        }
-
         [[nodiscard]] constexpr auto IsValid() const -> bool
         {
             return !m_name.IsEmpty();
@@ -104,31 +102,14 @@ namespace BopAudio
         AZ::Name m_name{};
     };
 
-    template<typename Tag>
-    void TaggedResource<Tag>::Reflect(AZ::ReflectContext* context)
-    {
-        using Self = TaggedResource<Tag>;
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serialize->Class<Self>()->Field("Id", &TaggedResource<Tag>::m_name);
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
-            {
-                editContext->Class<Self>("TaggedResource", "");
-            }
-        }
-    }
-
     using ResourceRef = TaggedResource<>;
 
     using SoundRef = TaggedResource<SoundTag>;
-    AZ_TYPE_INFO_SPECIALIZE(SoundRef, "{B7499ED6-F58E-4487-9D0B-60CA56B4ED60}");
 
     using BankRef = TaggedResource<SoundBankTag>;
-    AZ_TYPE_INFO_SPECIALIZE(BankRef, "{7AB9C911-22D9-4BC9-8C7F-9D7B31BF8282}");
     using BankRefContainer = AZStd::vector<BankRef>;
 
     using AudioEventId = TaggedResource<AudioEventTag>;
-    AZ_TYPE_INFO_SPECIALIZE(AudioEventId, "{71A3D831-A821-41A6-95C8-FA76AFFDC5CE}");
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 
     template<typename Tag = void>
@@ -184,24 +165,8 @@ namespace BopAudio
     {
         static_assert(
             HasTagMember<Tag>{}, "Unsupported tag. It must have a static member named 'RefPath'");
-        return resourceRef.GetAsPath().IsRelativeTo(Tag::RefPath);
+
+        return AZ::IO::PathView{ resourceRef.GetCStr() }.IsRelativeTo(Tag::RefPath);
     }
-
-} // namespace BopAudio
-
-namespace AZStd
-{
-    template<>
-    struct hash<BopAudio::ResourceRef>
-    {
-        inline auto operator()(BopAudio::ResourceRef const& resourceId) const -> size_t
-        {
-            return resourceId.GetHash();
-        }
-    };
-} // namespace AZStd
-
-namespace BopAudio
-{
 
 } // namespace BopAudio

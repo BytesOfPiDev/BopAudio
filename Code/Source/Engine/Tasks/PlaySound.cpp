@@ -6,6 +6,7 @@
 #include "AudioAllocators.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Common_BopAudio.h"
+#include "Engine/MiniAudioEngineBus.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
 
@@ -20,7 +21,7 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<PlaySoundTask>()->Version(0)->Field(
+            serialize->Class<PlaySoundTask>()->Version(4)->Field(
                 "TargetResource", &PlaySoundTask::m_resourceToPlay);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -32,6 +33,7 @@ namespace BopAudio
 
     void PlaySoundTask::operator()(AudioObject& audioObject) const
     {
+        AudioEngineInterface::Get()->LoadSound(m_resourceToPlay);
         auto soundToPlay = SoundInstance(SoundRef{ m_resourceToPlay.GetCStr() });
         if (!soundToPlay.IsValid())
         {
@@ -58,7 +60,7 @@ namespace BopAudio
 
         PlayTaskFactory()
         {
-            BusConnect(AZ_CRC_CE("Play"));
+            TaskFactoryBus::Handler::BusConnect(AZ_CRC_CE("Play"));
         }
 
         ~PlayTaskFactory() override = default;
@@ -104,7 +106,7 @@ namespace BopAudio
                 return {};
             }
 
-            task.m_resourceToPlay = ResourceRef{ resourceValue->GetString() };
+            task.m_resourceToPlay = SoundRef{ resourceValue->GetString() };
 
             return AZStd::any{ Task{ task } };
         };
