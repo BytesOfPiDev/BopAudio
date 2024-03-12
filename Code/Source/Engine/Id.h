@@ -13,9 +13,9 @@
 namespace BopAudio
 {
     /* clang-format off */
-    struct AudioEventTag{ static constexpr AZ::IO::PathView RefPath{EventsPath}; };
-    struct SoundTag{ static constexpr AZ::IO::PathView RefPath{SoundSourcePath}; };
-    struct SoundBankTag{ static constexpr AZ::IO::PathView RefPath{DefaultBanksPath}; };
+    struct AudioEventTag{ static constexpr AZ::IO::PathView RefPath{EventsAlias}; };
+    struct SoundTag{ static constexpr AZ::IO::PathView RefPath{SoundsAlias}; };
+    struct SoundBankTag{ static constexpr AZ::IO::PathView RefPath{BanksAlias}; };
     /* clang-format on */
 
     class ResourceRefBase

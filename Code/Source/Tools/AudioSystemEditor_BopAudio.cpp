@@ -545,8 +545,7 @@ namespace BopAudio
     }
     auto AudioSystemEditor_BopAudio::GetDataPath() const -> AZ::IO::FixedMaxPath
     {
-        auto projectPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectPath() };
-        return (projectPath / DefaultProjectPath);
+        return { ProjectAlias };
     }
 
     void AudioSystemEditor_BopAudio::ConnectionRemoved(AudioControls::IAudioSystemControl* control)

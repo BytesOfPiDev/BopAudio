@@ -109,7 +109,7 @@ namespace BopAudio
 
     auto SoundSource::Load() -> AZ::Outcome<void, char const*>
     {
-        auto const absPath{ AZ::IO::Path{ DefaultBanksPath } / m_soundRef.GetCStr() };
+        auto const absPath{ AZ::IO::Path{ BanksAlias } / m_soundRef.GetCStr() };
 
         m_soundAsset = Internal::LoadSoundAsset(
             FindAssetId(absPath, AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid()));

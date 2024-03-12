@@ -3,8 +3,7 @@
 
 namespace BopAudio
 {
-
-    static AZ::IO::PathView s_configuredBanksPath = DefaultBanksPath; // NOLINT
+    static AZ::IO::PathView s_configuredBanksPath = BanksAlias;
 
     auto GetBanksRootPath() -> AZ::IO::PathView
     {

@@ -6,6 +6,7 @@
 
 #include "AudioAllocators.h"
 
+#include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Tasks/Common.h"
 
@@ -37,6 +38,16 @@ namespace BopAudio
 
     auto AudioEventAsset::Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>
     {
+        if (m_eventState != AudioEventState::Idle)
+        {
+            return AZ::Failure("Not in Idle state");
+        }
+
+        AudioEventNotificationBus::Event(
+            EventNotificationIdType(Audio::TAudioControlID{}, nullptr),
+            &AudioEventNotifications::ReportEventStarted,
+            EventStartedData{});
+
         AZStd::ranges::for_each(
             m_tasks,
             [&audioObject](Task const& taskVariant)
@@ -44,10 +55,14 @@ namespace BopAudio
                 AZStd::visit(
                     [&audioObject](auto const& task)
                     {
-                        task(audioObject);
+                        if (!task.TryStart(audioObject))
+                        {
+                            AZ_Error("AudioEventAsset", false, "Failed to start task");
+                        };
                     },
                     taskVariant);
             });
+
         return AZ::Success();
     }
 

@@ -318,6 +318,7 @@ namespace BopAudio
         AudioEventAsset event{};
 
         event.m_id = AudioEventId{ absProductPath.Filename().Stem().String() };
+        AZ_Info(AssetBuilderSDK::WarningWindow, event.m_id.GetCStr());
         event.m_tasks = tasks;
 
         bool const successfullySaved = AZ::Utils::SaveObjectToFile<AudioEventAsset>(

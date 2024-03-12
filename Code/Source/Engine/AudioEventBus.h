@@ -8,6 +8,9 @@ namespace BopAudio
 {
     struct EventStartedData;
     struct EventFinishedData;
+    class AudioObject;
+
+    AZ_ENUM_CLASS(AudioEventState, Idle, Active);
 
     struct EventNotificationIdType
     {
@@ -39,12 +42,12 @@ namespace BopAudio
             return hash;
         }
 
-        constexpr auto operator==(EventNotificationIdType const& rhs) const -> bool
+        [[nodiscard]] constexpr auto operator==(EventNotificationIdType const& rhs) const -> bool
         {
             return (m_owner == rhs.m_owner) && m_atlControlId == rhs.m_atlControlId;
         }
 
-        constexpr auto operator!=(EventNotificationIdType const& rhs) const -> bool
+        [[nodiscard]] constexpr auto operator!=(EventNotificationIdType const& rhs) const -> bool
         {
             return !(*this == rhs);
         }
@@ -54,6 +57,34 @@ namespace BopAudio
     };
 
     static_assert(AZStd::is_pod_v<EventNotificationIdType>, "Must be POD");
+
+    class AudioEventRequests
+    {
+    public:
+        AZ_DISABLE_COPY_MOVE(AudioEventRequests);
+
+        AudioEventRequests() = default;
+        virtual ~AudioEventRequests() = default;
+
+        [[nodiscard]] virtual auto TryStartEvent(AudioObject const&) -> bool = 0;
+        [[nodiscard]] virtual auto TryStartActivateEvent() -> bool = 0;
+
+        [[nodiscard]] virtual auto TryStopEvent(AudioObject const&) -> bool = 0;
+        [[nodiscard]] virtual auto TryStopEvent() -> bool = 0;
+
+        [[nodiscard]] virtual auto GetEventState() -> AudioEventState;
+    };
+
+    struct AudioEventRequestBusTraits : AZ::EBusTraits
+    {
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static bool const EnableEventQueue = true;
+        using MutexType = AZStd::recursive_mutex;
+        using BusIdType = EventNotificationIdType;
+    };
+
+    using AudioEventRequestBus = AZ::EBus<AudioEventRequests, AudioEventRequestBusTraits>;
 
     class AudioEventNotifications
     {

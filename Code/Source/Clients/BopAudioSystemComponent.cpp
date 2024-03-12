@@ -14,6 +14,7 @@
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
+#include <AzCore/IO/Streamer/Streamer.h>
 
 namespace BopAudio
 {
@@ -81,26 +82,27 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
-        AZ::IO::Path const banksProductPath = []() -> decltype(banksProductPath)
+        AZ::IO::Path const banksPath = []() -> decltype(banksPath)
         {
-            auto builtPath{ decltype(banksProductPath){
-                AZ::Utils::GetProjectProductPathForPlatform() } };
-
-            builtPath /= DefaultBanksPath;
-            return builtPath;
+            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
+            return path / "sounds/bopaudio/banks";
         }();
 
-        AZ::IO::Path const eventsProductPath = []() -> decltype(eventsProductPath)
+        AZ::IO::Path const eventsPath = []() -> decltype(eventsPath)
         {
-            auto builtPath{ decltype(banksProductPath){
-                AZ::Utils::GetProjectProductPathForPlatform() } };
-
-            builtPath /= EventsPath;
-            return builtPath;
+            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
+            return path / "sounds/bopaudio/events";
         }();
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksProductPath.c_str());
-        AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsProductPath.c_str());
+        AZ::IO::Path const projectPath = []() -> decltype(projectPath)
+        {
+            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
+            return path / "sounds/bopaudio";
+        }();
+
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(ProjectAlias, projectPath.c_str());
 
         m_soundBankAssetHandler.Register();
         m_audioEventAssetHandler.Register();

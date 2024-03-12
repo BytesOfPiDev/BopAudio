@@ -52,7 +52,7 @@ namespace BopAudio
         // "sounds/bopaudio/"
 
         // "sounds/bopaudio/bopaudio_config.json"
-        auto const configFilePath = AZ::IO::Path{ DefaultProjectPath } / ConfigFile;
+        auto const configFilePath = AZ::IO::Path{ ProjectAlias } / ConfigFile;
 
         if (AZ::IO::FileIOBase::GetInstance() &&
             AZ::IO::FileIOBase::GetInstance()->Exists(configFilePath.c_str()))
@@ -70,10 +70,17 @@ namespace BopAudio
             AZLOG_ERROR(
                 "Failed to find Bop Audio configuration file: \"%s\".",
                 configFilePath.c_str()); // NOLINT
+        };
+
+        if (AZ::IO::FileIOBase::GetInstance() == nullptr)
+        {
+            AZLOG_ERROR(
+                "ASI is unable to set the soundbank folder because due to no FileIO instance.");
+
+            return;
         }
 
-        m_soundBankFolder = DefaultBanksPath;
-
+        m_soundBankFolder = BanksAlias;
         SetBanksRootPath(m_soundBankFolder);
     }
 

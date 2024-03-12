@@ -272,12 +272,6 @@ namespace BopAudio
 
         executeEventOnObject(*eventAsset, *audioObj);
 
-        AudioEventNotificationBus::Event(
-            EventNotificationIdType(
-                activateTriggerRequest.m_audioControlId, activateTriggerRequest.m_owner),
-            &AudioEventNotifications::ReportEventStarted,
-            EventStartedData{});
-
         return AZ::Success();
     }
 

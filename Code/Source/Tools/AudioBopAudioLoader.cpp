@@ -28,10 +28,7 @@ namespace BopAudio
             AZ::IO::FixedMaxPath{ audioProjectFullPath / AudioStrings::GameParametersFolder }
                 .Native());
 
-        auto const eventsPath{ AZ::IO::Path{} / AZ::Utils::GetProjectProductPathForPlatform() /
-                               EventsPath };
-
-        LoadControlsInFolder(eventsPath.Native());
+        LoadControlsInFolder(EventsAlias);
         LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 

@@ -7,6 +7,7 @@
 #include "AzCore/Utils/Utils.h"
 #include "AzCore/std/string/string.h"
 
+#include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
@@ -29,7 +30,7 @@ namespace BopAudio
 
     static inline auto GetBankCachePath() -> AZ::IO::Path
     {
-        return AZ::IO::Path{ AZ::Utils::GetProjectProductPathForPlatform() } / DefaultBanksPath;
+        return AZ::IO::Path{ BanksAlias };
     }
 
     static inline auto FindAssetId(AZ::IO::PathView assetPath, AZ::TypeId typeId)

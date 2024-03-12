@@ -257,7 +257,7 @@ namespace BopAudio
                             // the BopAudio sounds folder to get relative path
                             // to the bank from the @products@ alias and push
                             // that into the list of banks referenced.
-                            AZStd::string soundsPrefix = DefaultBanksPath;
+                            AZStd::string soundsPrefix = BanksAlias;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 
                             bopFileNode = bopFileNode->next_sibling(XmlTags::BopFileTag);
@@ -344,7 +344,7 @@ namespace BopAudio
                             bopAudioFileNode->first_attribute(XmlTags::NameAttribute);
                         if (libraryNameAttr)
                         {
-                            AZStd::string soundsPrefix = DefaultBanksPath;
+                            AZStd::string soundsPrefix = BanksAlias;
                             banksReferenced.emplace_back(soundsPrefix + libraryNameAttr->value());
                         }
                         else

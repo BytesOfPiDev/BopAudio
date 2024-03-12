@@ -7,6 +7,7 @@
 #include "AzCore/Outcome/Outcome.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 
+#include "Engine/AudioEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/Common.h"
 #include "IAudioInterfacesCommonData.h"
@@ -16,6 +17,7 @@
 namespace BopAudio
 {
     class AudioObject;
+
     class AudioEventAsset : public AZ::Data::AssetData
     {
         friend class AudioEventAssetBuilderWorker;
@@ -65,6 +67,28 @@ namespace BopAudio
             return m_tasks;
         }
 
+        [[nodiscard]] constexpr auto TryStartEvent() -> bool
+        {
+            if (m_eventState != AudioEventState::Idle)
+            {
+                return false;
+            }
+
+            m_eventState = AudioEventState::Active;
+
+            return true;
+        }
+
+        [[nodiscard]] constexpr auto TryStopEvent() -> bool
+        {
+            if (m_eventState != AudioEventState::Idle)
+            {
+                m_eventState = AudioEventState::Idle;
+            }
+
+            return true;
+        }
+
     protected:
         auto Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>;
 
@@ -72,6 +96,7 @@ namespace BopAudio
         AudioEventId m_id{};
         TaskContainer m_tasks{};
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
+        AudioEventState m_eventState{};
     };
 
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
