@@ -117,10 +117,14 @@ namespace BopAudio
             return result;
         }();
 
-        AZStd::vector<char> tempBuffer(bufferSize);
-        auto const readResult{ fileIO.Read(fileHandle, tempBuffer.data(), tempBuffer.size()) };
+        AZStd::vector<char> const buffer = [&]() -> decltype(buffer)
+        {
+            auto tempBuffer{ decltype(buffer)(bufferSize) };
+            fileIO.Read(fileHandle, tempBuffer.data(), tempBuffer.size());
+            return tempBuffer;
+        }();
 
-        if (readResult != AZ::IO::ResultCode::Success)
+        if (buffer.empty())
         {
             return AZ::Failure(AZStd::string::format(
                 "Failed to read file '%s'", soundBankFilePath.Native().data()));
@@ -128,11 +132,11 @@ namespace BopAudio
 
         AZ_Warning(
             "LoadSoundBankToBuffer",
-            tempBuffer.size() != 0,
+            buffer.size() != 0,
             "The sound bank file [%s] is empty!",
             soundBankFilePath.Native().data());
 
-        return AZ::Success(AZStd::move(tempBuffer));
+        return AZ::Success(AZStd::move(buffer));
     }
 
     auto GetSoundNamesFromSoundBankFile(rapidjson::Document const& doc) -> SoundNames

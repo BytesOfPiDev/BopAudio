@@ -59,7 +59,7 @@ namespace BopAudio
     {
         ma_engine* const engine{ AudioEngineInterface::Get()->GetSoundEngine() };
         ma_resource_manager_unregister_data(
-            ma_engine_get_resource_manager(engine), m_name.GetCStr());
+            ma_engine_get_resource_manager(engine), m_soundRef.GetCStr());
     }
     void SoundSource::Reflect(AZ::ReflectContext* context)
     {
@@ -74,15 +74,11 @@ namespace BopAudio
         }
     }
 
-    SoundSource::SoundSource(SoundRef const& soundResourceRef)
-        : m_name{ soundResourceRef.ToName() }
-    {
-    }
+    SoundSource::SoundSource(SoundRef soundResourceRef)
+        : m_soundRef{ AZStd::move(soundResourceRef) } {};
 
     SoundSource::SoundSource(AZ::IO::Path localPath)
-        : m_name{ localPath.Native() }
-    {
-    }
+        : m_soundRef{ localPath.Native() } {};
 
     auto SoundSource::RegisterSound() -> bool
     {
@@ -96,7 +92,7 @@ namespace BopAudio
 
         ma_result const result = ma_resource_manager_register_encoded_data(
             ma_engine_get_resource_manager(miniAudioEngine),
-            m_name.GetCStr(),
+            m_soundRef.GetCStr(),
             m_soundAsset->m_data.data(),
             m_soundAsset->m_data.size());
 
@@ -106,14 +102,14 @@ namespace BopAudio
             "SoundSource",
             m_registered,
             "Failed to register sound '%' with miniaudio!",
-            m_name.GetCStr());
+            m_soundRef.GetCStr());
 
         return m_registered;
     }
 
     auto SoundSource::Load() -> AZ::Outcome<void, char const*>
     {
-        auto const absPath{ AZ::IO::Path{ DefaultBanksPath } / m_name.GetCStr() };
+        auto const absPath{ AZ::IO::Path{ DefaultBanksPath } / m_soundRef.GetCStr() };
 
         m_soundAsset = Internal::LoadSoundAsset(
             FindAssetId(absPath, AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid()));
@@ -129,7 +125,7 @@ namespace BopAudio
             return AZ::Failure("Loaded sound, but failed registration failed.");
         }
 
-        AZLOG_INFO("Registered sound '%s' to miniaudio", m_name.GetCStr());
+        AZLOG_INFO("Registered sound '%s' to miniaudio", m_soundRef.GetCStr());
         return AZ::Success();
     }
 

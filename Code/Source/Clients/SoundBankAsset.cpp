@@ -10,24 +10,24 @@
 
 namespace BopAudio
 {
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, Audio::AudioImplAllocator);
     AZ_RTTI_NO_TYPE_INFO_IMPL(SoundBankAsset, AZ::Data::AssetData);
     AZ_TYPE_INFO_WITH_NAME_IMPL(SoundBankAsset, "SoundBankAsset", SoundBankAssetTypeId);
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, Audio::AudioImplAllocator);
 
     void SoundBankAsset::Reflect(AZ::ReflectContext* context)
     {
+        ResourceRefBase::Reflect(context);
         AudioEventAsset::Reflect(context);
-        ResourceRef::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->RegisterGenericType<BankRef>();
-            serialize->RegisterGenericType<SoundRef>();
-            serialize->RegisterGenericType<ResourceRef>();
-            serialize->RegisterGenericType<AudioEventId>();
+            serialize->Class<ResourceRef>()->Version(0);
+            serialize->Class<AudioEventId>()->Version(0);
+            serialize->Class<BankRef>()->Version(0);
+            serialize->Class<SoundRef>()->Version(0);
 
             serialize->Class<SoundBankAsset, AZ::Data::AssetData>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Id", &SoundBankAsset::m_id)
                 ->Field("Sounds", &SoundBankAsset::m_soundSources);
 

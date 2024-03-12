@@ -8,9 +8,9 @@ namespace BopAudio
     static constexpr auto EventsAlias = "@audioevents@";
     static constexpr auto ProjectAlias = "@audioproject@";
 
-    static constexpr auto DefaultBanksPath = "sounds/bopaudio";
-    static constexpr auto SoundSourcePath = "sounds/bopaudio/data";
-    static constexpr auto DefaultProjectPath = DefaultBanksPath;
+    static constexpr auto DefaultBanksPath = "sounds/bopaudio/banks";
+    static constexpr auto SoundSourcePath = DefaultBanksPath;
+    static constexpr auto DefaultProjectPath = "sounds/bopaudio";
     static constexpr auto ExternalSourcesPath = "external";
     static constexpr auto ConfigFile = "bopaudio_config.json";
     static constexpr auto SoundbankExtension = ".soundbank";
@@ -27,10 +27,20 @@ namespace BopAudio
     static constexpr auto DefaultSampleRate = 48000;
     static constexpr auto DefaultBitsPerSample = 16;
 
+    AZ_ENUM_CLASS(Language, en, es);
+
     class ConfigurationSettings
     {
     public:
         auto Load(AZ::IO::PathView configFile) -> bool;
+
+        [[nodiscard]] auto GetLanguage() const -> Language
+        {
+            return m_language;
+        }
+
+    private:
+        Language m_language{};
     };
 
 } // namespace BopAudio

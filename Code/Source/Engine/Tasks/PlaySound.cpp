@@ -34,7 +34,7 @@ namespace BopAudio
     void PlaySoundTask::operator()(AudioObject& audioObject) const
     {
         AudioEngineInterface::Get()->LoadSound(m_resourceToPlay);
-        auto soundToPlay = SoundInstance(SoundRef{ m_resourceToPlay.GetCStr() });
+        auto soundToPlay = SoundInstance(SoundRef{ m_resourceToPlay });
         if (!soundToPlay.IsValid())
         {
             AZ_Error(

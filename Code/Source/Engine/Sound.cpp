@@ -12,7 +12,7 @@ namespace BopAudio
     }
 
     SoundInstance::SoundInstance(SoundRef const& soundName)
-        : m_resourceRef{ soundName.GetCStr() }
+        : m_resourceRef{ soundName }
         , m_sound{ new ma_sound }
         , m_volume{ 1.0f }
     {

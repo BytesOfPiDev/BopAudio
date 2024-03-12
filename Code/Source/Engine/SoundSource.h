@@ -16,19 +16,19 @@ namespace BopAudio
 
         SoundSource();
         ~SoundSource();
-        SoundSource(SoundRef const& soundResourceRef);
+        SoundSource(SoundRef soundResourceRef);
         SoundSource(AZ::IO::Path localPath);
 
         static void Reflect(AZ::ReflectContext* context);
 
         [[nodiscard]] explicit constexpr operator size_t() const
         {
-            return m_name.GetHash();
+            return m_soundRef.GetHash();
         }
 
         [[nodiscard]] constexpr auto operator==(SoundSource const& other) const
         {
-            return m_name == other.m_name;
+            return m_soundRef == other.m_soundRef;
         }
 
         [[nodiscard]] constexpr auto operator!=(SoundSource const& other) const
@@ -50,14 +50,14 @@ namespace BopAudio
 
         [[nodiscard]] auto GetResourceId() const -> SoundRef
         {
-            return m_name;
+            return m_soundRef;
         };
 
     protected:
         auto RegisterSound() -> bool;
 
     private:
-        SoundRef m_name{};
+        SoundRef m_soundRef{};
         MiniAudio::SoundDataAsset m_soundAsset{};
         bool m_registered{};
     };

@@ -17,7 +17,6 @@
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
-#include "Engine/MiniAudioEngine.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "Engine/MiniAudioEngineRequests.h"
 
@@ -51,10 +50,9 @@ namespace BopAudio
     void AudioSystemImpl_miniaudio::SetPaths()
     {
         // "sounds/bopaudio/"
-        AZ::IO::Path libraryPath = DefaultBanksPath;
 
         // "sounds/bopaudio/bopaudio_config.json"
-        auto const configFilePath = libraryPath / ConfigFile;
+        auto const configFilePath = AZ::IO::Path{ DefaultProjectPath } / ConfigFile;
 
         if (AZ::IO::FileIOBase::GetInstance() &&
             AZ::IO::FileIOBase::GetInstance()->Exists(configFilePath.c_str()))
@@ -62,26 +60,9 @@ namespace BopAudio
             ConfigurationSettings configSettings{};
             if (configSettings.Load(configFilePath))
             {
-                AZStd::string platformPath{};
-                // HACK: Manually setting to linux. I'll implement the platform
-                // detection once that works.
-                //
-                // "sounds/bopaudio/linux"
-                AZ::StringFunc::AssetDatabasePath::Join(libraryPath.c_str(), "linux", platformPath);
-                AZStd::string initLibraryPath{};
-                AZLOG_INFO("InitLibraryPath set: %s.", initLibraryPath.c_str());
-                // "sounds/bopaudio/linux/init.soundlib"
-                AZ::StringFunc::AssetDatabasePath::Join(
-                    platformPath.c_str(), InitBank, initLibraryPath);
-                AZLOG_INFO("InitLibraryPath changed: %s.", initLibraryPath.c_str());
-                if (AZ::IO::FileIOBase::GetInstance()->Exists(initLibraryPath.c_str()))
-                {
-                    if (!platformPath.ends_with(AZ_CORRECT_DATABASE_SEPARATOR))
-                    {
-                        platformPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-                    }
-                    libraryPath = platformPath;
-                }
+                m_localizedSoundBankFolder = {
+                    m_soundBankFolder / LanguageNamespace::ToString(configSettings.GetLanguage())
+                };
             }
         }
         else
@@ -91,8 +72,7 @@ namespace BopAudio
                 configFilePath.c_str()); // NOLINT
         }
 
-        m_soundBankFolder = libraryPath;
-        m_localizedSoundBankFolder = libraryPath;
+        m_soundBankFolder = DefaultBanksPath;
 
         SetBanksRootPath(m_soundBankFolder);
     }
@@ -537,7 +517,7 @@ namespace BopAudio
         auto* implAudioTriggerData{ azcreate(
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetImplTriggerId(AudioEventId{ triggerName });
+        implAudioTriggerData->SetImplTriggerId(AudioEventId{ triggerName.GetStringView() });
 
         return implAudioTriggerData;
     }
