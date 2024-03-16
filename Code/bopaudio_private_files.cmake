@@ -44,6 +44,8 @@ set(FILES
     Source/Engine/MiniAudioEngineBus.h
     Source/Engine/MiniAudioEngineRequests.h
     Source/Engine/MiniAudioIncludes.h
+    Source/Engine/Rtpc.cpp
+    Source/Engine/Rtpc.h
     Source/Engine/Sound.cpp
     Source/Engine/Sound.h
     Source/Engine/SoundBankUtil.cpp
