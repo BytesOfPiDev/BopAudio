@@ -22,7 +22,6 @@ namespace BopAudio
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ResourceRef, ResourceRefBase>()->Version(1);
-            serialize->Class<AudioEventId, ResourceRefBase>()->Version(1);
             serialize->Class<BankRef, ResourceRefBase>()->Version(1);
             serialize->Class<SoundRef, ResourceRefBase>()->Version(1);
 

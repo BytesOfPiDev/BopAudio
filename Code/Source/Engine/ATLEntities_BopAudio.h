@@ -47,11 +47,6 @@ namespace BopAudio
             return m_implAudioObjectId;
         }
 
-        [[nodiscard]] constexpr auto GetInstanceId() const -> UniqueId
-        {
-            return m_instanceId;
-        }
-
         constexpr void ChangeName(AZStd::string_view objectName)
         {
             m_objectName = objectName;
@@ -60,7 +55,6 @@ namespace BopAudio
     private:
         Audio::TAudioObjectID m_atlAudioObjectId;
         AudioObjectId m_implAudioObjectId{};
-        UniqueId m_instanceId{};
         AZ::Name m_objectName;
     };
 
@@ -88,7 +82,7 @@ namespace BopAudio
             m_implAudioObjectId = implAudioObjectIde;
         }
 
-        [[nodiscard]] auto GetImplTriggerId() const -> AudioEventId
+        [[nodiscard]] auto GetEventId() const -> AudioEventId
         {
             return m_audioEventResourceId;
         }
@@ -127,17 +121,15 @@ namespace BopAudio
 
         ~SATLEventData_BopAudio() override = default;
 
-        /*
-              [[nodiscard]] constexpr auto GetImplEventId() const -> AudioEventId
-              {
-                  return m_implEventId;
-              }
+        [[nodiscard]] auto GetImplEventId() const -> AudioEventId
+        {
+            return m_implEventId;
+        }
 
         void SetImplEventId(AudioEventId eventId)
         {
             m_implEventId = eventId;
         }
-        */
 
         [[nodiscard]] constexpr auto GetAtlEventId() const -> Audio::TAudioEventID
         {
@@ -147,16 +139,6 @@ namespace BopAudio
         constexpr void SetAtlEventId(Audio::TAudioEventID atlEventId)
         {
             m_atlEventId = atlEventId;
-        }
-
-        [[nodiscard]] constexpr auto GetEventState() const -> Audio::EAudioEventState
-        {
-            return m_eventState;
-        }
-
-        constexpr void SetEventState(Audio::EAudioEventState atlEventState)
-        {
-            m_eventState = atlEventState;
         }
 
         [[nodiscard]] constexpr auto GetSourceId() const -> Audio::TAudioSourceId
@@ -170,10 +152,9 @@ namespace BopAudio
         }
 
     private:
-        Audio::EAudioEventState m_eventState{};
         Audio::TAudioEventID m_atlEventId{};
         Audio::TAudioSourceId m_sourceId{};
-        // AudioEventId m_implEventId{};
+        AudioEventId m_implEventId{};
     };
 
     struct SATLAudioFileEntryData_BopAudio : public Audio::IATLAudioFileEntryData

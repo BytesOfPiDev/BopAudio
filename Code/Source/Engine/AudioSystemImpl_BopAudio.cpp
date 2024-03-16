@@ -10,6 +10,7 @@
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
 #include "IAudioInterfacesCommonData.h"
+#include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 #include "MiniAudio/SoundAsset.h"
 
@@ -68,8 +69,7 @@ namespace BopAudio
         else
         {
             AZLOG_ERROR(
-                "Failed to find Bop Audio configuration file: \"%s\".",
-                configFilePath.c_str()); // NOLINT
+                "Failed to find Bop Audio configuration file: \"%s\".", configFilePath.c_str());
         };
 
         if (AZ::IO::FileIOBase::GetInstance() == nullptr)
@@ -267,32 +267,38 @@ namespace BopAudio
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        ActivateEventData activateTriggerRequest{};
+        implEventData->SetImplEventId(implTriggerData->GetEventId());
+
+        StartEventData activateTriggerRequest{};
         activateTriggerRequest.m_owner = eventData->m_owner;
         activateTriggerRequest.m_audioControlId = eventData->m_triggerId;
         activateTriggerRequest.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
-        activateTriggerRequest.m_audioEventId = implTriggerData->GetImplTriggerId();
+        activateTriggerRequest.m_audioEventId = implTriggerData->GetEventId();
 
-        auto const activateOutcome{ AudioEngineInterface::Get()->ActivateTrigger(
+        auto const activateOutcome{ AudioEngineInterface::Get()->StartEvent(
             activateTriggerRequest) };
 
         AZ_Error(
             "ASI",
             activateOutcome.IsSuccess(),
-            "Failed to activate event with trigger '[%s]': '[%s]'",
-            implTriggerData->GetImplTriggerId().c_str(),
+            "Failed to activate event. [EventId: %zu]': '[Error: %s]'",
+            implTriggerData->GetEventId(),
             activateOutcome.GetError().c_str());
 
         return Audio::EAudioRequestStatus::Success;
     }
 
     auto AudioSystemImpl_miniaudio::StopEvent(
-        Audio::IATLAudioObjectData* const audioObjectData,
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::IATLEventData const* const eventData) -> Audio::EAudioRequestStatus
     {
-        AZ_Error("ASI", false, "StopEvent is not yet implemented.");
-        AZ_UNUSED(audioObjectData, eventData);
-        return Audio::EAudioRequestStatus::Failure;
+        auto const* const implEventData{ static_cast<SATLEventData_BopAudio const*>(eventData) };
+
+        auto const isStopped{ AudioEngineInterface::Get()->StopEvent(
+            implEventData->GetImplEventId()) };
+
+        return isStopped ? Audio::EAudioRequestStatus::Success
+                         : Audio::EAudioRequestStatus::Failure;
     }
 
     auto AudioSystemImpl_miniaudio::StopAllEvents(Audio::IATLAudioObjectData* const audioObjectData)
@@ -524,7 +530,8 @@ namespace BopAudio
         auto* implAudioTriggerData{ azcreate(
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetImplTriggerId(AudioEventId{ triggerName.GetStringView() });
+        implAudioTriggerData->SetImplTriggerId(
+            Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.GetCStr()));
 
         return implAudioTriggerData;
     }
@@ -654,7 +661,7 @@ namespace BopAudio
 
         // eventData->m_owner = nullptr;
         // eventData->m_triggerId = INVALID_AUDIO_CONTROL_ID;
-        bopEventData->SetEventState(Audio::EAudioEventState::eAES_NONE);
+        // bopEventData->SetEventState(Audio::EAudioEventState::eAES_NONE);
         bopEventData->SetSourceId(INVALID_AUDIO_SOURCE_ID);
     }
 

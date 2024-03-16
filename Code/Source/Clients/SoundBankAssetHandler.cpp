@@ -88,15 +88,6 @@ namespace BopAudio
             return AZ::Data::AssetHandler::LoadResult::Error;
         }
 
-        SoundBankAsset* assetData{ asset.GetAs<SoundBankAsset>() };
-
-        AZStd::ranges::for_each(
-            assetData->GetEventAssets(),
-            [&assetData](auto const& eventAsset)
-            {
-                assetData->MapControlToEvent(eventAsset->GetControlId(), eventAsset->GetId());
-            });
-
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }
 

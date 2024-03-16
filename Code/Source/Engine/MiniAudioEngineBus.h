@@ -12,7 +12,7 @@ struct ma_engine;
 
 namespace BopAudio
 {
-    struct ActivateEventData;
+    struct StartEventData;
 
     struct RegisterFileData
     {
@@ -35,10 +35,11 @@ namespace BopAudio
         [[nodiscard]] virtual auto RegisterFile(RegisterFileData const&) -> NullOutcome = 0;
         [[nodiscard]] virtual auto CreateAudioObject() -> AudioObjectId = 0;
         virtual void RemoveAudioObject(AudioObjectId) = 0;
-        [[nodiscard]] virtual auto ActivateTrigger(ActivateEventData const&) -> NullOutcome = 0;
+        [[nodiscard]] virtual auto StartEvent(StartEventData const&) -> NullOutcome = 0;
+        virtual auto StopEvent(AudioEventId eventId) -> bool = 0;
 
         [[nodiscard]] virtual auto GetSoundEngine() -> ma_engine* = 0;
-        virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;
+        [[nodiscard]] virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;
     };
 
     using AudioEngineInterface = AZ::Interface<AudioEngineRequests>;

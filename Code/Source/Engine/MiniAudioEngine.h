@@ -16,6 +16,8 @@ namespace BopAudio
     {
     public:
         AZ_DISABLE_COPY_MOVE(MiniAudioEngine);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_TYPE_INFO_WITH_NAME_DECL(MiniAudioEngine);
 
         MiniAudioEngine();
         ~MiniAudioEngine() override;
@@ -26,7 +28,7 @@ namespace BopAudio
 
         [[nodiscard]] auto GetSoundEngine() -> ma_engine* override;
 
-        [[nodiscard]] auto ActivateTrigger(ActivateEventData const& activateTriggerRequest)
+        [[nodiscard]] auto StartEvent(StartEventData const& activateTriggerRequest)
             -> NullOutcome override;
 
         [[nodiscard]] auto CreateAudioObject() -> AudioObjectId override;
@@ -36,8 +38,8 @@ namespace BopAudio
         void LoadSounds();
         void LoadEvents();
 
-        [[nodiscard]] auto FindAudioEvent(AudioEventId targetAudioEvent)
-            -> AZ::Data::Asset<AudioEventAsset>;
+        auto StopEvent(AudioEventId eventId) -> bool override;
+
         [[nodiscard]] auto FindAudioObject(AudioObjectId targetAudioObjectId) -> AudioObject*;
         auto LoadSound(SoundRef const& resourceRef) -> NullOutcome override;
 
@@ -48,7 +50,8 @@ namespace BopAudio
 
         AZStd::map<Audio::TAudioControlID, AZ::Data::Asset<AudioEventAsset>> m_controlEventMap{};
         AZStd::unordered_set<Audio::TAudioSourceId> m_loadedSources{};
-        AZStd::unordered_map<AudioEventId, AZ::Data::Asset<AudioEventAsset>> m_eventAssets{};
         AZStd::unordered_map<SoundRef, AZStd::unique_ptr<SoundSource>> m_soundSourceMap{};
+
+        AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_eventAssets{};
     };
 } // namespace BopAudio

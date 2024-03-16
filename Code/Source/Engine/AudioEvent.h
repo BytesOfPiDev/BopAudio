@@ -25,7 +25,7 @@ namespace BopAudio
     protected:
         [[nodiscard]] constexpr auto operator==(AudioEvent const& otherEvent) const
         {
-            return m_id.GetHash() == otherEvent.m_id.GetHash();
+            return m_id == otherEvent.m_id;
         }
 
         [[nodiscard]] constexpr auto operator!=(AudioEvent const& otherEvent) const
@@ -35,12 +35,12 @@ namespace BopAudio
 
         [[nodiscard]] constexpr auto operator<(AudioEvent const& otherEvent) const
         {
-            return m_id.GetHash() < otherEvent.m_id.GetHash();
+            return m_id < otherEvent.m_id;
         }
 
         [[nodiscard]] constexpr auto operator>(AudioEvent const& otherEvent) const
         {
-            return m_id.GetHash() > otherEvent.m_id.GetHash();
+            return m_id > otherEvent.m_id;
         }
 
     private:

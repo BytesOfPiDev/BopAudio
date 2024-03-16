@@ -2,21 +2,18 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
-#include <AzCore/Outcome/Outcome.h>
 
 #include "AudioAllocators.h"
 
 #include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Tasks/Common.h"
 
 namespace BopAudio
 {
-
     AZ_CLASS_ALLOCATOR_IMPL(AudioEventAsset, Audio::AudioImplAllocator);
-
-    AZ_RTTI_NO_TYPE_INFO_IMPL(AudioEventAsset, AZ::Data::AssetData);
-
+    AZ_RTTI_NO_TYPE_INFO_IMPL(AudioEventAsset, AZ::Data::AssetData, MiniAudioEventRequests);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioEventAsset, "AudioEventAsset", "{F26CEC71-D882-4367-BCBF-B9B041E1C708}");
 
@@ -24,28 +21,35 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AudioEventAsset, AZ::Data::AssetData>()
-                ->Version(0)
+            serialize->Class<AudioEventAsset, AZ::Data::AssetData, MiniAudioEventRequests>()
+                ->Version(1)
                 ->Field("Id", &AudioEventAsset::m_id)
                 ->Field("Tasks", &AudioEventAsset::m_tasks);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<AudioEventAsset>("AudioEventAsset", "");
+                editContext->Class<AudioEventAsset>("Audio Event Asset", "");
             }
         }
     }
 
-    auto AudioEventAsset::Execute(AudioObject& audioObject) const -> AZ::Outcome<void, char const*>
+    AudioEventAsset::AudioEventAsset() = default;
+
+    AudioEventAsset::~AudioEventAsset()
+    {
+        UnregisterAudioEvent();
+    }
+
+    void AudioEventAsset::operator()(AudioObject& audioObject) const
     {
         if (m_eventState != AudioEventState::Idle)
         {
-            return AZ::Failure("Not in Idle state");
+            return;
         }
 
         AudioEventNotificationBus::Event(
             EventNotificationIdType(Audio::TAudioControlID{}, nullptr),
-            &AudioEventNotifications::ReportEventStarted,
+            &MiniAudioEventNotifications::ReportEventStarted,
             EventStartedData{});
 
         AZStd::ranges::for_each(
@@ -62,13 +66,34 @@ namespace BopAudio
                     },
                     taskVariant);
             });
-
-        return AZ::Success();
     }
 
-    void AudioEventAsset::operator()(AudioObject& audioObject) const
+    auto AudioEventAsset::TryStartEvent(AudioObject& obj) -> bool
     {
-        Execute(audioObject);
+        AZ_Error("AudioEventAsset", false, "TryStartEventXX");
+        auto const& self(*this);
+        self(obj);
+
+        return true;
     }
+
+    auto AudioEventAsset::TryStopEvent(AudioObject& obj) -> bool
+    {
+        AZ_Error("AudioEventAsset", false, "TryStopEvent");
+        auto const& self(*this);
+        self(obj);
+
+        return true;
+    }
+
+    void AudioEventAsset::RegisterAudioEvent()
+    {
+        MiniAudioEventRequestBus::Handler::BusConnect(m_id);
+    }
+
+    void AudioEventAsset::UnregisterAudioEvent()
+    {
+        MiniAudioEventRequestBus::Handler::BusDisconnect();
+    };
 
 } // namespace BopAudio

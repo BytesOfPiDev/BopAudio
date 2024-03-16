@@ -15,7 +15,7 @@ namespace BopAudio
     AZ_RTTI_NO_TYPE_INFO_IMPL(AudioControlBuilderWorker);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioControlBuilderWorker,
-        "BopAudioBuilserWorker",
+        "MaAudioControlBuilderWorker",
         "{06B4A9AB-D205-4DAF-B36D-EEED181509B2}");
     AZ_CLASS_ALLOCATOR_IMPL(AudioControlBuilderWorker, AZ::SystemAllocator);
 

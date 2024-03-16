@@ -51,7 +51,7 @@ namespace AZStd
     {
         inline auto operator()(BopAudio::AudioObject const& soundObject) const -> size_t
         {
-            return soundObject.GetId();
+            return static_cast<size_t>(soundObject.GetId());
         }
     };
 } // namespace AZStd

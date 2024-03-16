@@ -1,5 +1,6 @@
 #include "Engine/ConfigurationSettings.h"
-#include <AzCore/IO/Path/Path.h>
+
+#include "AzCore/IO/Path/Path.h"
 
 namespace BopAudio
 {

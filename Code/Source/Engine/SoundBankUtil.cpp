@@ -16,6 +16,7 @@
 #include "Engine/Common_BopAudio.h"
 #include "Engine/DocumentReader.h"
 #include "Engine/Id.h"
+#include "IAudioSystem.h"
 
 namespace BopAudio
 {
@@ -88,7 +89,8 @@ namespace BopAudio
                 continue;
             }
 
-            eventIds.emplace_back(eventsMember.name.GetString());
+            eventIds.emplace_back(
+                Audio::AudioStringToID<AudioEventId>(eventsMember.name.GetString()));
         }
 
         AZ_Info("LoadEventIds", "Events found: [%i]", eventIds.size());

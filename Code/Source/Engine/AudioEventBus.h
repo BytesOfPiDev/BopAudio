@@ -2,6 +2,7 @@
 
 #include "AzCore/EBus/EBus.h"
 #include "AzCore/std/hash.h"
+#include "Engine/Id.h"
 #include "IAudioInterfacesCommonData.h"
 
 namespace BopAudio
@@ -58,41 +59,38 @@ namespace BopAudio
 
     static_assert(AZStd::is_pod_v<EventNotificationIdType>, "Must be POD");
 
-    class AudioEventRequests
+    class MiniAudioEventRequests
     {
     public:
-        AZ_DISABLE_COPY_MOVE(AudioEventRequests);
+        AZ_DISABLE_COPY_MOVE(MiniAudioEventRequests);
+        AZ_RTTI(MiniAudioEventRequests, "{4E60C34B-EBD3-47BE-87CA-42E4500BCD29}");
 
-        AudioEventRequests() = default;
-        virtual ~AudioEventRequests() = default;
+        MiniAudioEventRequests() = default;
+        virtual ~MiniAudioEventRequests() = default;
 
-        [[nodiscard]] virtual auto TryStartEvent(AudioObject const&) -> bool = 0;
-        [[nodiscard]] virtual auto TryStartActivateEvent() -> bool = 0;
+        [[nodiscard]] virtual auto TryStartEvent(AudioObject&) -> bool = 0;
+        [[nodiscard]] virtual auto TryStopEvent(AudioObject&) -> bool = 0;
 
-        [[nodiscard]] virtual auto TryStopEvent(AudioObject const&) -> bool = 0;
-        [[nodiscard]] virtual auto TryStopEvent() -> bool = 0;
-
-        [[nodiscard]] virtual auto GetEventState() -> AudioEventState;
+        [[nodiscard]] virtual auto GetEventState() const -> AudioEventState = 0;
     };
 
     struct AudioEventRequestBusTraits : AZ::EBusTraits
     {
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static bool const EnableEventQueue = true;
         using MutexType = AZStd::recursive_mutex;
-        using BusIdType = EventNotificationIdType;
+        using BusIdType = AudioEventId;
     };
 
-    using AudioEventRequestBus = AZ::EBus<AudioEventRequests, AudioEventRequestBusTraits>;
+    using MiniAudioEventRequestBus = AZ::EBus<MiniAudioEventRequests, AudioEventRequestBusTraits>;
 
-    class AudioEventNotifications
+    class MiniAudioEventNotifications
     {
     public:
-        AZ_DISABLE_COPY_MOVE(AudioEventNotifications);
+        AZ_DISABLE_COPY_MOVE(MiniAudioEventNotifications);
 
-        AudioEventNotifications() = default;
-        virtual ~AudioEventNotifications() = default;
+        MiniAudioEventNotifications() = default;
+        virtual ~MiniAudioEventNotifications() = default;
 
         virtual void ReportDurationInfo(
             [[maybe_unused]] Audio::TAudioControlID triggerId,
@@ -114,5 +112,5 @@ namespace BopAudio
     };
 
     using AudioEventNotificationBus =
-        AZ::EBus<AudioEventNotifications, AudioEventNotificationBusTraits>;
+        AZ::EBus<MiniAudioEventNotifications, AudioEventNotificationBusTraits>;
 } // namespace BopAudio

@@ -1,19 +1,22 @@
 #pragma once
 
+#include "AudioAllocators.h"
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/Memory/SystemAllocator.h"
+#include "AzCore/Name/Name.h"
 #include "AzCore/RTTI/ReflectContext.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
-
-#include "AzCore/Name/Name.h"
 #include "AzCore/std/containers/vector.h"
+
 #include "Engine/ConfigurationSettings.h"
+#include "IAudioInterfacesCommonData.h"
 
 namespace BopAudio
 {
     /* clang-format off */
     struct AudioEventTag{ static constexpr AZ::IO::PathView RefPath{EventsAlias}; };
+    struct AudioObjectTag{};
     struct SoundTag{ static constexpr AZ::IO::PathView RefPath{SoundsAlias}; };
     struct SoundBankTag{ static constexpr AZ::IO::PathView RefPath{BanksAlias}; };
     /* clang-format on */
@@ -89,55 +92,27 @@ namespace BopAudio
         AZ::Name m_name{};
     };
 
-    template<typename T, typename = void>
-    struct HasTagMember : AZStd::false_type
-    {
-    };
-
-    template<typename T>
-    struct HasTagMember<T, AZStd::void_t<decltype(T::RefPath)>> : AZStd::true_type
-    {
-    };
-
-    template<typename Tag = void>
+    template<typename Tag>
     class TaggedResource final : public ResourceRefBase
     {
         using Self = TaggedResource<Tag>;
 
-        template<typename>
-        friend void ReflectTaggedResource(AZ::ReflectContext*);
-
     public:
         AZ_DEFAULT_COPY_MOVE(TaggedResource<Tag>);
-        AZ_CLASS_ALLOCATOR(TaggedResource<Tag>, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(TaggedResource<Tag>, Audio::AudioImplAllocator);
 
         constexpr TaggedResource() = default;
         ~TaggedResource() = default;
-
-        [[nodiscard]] static constexpr auto IsResource(AZStd::string_view resource) -> bool
-        {
-            if constexpr (HasTagMember<Tag>{})
-            {
-                return AZ::IO::PathView{ resource }.IsRelativeTo(Tag::RefPath);
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         explicit constexpr TaggedResource(AZStd::string_view resourceName)
             : ResourceRefBase(AZ::Name{ resourceName }){};
     };
 
-    using ResourceRef = TaggedResource<>;
+    using ResourceRef = TaggedResource<void>;
 
     using SoundRef = TaggedResource<SoundTag>;
     using BankRef = TaggedResource<SoundBankTag>;
     using BankRefContainer = AZStd::vector<BankRef>;
-
-    using AudioEventId = TaggedResource<AudioEventTag>;
-    using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 
     template<typename Tag = void>
     class TaggedId
@@ -146,9 +121,14 @@ namespace BopAudio
         AZ_DEFAULT_COPY_MOVE(TaggedId);
 
         constexpr TaggedId() = default;
-        constexpr TaggedId(AZ::Uuid const& guid)
-            : m_value{ guid.GetHash() } {};
+        constexpr TaggedId(AZ::u32 id)
+            : m_value{ id } {};
         ~TaggedId() = default;
+
+        [[nodiscard]] explicit constexpr operator size_t() const
+        {
+            return m_value;
+        }
 
         [[nodiscard]] constexpr auto operator==(TaggedId const& other) -> bool
         {
@@ -160,22 +140,19 @@ namespace BopAudio
             return !(m_value == other.m_value);
         }
 
-        [[nodiscard]] auto GetHash() const
-        {
-            return m_value;
-        }
-
         [[nodiscard]] constexpr auto IsValid() const
         {
             return m_value != 0;
         }
 
     private:
-        size_t m_value;
+        AZ::u32 m_value;
     };
 
-    using UniqueId = TaggedId<>;
-    using AudioObjectId = AZ::u32;
+    using AudioObjectId = TaggedId<AudioObjectTag>;
+
+    using AudioEventId = Audio::TAudioEventID;
+    using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 
 } // namespace BopAudio
 
@@ -189,9 +166,6 @@ namespace AZ
 
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(
         BopAudio::BankRef, "{53D23BB0-5F71-49ED-B507-7244679746A5}", "BankResourceRef");
-
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(
-        BopAudio::AudioEventId, "{92D29F86-1B00-4A97-9B5B-E23B8C7C4EAD}", "AudioEventId");
 
     AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(
         BopAudio::SoundRef, "{58C17C6F-BE02-420A-B7D4-5301DF1E2234}", "SoundResourceRef");

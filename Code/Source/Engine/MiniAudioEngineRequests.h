@@ -7,7 +7,7 @@
 
 namespace BopAudio
 {
-    struct ActivateEventData
+    struct StartEventData
     {
         AZ::Data::Asset<AudioEventAsset> m_eventAsset{};
         void* m_owner{};

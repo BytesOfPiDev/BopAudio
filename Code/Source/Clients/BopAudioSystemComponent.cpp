@@ -8,27 +8,25 @@
 #include "AzCore/Utils/Utils.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
 #include "Clients/SoundBankAssetHandler.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
-#include <AzCore/IO/Streamer/Streamer.h>
 
 namespace BopAudio
 {
     AZ_COMPONENT_IMPL(
-        BopAudioSystemComponent,
-        "BopAudioSystemComponent",
-        BopAudioSystemComponentTypeId); // NOLINT
+        BopAudioSystemComponent, "BopAudioSystemComponent", BopAudioSystemComponentTypeId);
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         SoundBankAsset::Reflect(context);
 
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* const serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->Class<MiniAudioEventRequests>()->Version(0);
+
             serialize->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
         }
     }
@@ -142,11 +140,11 @@ namespace BopAudio
                 AZStd::move(initRequest));
 
             return true;
-            AZLOG_INFO("AudioEngineBopAudio created!"); // NOLINT
+            AZLOG_INFO("AudioEngineBopAudio created!");
         }
         else
         {
-            AZLOG_ERROR("Could not create AudioEngineBopAudio!"); // NOLINT
+            AZLOG_ERROR("Could not create AudioEngineBopAudio!");
         }
         return false;
     }
