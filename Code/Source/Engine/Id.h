@@ -130,6 +130,11 @@ namespace BopAudio
             return m_value;
         }
 
+        [[nodiscard]] explicit constexpr operator AZ::u32() const
+        {
+            return m_value;
+        }
+
         [[nodiscard]] constexpr auto operator==(TaggedId const& other) -> bool
         {
             return m_value == other.m_value;
@@ -150,6 +155,7 @@ namespace BopAudio
     };
 
     using AudioObjectId = TaggedId<AudioObjectTag>;
+    static constexpr auto InvalidAudioObjectId = AudioObjectId{};
 
     using AudioEventId = Audio::TAudioEventID;
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;

@@ -9,10 +9,10 @@
 
 namespace BopAudio
 {
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, Audio::AudioImplAllocator);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         SoundBankAssetHandler, "SoundBankAssetHandler", "{3F1E6E35-4791-4A6A-81B7-D57DAF82E761}");
-
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, Audio::AudioImplAllocator, AZ::AssetTypeInfo);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SoundBankAssetHandler, AZ::Data::AssetHandler);
 
     SoundBankAssetHandler::SoundBankAssetHandler()
     {
@@ -23,42 +23,12 @@ namespace BopAudio
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequests::AddExtension, SoundBankAsset::ProductExtension);
 
-        Register();
+        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
     }
 
     SoundBankAssetHandler::~SoundBankAssetHandler()
     {
-        Unregister();
-    }
-
-    void SoundBankAssetHandler::Register()
-    {
-        if (!AZ::Data::AssetManager::IsReady())
-        {
-            AZ_Error(
-                "SoundBankAssetHandler",
-                false,
-                "The Asset Manager isn't ready. It is required in order to "
-                "handle assets.");
-            return;
-        }
-
-        AZ::Data::AssetManager::Instance().RegisterHandler(
-            this, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
-
-        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
-    }
-
-    void SoundBankAssetHandler::Unregister()
-    {
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
-
-        if (!AZ::Data::AssetManager::IsReady())
-        {
-            return;
-        }
-
-        AZ::Data::AssetManager::Instance().UnregisterHandler(this);
     }
 
     auto SoundBankAssetHandler::CreateAsset(
@@ -69,8 +39,7 @@ namespace BopAudio
             return aznew SoundBankAsset{};
         }
 
-        AZ_Error("SoundBankAssetHandler", false,
-                 "The type requested is not supported."); // NOLINT
+        AZ_Error("SoundBankAssetHandler", false, "The type requested is not supported.");
         return {};
     }
 

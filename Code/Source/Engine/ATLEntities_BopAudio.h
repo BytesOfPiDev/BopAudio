@@ -111,7 +111,7 @@ namespace BopAudio
     class SATLEventData_BopAudio : public Audio::IATLEventData
     {
     public:
-        AZ_DISABLE_COPY(SATLEventData_BopAudio);
+        AZ_DEFAULT_COPY_MOVE(SATLEventData_BopAudio);
 
         explicit SATLEventData_BopAudio(Audio::TAudioEventID const atlEventId)
             : m_atlEventId(atlEventId)

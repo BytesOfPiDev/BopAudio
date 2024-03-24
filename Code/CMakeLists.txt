@@ -174,9 +174,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# ###############################################################################
+# # # # # # ##########################################################################
 # Tests
-# ###############################################################################
+# # # # # # ##########################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
@@ -197,6 +197,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzFramework
                     Gem::${gem_name}.Private.Object
+                    Legacy::CryCommon
         )
 
     # Add ${gem_name}.Tests to googletest

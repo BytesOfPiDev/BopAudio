@@ -8,12 +8,13 @@
 
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace BopAudio
 {
     class MiniAudioEngine;
 
-    class AudioSystemImpl_miniaudio : public Audio::AudioSystemImplementation
+    class AudioSystemImpl_miniaudio : protected Audio::AudioSystemImplementation
     {
         friend MiniAudioEngine;
 

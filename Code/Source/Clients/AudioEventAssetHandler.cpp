@@ -10,10 +10,8 @@
 namespace BopAudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(AudioEventAssetHandler, Audio::AudioImplAllocator);
-
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioEventAssetHandler, "AudioEventAssetHandler", "{AD28F187-2EA4-465E-BB3E-6854696CB135}");
-
     AZ_RTTI_NO_TYPE_INFO_IMPL(AudioEventAssetHandler, AZ::Data::AssetHandler);
 
     AudioEventAssetHandler::AudioEventAssetHandler()
@@ -25,43 +23,12 @@ namespace BopAudio
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequests::AddExtension, AudioEventAsset::ProductExtension);
 
-        Register();
+        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioEventAsset>::Uuid());
     }
 
     AudioEventAssetHandler::~AudioEventAssetHandler()
     {
-        Unregister();
-    }
-
-    void AudioEventAssetHandler::Register()
-    {
-        if (!AZ::Data::AssetManager::IsReady())
-        {
-            AZ_Error(
-                "AudioEventAssetHandler",
-                false,
-                "The Asset Manager isn't ready. It is required in order to "
-                "handle assets.");
-
-            return;
-        }
-
-        AZ::Data::AssetManager::Instance().RegisterHandler(
-            this, AZ::AzTypeInfo<AudioEventAsset>::Uuid());
-
-        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioEventAsset>::Uuid());
-    }
-
-    void AudioEventAssetHandler::Unregister()
-    {
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
-
-        if (!AZ::Data::AssetManager::IsReady())
-        {
-            return;
-        }
-
-        AZ::Data::AssetManager::Instance().UnregisterHandler(this);
     }
 
     auto AudioEventAssetHandler::CreateAsset(

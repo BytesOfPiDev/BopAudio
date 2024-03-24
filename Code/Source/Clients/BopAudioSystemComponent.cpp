@@ -1,18 +1,22 @@
 #include "BopAudioSystemComponent.h"
 
+#include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/PlatformId/PlatformDefaults.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
 #include "AzCore/Utils/Utils.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioEventAssetHandler.h"
 #include "Clients/SoundBankAsset.h"
 #include "Clients/SoundBankAssetHandler.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
+#include "IAudioSystem.h"
 
 namespace BopAudio
 {
@@ -50,12 +54,12 @@ namespace BopAudio
     {
         required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         required.push_back(AZ_CRC_CE("AssetCatalogService"));
-        required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     void BopAudioSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
         dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 
@@ -73,9 +77,6 @@ namespace BopAudio
         {
             BopAudioInterface::Unregister(this);
         }
-
-        m_soundBankAssetHandler.Unregister();
-        m_audioEventAssetHandler.Unregister();
     }
 
     void BopAudioSystemComponent::Init()
@@ -101,29 +102,24 @@ namespace BopAudio
         AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksPath.c_str());
         AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsPath.c_str());
         AZ::IO::FileIOBase::GetInstance()->SetAlias(ProjectAlias, projectPath.c_str());
-
-        m_soundBankAssetHandler.Register();
-        m_audioEventAssetHandler.Register();
-        m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
     }
 
     void BopAudioSystemComponent::Activate()
     {
-        BopAudioRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
         Audio::Gem::EngineRequestBus::Handler::BusConnect();
+        BopAudioRequestBus::Handler::BusConnect();
+
+        AZ::Data::AssetManager::Instance().RegisterHandler(
+            aznew SoundBankAssetHandler, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+
+        AZ::Data::AssetManager::Instance().RegisterHandler(
+            aznew AudioEventAssetHandler, AZ::AzTypeInfo<AudioEventAsset>::Uuid());
     }
 
     void BopAudioSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
         Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
         BopAudioRequestBus::Handler::BusDisconnect();
-    }
-
-    void BopAudioSystemComponent::OnTick(
-        [[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
     }
 
     auto BopAudioSystemComponent::Initialize() -> bool
@@ -131,16 +127,18 @@ namespace BopAudio
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
             AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
-        m_audioSystemImpl =
-            AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
-        if (m_audioSystemImpl)
+        m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
+
+        if (m_audioSystemImpl =
+                AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
+            m_audioSystemImpl)
         {
             Audio::SystemRequest::Initialize initRequest;
             AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(
                 AZStd::move(initRequest));
 
-            return true;
             AZLOG_INFO("AudioEngineBopAudio created!");
+            return true;
         }
         else
         {
@@ -152,6 +150,7 @@ namespace BopAudio
     void BopAudioSystemComponent::Release()
     {
         m_audioSystemImpl = nullptr;
+        m_miniAudioEngine = nullptr;
     }
 
 } // namespace BopAudio

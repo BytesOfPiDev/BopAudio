@@ -18,9 +18,6 @@ namespace BopAudio
         AudioEventAssetHandler();
         ~AudioEventAssetHandler() override;
 
-        void Register();
-        void Unregister();
-
         auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
             -> AZ::Data::AssetPtr override;
 

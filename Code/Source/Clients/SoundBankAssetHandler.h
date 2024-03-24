@@ -12,13 +12,11 @@ namespace BopAudio
     public:
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_DISABLE_COPY_MOVE(SoundBankAssetHandler);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_TYPE_INFO_WITH_NAME_DECL(SoundBankAssetHandler);
 
         SoundBankAssetHandler();
         ~SoundBankAssetHandler() override;
-
-        void Register();
-        void Unregister();
 
         auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
             -> AZ::Data::AssetPtr override;

@@ -1,21 +1,17 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
-#include "AzCore/Component/TickBus.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "IAudioSystem.h"
-#include "IAudioSystemImplementation.h"
 
 #include "BopAudio/BopAudioBus.h"
-#include "Clients/AudioEventAssetHandler.h"
-#include "Clients/SoundBankAssetHandler.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
     class BopAudioSystemComponent
         : public AZ::Component
-        , public AZ::TickBus::Handler
         , protected BopAudioRequestBus::Handler
         , protected Audio::Gem::EngineRequestBus::Handler
     {
@@ -35,20 +31,10 @@ namespace BopAudio
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // BopAudioRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
-        void Deactivate()
-            override; ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -57,16 +43,9 @@ namespace BopAudio
         void Release() override;
         ////////////////////////////////////////////////////////////////////////
 
-        [[nodiscard]] constexpr auto GetEngine() const -> Audio::AudioSystemImplementation const*
-        {
-            return m_audioSystemImpl.get();
-        }
-
     private:
-        AZStd::unique_ptr<Audio::AudioSystemImplementation> m_audioSystemImpl;
+        AZStd::unique_ptr<BopAudio::AudioSystemImpl_miniaudio> m_audioSystemImpl;
         AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
-        SoundBankAssetHandler m_soundBankAssetHandler;
-        AudioEventAssetHandler m_audioEventAssetHandler;
     };
 
 } // namespace BopAudio

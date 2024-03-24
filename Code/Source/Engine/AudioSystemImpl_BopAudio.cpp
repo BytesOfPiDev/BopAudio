@@ -9,6 +9,7 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "BopAudio/BopAudioBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
@@ -40,10 +41,14 @@ namespace BopAudio
 
         Audio::AudioSystemImplementationRequestBus::Handler::BusConnect();
         Audio::AudioSystemImplementationNotificationBus::Handler::BusConnect();
+
+        AsiInterface::Register(this);
     }
 
     AudioSystemImpl_miniaudio::~AudioSystemImpl_miniaudio()
     {
+        AsiInterface::Unregister(this);
+
         Audio::AudioSystemImplementationRequestBus::Handler::BusDisconnect();
         Audio::AudioSystemImplementationNotificationBus::Handler::BusDisconnect();
     }
@@ -116,6 +121,12 @@ namespace BopAudio
 
     auto AudioSystemImpl_miniaudio::Initialize() -> Audio::EAudioRequestStatus
     {
+        if (!AudioEngineInterface::Get())
+        {
+            AZ_Error("ASI", false, "No MiniAudio AudioEngineInterface found!");
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
         auto const initializeOutcome{ AudioEngineInterface::Get()->Initialize() };
         if (!initializeOutcome.IsSuccess())
         {
@@ -259,12 +270,26 @@ namespace BopAudio
             audioObjectData) };
         auto* const implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
 
-        AZ_Warning("ASI", implAudioObjectData != nullptr, "Received nullptr for the audio object!");
+        if (!implAudioObjectData)
+        {
+            AZ_Error("ASI", false, "Received nullptr for the object data!");
+            return Audio::EAudioRequestStatus::FailureInvalidRequest;
+        }
 
         if (!implEventData)
         {
             AZ_Error("ASI", false, "Received nullptr for the event data!");
             return Audio::EAudioRequestStatus::Failure;
+        }
+
+        if (!implAudioObjectData->GetImplAudioObjectId().IsValid())
+        {
+            return Audio::EAudioRequestStatus::FailureInvalidObjectId;
+        }
+
+        if (implAudioObjectData->GetAtlAudioObjectId() == INVALID_AUDIO_OBJECT_ID)
+        {
+            return Audio::EAudioRequestStatus::FailureInvalidControlId;
         }
 
         implEventData->SetImplEventId(implTriggerData->GetEventId());
@@ -434,7 +459,8 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: ParseAudioFileEntry.");
 
-        constexpr auto defaultFileEntry = [](Audio::SATLAudioFileEntryInfo* const entry) -> void
+        static constexpr auto defaultFileEntry =
+            [](Audio::SATLAudioFileEntryInfo* const entry) -> void
         {
             entry->sFileName = nullptr;
             entry->pFileData = nullptr;
