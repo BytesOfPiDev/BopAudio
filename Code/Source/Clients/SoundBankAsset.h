@@ -80,7 +80,7 @@ namespace BopAudio
 
         AZStd::vector<SoundSource> m_soundSources{};
         AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_events{};
-        AZStd::map<Audio::TAudioControlID, AudioEventId> m_controlToEventMap{};
+        AZStd::unordered_map<Audio::TAudioControlID, AudioEventId> m_controlToEventMap{};
     };
 
     using AudioAssetVector = AZStd::vector<AZ::Data::Asset<SoundBankAsset>>;

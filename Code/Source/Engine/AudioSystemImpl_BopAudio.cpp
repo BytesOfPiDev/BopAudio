@@ -434,7 +434,8 @@ namespace BopAudio
     {
         AZLOG(ASI_BopAudio, "BopAudio: ParseAudioFileEntry.");
 
-        constexpr auto defaultFileEntry = [](Audio::SATLAudioFileEntryInfo* const entry) -> void
+        static constexpr auto defaultFileEntry =
+            [](Audio::SATLAudioFileEntryInfo* const entry) -> void
         {
             entry->sFileName = nullptr;
             entry->pFileData = nullptr;
