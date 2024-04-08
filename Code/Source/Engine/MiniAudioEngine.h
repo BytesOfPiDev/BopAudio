@@ -12,14 +12,14 @@
 
 namespace BopAudio
 {
-    class MiniAudioEngine final : public AudioEngineInterface::Registrar
+    class MiniAudioEngine final : public SoundEngine::Registrar
     {
     public:
         AZ_DISABLE_COPY_MOVE(MiniAudioEngine);
         AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_TYPE_INFO_WITH_NAME_DECL(MiniAudioEngine);
 
-        MiniAudioEngine();
+        MiniAudioEngine() = default;
         ~MiniAudioEngine() override;
 
         [[nodiscard]] auto Initialize() -> AudioOutcome<void> override;

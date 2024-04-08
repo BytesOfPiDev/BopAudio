@@ -24,4 +24,5 @@ namespace BopAudio
     inline constexpr char const* EditorBopAudioComponentTypeId = BopAudioComponentTypeId;
 
     inline constexpr auto const* SoundBankAssetTypeId = "{F5E3BBE5-1DF9-46FF-8D4E-9175CFF4DBA3}";
+    inline constexpr auto const* AudioEventAssetTypeId = "{F26CEC71-D882-4367-BCBF-B9B041E1C708}";
 } // namespace BopAudio

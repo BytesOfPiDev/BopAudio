@@ -1,6 +1,7 @@
 #include "Engine/AudioEvent.h"
 #include "AudioAllocators.h"
 #include "Clients/AudioEventAsset.h"
+#include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
 {

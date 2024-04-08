@@ -6,7 +6,6 @@
 #include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/SoundAsset.h"
 
-#include "BopAudio/Util.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 #include "Engine/SoundSource.h"
@@ -29,6 +28,12 @@ namespace BopAudio
         static constexpr auto ProductExtension = SoundbankExtension;
         static constexpr auto AssetGroup = "Sound";
         static constexpr auto AssetSubId = 1u;
+
+        struct Section
+        {
+            AZ::u32 m_beginFrame;
+            AZ::u32 m_endFrame;
+        };
 
         SoundBankAsset();
         ~SoundBankAsset() override = default;
@@ -77,6 +82,7 @@ namespace BopAudio
 
     private:
         BankRef m_id{};
+        AZStd::vector<AZStd::byte> m_soundData{};
 
         AZStd::vector<SoundSource> m_soundSources{};
         AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_events{};

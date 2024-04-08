@@ -31,7 +31,7 @@
 
 namespace BopAudio
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(MiniAudioEngine, AudioEngineRequests);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(MiniAudioEngine, SoundEngineRequests);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         MiniAudioEngine, "MiniAudioEngine", "{B959D7B7-CDC2-4829-B3FB-F34F4E82339E}");
 
@@ -133,8 +133,6 @@ namespace BopAudio
     } // namespace Internal
     class AudioSystemImpl_miniaudio;
 
-    MiniAudioEngine::MiniAudioEngine() = default;
-
     MiniAudioEngine::~MiniAudioEngine()
     {
         AZLOG_INFO("Begin audio object cleanup...");
@@ -157,6 +155,9 @@ namespace BopAudio
     {
         m_controlEventMap.clear();
         m_audioObjects.clear();
+        m_eventAssets.clear();
+        m_soundSourceMap.clear();
+        m_loadedSources.clear();
 
         return true;
     }
@@ -219,45 +220,45 @@ namespace BopAudio
             foundFiles,
             [this](auto const& filepath)
             {
+                static constexpr auto audioEventAssetTypeInfo{ AZ::AzTypeInfo<AudioEventAsset>{} };
+
                 AZ::Data::AssetId eventAssetId{};
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     eventAssetId,
                     &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
                     filepath.c_str(),
-                    AZ::AzTypeInfo<AudioEventAsset>::Uuid(),
+                    audioEventAssetTypeInfo.Uuid(),
                     true);
 
                 auto audioEventAsset{ AZ::Data::AssetManager::Instance().GetAsset<AudioEventAsset>(
                     eventAssetId, AZ::Data::AssetLoadBehavior::Default) };
 
+                AZ_Error(
+                    "MiniAudioEngine",
+                    eventAssetId.IsValid(),
+                    "Failed to find AssetId for [%s]. Id resolved to [%s].",
+                    filepath.c_str(),
+                    eventAssetId.ToFixedString().c_str());
+
                 audioEventAsset.BlockUntilLoadComplete();
 
                 AZ_Error(
                     "MiniAudioEngine",
-                    false,
-                    "BusIsConnected: %s",
-                    audioEventAsset->BusIsConnected() ? "true" : "false");
-
-                AZ_Error(
-                    "MiniAudioEngine",
-                    false,
-                    "IdIsConnected: %s",
-                    audioEventAsset->BusIsConnectedId(audioEventAsset->GetEventId()) ? "true"
-                                                                                     : "false");
-
-                AZ_Warning(
-                    "MiniAudioEngine",
-                    !audioEventAsset.IsError(),
-                    "Failed to queue load event asset '%s'",
+                    MiniAudioEventRequestBus::HasHandlers(audioEventAsset->GetEventId()),
+                    "Audio event asset [%s] is not connected to its bus.",
                     filepath.c_str());
 
                 AZ_Error(
                     "MiniAudioEngine",
                     audioEventAsset.IsReady(),
-                    "Failed to load asset '%s'",
-                    filepath.c_str());
+                    "Failed to load audio event [%s]. Hint: [%s].",
+                    filepath.c_str(),
+                    audioEventAsset.GetHint().c_str());
 
-                m_eventAssets.emplace_back(AZStd::move(audioEventAsset));
+                if (audioEventAsset.IsReady())
+                {
+                    m_eventAssets.emplace_back(AZStd::move(audioEventAsset));
+                }
             });
     }
 

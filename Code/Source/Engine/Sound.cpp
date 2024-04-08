@@ -24,7 +24,7 @@ namespace BopAudio
         ma_uint32 const flags = MA_SOUND_FLAG_DECODE;
 
         ma_result const soundInitResult = ma_sound_init_from_file(
-            AudioEngineInterface::Get()->GetSoundEngine(),
+            SoundEngine::Get()->GetSoundEngine(),
             m_resourceRef.c_str(),
             flags,
             nullptr,

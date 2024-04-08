@@ -33,7 +33,7 @@ namespace BopAudio
 
     void PlaySoundTask::operator()(AudioObject& audioObject) const
     {
-        if (!AudioEngineInterface::Get()->LoadSound(m_resourceToPlay))
+        if (!SoundEngine::Get()->LoadSound(m_resourceToPlay))
         {
             AZ_Error(
                 "PlaySoundTask", false, "Failed to load sound '%s'", m_resourceToPlay.GetCStr());

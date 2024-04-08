@@ -20,14 +20,14 @@ namespace BopAudio
         AZStd::string_view m_fileName;
     };
 
-    class AudioEngineRequests
+    class SoundEngineRequests
     {
     public:
-        AZ_RTTI(AudioEngineRequests, "{CBAFA763-278C-4D48-9CE3-E11B78492F72}");
-        AZ_DISABLE_COPY_MOVE(AudioEngineRequests);
+        AZ_RTTI(SoundEngineRequests, "{CBAFA763-278C-4D48-9CE3-E11B78492F72}");
+        AZ_DISABLE_COPY_MOVE(SoundEngineRequests);
 
-        AudioEngineRequests() = default;
-        virtual ~AudioEngineRequests() = default;
+        SoundEngineRequests() = default;
+        virtual ~SoundEngineRequests() = default;
 
         [[nodiscard]] virtual auto Initialize() -> NullOutcome = 0;
         [[nodiscard]] virtual auto Shutdown() -> bool = 0;
@@ -42,5 +42,5 @@ namespace BopAudio
         [[nodiscard]] virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;
     };
 
-    using AudioEngineInterface = AZ::Interface<AudioEngineRequests>;
+    using SoundEngine = AZ::Interface<SoundEngineRequests>;
 } // namespace BopAudio

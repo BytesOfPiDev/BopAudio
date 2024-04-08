@@ -29,6 +29,8 @@ namespace BopAudio
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
+        static void RegisterFileAliases();
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

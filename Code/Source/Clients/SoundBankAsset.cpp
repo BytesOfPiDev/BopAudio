@@ -28,7 +28,8 @@ namespace BopAudio
             serialize->Class<SoundBankAsset, AZ::Data::AssetData>()
                 ->Version(2)
                 ->Field("Id", &SoundBankAsset::m_id)
-                ->Field("Sounds", &SoundBankAsset::m_soundSources);
+                ->Field("Sounds", &SoundBankAsset::m_soundSources)
+                ->Field("SoundData", &SoundBankAsset::m_soundData);
 
             serialize->RegisterGenericType<AZ::Data::Asset<SoundBankAsset>>();
             serialize->RegisterGenericType<AZStd::vector<BankRef>>();

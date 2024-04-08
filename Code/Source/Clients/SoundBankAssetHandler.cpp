@@ -6,6 +6,7 @@
 #include "AzCore/Serialization/Utils.h"
 
 #include "Clients/SoundBankAsset.h"
+#include <AzCore/Asset/AssetManagerBus.h>
 
 namespace BopAudio
 {
@@ -16,19 +17,34 @@ namespace BopAudio
 
     SoundBankAssetHandler::SoundBankAssetHandler()
     {
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset,
-            AZ::AzTypeInfo<SoundBankAsset>::Uuid());
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequests::AddExtension, SoundBankAsset::ProductExtension);
-
         AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<SoundBankAsset>::Uuid());
     }
 
     SoundBankAssetHandler::~SoundBankAssetHandler()
     {
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
+    }
+
+    void SoundBankAssetHandler::Register()
+    {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset,
+            AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::AddExtension,
+            SoundBankAsset::ProductExtension);
+
+        AZ_Assert(AZ::Data::AssetManager::IsReady(), "AssetManager isn't ready!");
+        AZ::Data::AssetManager::Instance().RegisterHandler(
+            this, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
+    }
+
+    void SoundBankAssetHandler::Unregister()
+    {
+        if (AZ::Data::AssetManager::IsReady())
+        {
+            AZ::Data::AssetManager::Instance().UnregisterHandler(this);
+        }
     }
 
     auto SoundBankAssetHandler::CreateAsset(

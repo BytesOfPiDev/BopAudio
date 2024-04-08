@@ -2,6 +2,9 @@
 
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
+#include "AzCore/StringFunc/StringFunc.h"
+#include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioEventAsset.h"
 
 namespace BopAudio
 {
@@ -9,6 +12,8 @@ namespace BopAudio
         : public AZ::Data::AssetHandler
         , public AZ::AssetTypeInfoBus::Handler
     {
+        static constexpr auto AudioEventAssetType = AZ::Data::AssetType{ AudioEventAssetTypeId };
+
     public:
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_DISABLE_COPY_MOVE(AudioEventAssetHandler);
@@ -18,6 +23,25 @@ namespace BopAudio
         AudioEventAssetHandler();
         ~AudioEventAssetHandler() override;
 
+        void Register();
+        void Unregister();
+
+        [[nodiscard]] auto CanHandleAsset(AZ::Data::AssetId const& id) const -> bool override
+        {
+            AZStd::string assetPath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
+            if (!assetPath.empty())
+            {
+                AZStd::string assetExtension;
+                if (AZ::StringFunc::Path::GetExtension(assetPath.c_str(), assetExtension, false))
+                {
+                    return assetExtension == AudioEventAsset::ProductExtension;
+                }
+            }
+
+            return false;
+        }
         auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
             -> AZ::Data::AssetPtr override;
 

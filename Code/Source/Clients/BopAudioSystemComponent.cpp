@@ -81,6 +81,10 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
+    }
+
+    void BopAudioSystemComponent::RegisterFileAliases()
+    {
         AZ::IO::Path const banksPath = []() -> decltype(banksPath)
         {
             auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
@@ -108,12 +112,6 @@ namespace BopAudio
     {
         Audio::Gem::EngineRequestBus::Handler::BusConnect();
         BopAudioRequestBus::Handler::BusConnect();
-
-        AZ::Data::AssetManager::Instance().RegisterHandler(
-            aznew SoundBankAssetHandler, AZ::AzTypeInfo<SoundBankAsset>::Uuid());
-
-        AZ::Data::AssetManager::Instance().RegisterHandler(
-            aznew AudioEventAssetHandler, AZ::AzTypeInfo<AudioEventAsset>::Uuid());
     }
 
     void BopAudioSystemComponent::Deactivate()

@@ -57,7 +57,7 @@ namespace BopAudio
 
     SoundSource::~SoundSource()
     {
-        ma_engine* const engine{ AudioEngineInterface::Get()->GetSoundEngine() };
+        ma_engine* const engine{ SoundEngine::Get()->GetSoundEngine() };
         ma_resource_manager_unregister_data(
             ma_engine_get_resource_manager(engine), m_soundRef.GetCStr());
     }
@@ -88,7 +88,7 @@ namespace BopAudio
             return false;
         }
 
-        ma_engine* const miniAudioEngine{ AudioEngineInterface::Get()->GetSoundEngine() };
+        ma_engine* const miniAudioEngine{ SoundEngine::Get()->GetSoundEngine() };
 
         ma_result const result = ma_resource_manager_register_encoded_data(
             ma_engine_get_resource_manager(miniAudioEngine),

@@ -10,8 +10,6 @@ set(FILES
     Source/Clients/AudioEventAsset.h
     Source/Clients/AudioEventAssetHandler.cpp
     Source/Clients/AudioEventAssetHandler.h
-    Source/Clients/BopAudioComponent.cpp
-    Source/Clients/BopAudioComponent.h
     Source/Clients/SoundBankAsset.cpp
     Source/Clients/SoundBankAsset.h
     Source/Clients/SoundBankAssetHandler.cpp

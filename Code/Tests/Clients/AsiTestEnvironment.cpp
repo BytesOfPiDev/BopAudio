@@ -1,13 +1,13 @@
 #include "AzTest/AzTest.h"
 
+#include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
+#include "AzCore/UnitTest/UnitTest.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
 #include "ISystem.h"
 #include "Mocks/IConsoleMock.h"
 #include "Mocks/ISystemMock.h"
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/UnitTest/UnitTest.h>
 
 using ::testing::NiceMock;
 namespace BopAudioTests
@@ -15,7 +15,7 @@ namespace BopAudioTests
     class AsiTestEnvironment : public UnitTest::TraceBusHook
     {
     public:
-        AZ_DEFAULT_COPY_MOVE(AsiTestEnvironment);
+        AZ_DISABLE_COPY_MOVE(AsiTestEnvironment);
 
         AsiTestEnvironment() = default;
         ~AsiTestEnvironment() override = default;
@@ -36,6 +36,7 @@ namespace BopAudioTests
             m_stubEnv.pSystem = &m_mocks->m_system;
             gEnv = &m_stubEnv;
 
+            AZ::Data::AssetCatalogRequestBus::GetOrCreateContext();
             AZ::Data::AssetManagerNotificationBus::GetOrCreateContext();
             AZ::AssetTypeInfoBus::GetOrCreateContext();
             Audio::AudioSystemImplementationRequestBus::GetOrCreateContext();

@@ -121,13 +121,13 @@ namespace BopAudio
 
     auto AudioSystemImpl_miniaudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        if (!AudioEngineInterface::Get())
+        if (!SoundEngine::Get())
         {
             AZ_Error("ASI", false, "No MiniAudio AudioEngineInterface found!");
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        auto const initializeOutcome{ AudioEngineInterface::Get()->Initialize() };
+        auto const initializeOutcome{ SoundEngine::Get()->Initialize() };
         if (!initializeOutcome.IsSuccess())
         {
             AZ_Error(
@@ -144,8 +144,8 @@ namespace BopAudio
 
     auto AudioSystemImpl_miniaudio::ShutDown() -> Audio::EAudioRequestStatus
     {
-        return AudioEngineInterface::Get()->Shutdown() ? Audio::EAudioRequestStatus::Success
-                                                       : Audio::EAudioRequestStatus::Failure;
+        return SoundEngine::Get()->Shutdown() ? Audio::EAudioRequestStatus::Success
+                                              : Audio::EAudioRequestStatus::Failure;
     }
 
     auto AudioSystemImpl_miniaudio::Release() -> Audio::EAudioRequestStatus
@@ -181,7 +181,7 @@ namespace BopAudio
             static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
         implAudioObjectData->ChangeName(objectName);
-        implAudioObjectData->SetImplAudioObjectId(AudioEngineInterface::Get()->CreateAudioObject());
+        implAudioObjectData->SetImplAudioObjectId(SoundEngine::Get()->CreateAudioObject());
 
         return Audio::EAudioRequestStatus::Success;
     }
@@ -199,7 +199,7 @@ namespace BopAudio
 
         auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
-        AudioEngineInterface::Get()->RemoveAudioObject(implOldObjectData->GetAtlAudioObjectId());
+        SoundEngine::Get()->RemoveAudioObject(implOldObjectData->GetAtlAudioObjectId());
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -300,8 +300,7 @@ namespace BopAudio
         activateTriggerRequest.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
         activateTriggerRequest.m_audioEventId = implTriggerData->GetEventId();
 
-        auto const activateOutcome{ AudioEngineInterface::Get()->StartEvent(
-            activateTriggerRequest) };
+        auto const activateOutcome{ SoundEngine::Get()->StartEvent(activateTriggerRequest) };
 
         AZ_Error(
             "ASI",
@@ -319,8 +318,7 @@ namespace BopAudio
     {
         auto const* const implEventData{ static_cast<SATLEventData_BopAudio const*>(eventData) };
 
-        auto const isStopped{ AudioEngineInterface::Get()->StopEvent(
-            implEventData->GetImplEventId()) };
+        auto const isStopped{ SoundEngine::Get()->StopEvent(implEventData->GetImplEventId()) };
 
         return isStopped ? Audio::EAudioRequestStatus::Success
                          : Audio::EAudioRequestStatus::Failure;
@@ -427,8 +425,7 @@ namespace BopAudio
             auto fileBuffer{ AZStd::span<char const>(
                 static_cast<char*>(audioFileEntry->pFileData), audioFileEntry->nSize) };
 
-            return AudioEngineInterface::Get()->RegisterFile(
-                { fileBuffer, audioFileEntry->sFileName });
+            return SoundEngine::Get()->RegisterFile({ fileBuffer, audioFileEntry->sFileName });
         }();
 
         if (!loadBankOutcome.IsSuccess())
@@ -556,7 +553,7 @@ namespace BopAudio
         auto* implAudioTriggerData{ azcreate(
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetImplTriggerId(
+        implAudioTriggerData->SetImplEventId(
             Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.GetCStr()));
 
         return implAudioTriggerData;
@@ -763,7 +760,7 @@ namespace BopAudio
 
         auto const& assetBuffer = soundAsset->m_data;
 
-        auto* const engine = AudioEngineInterface::Get()->GetSoundEngine();
+        auto* const engine = SoundEngine::Get()->GetSoundEngine();
 
         if (!engine)
         {

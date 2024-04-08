@@ -2,7 +2,9 @@
 #include "AzCore/Asset/AssetTypeInfoBus.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/UnitTest/UnitTest.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/Id.h"
+#include "Engine/MiniAudioEngine.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
@@ -21,14 +23,58 @@ using ::testing::NiceMock;
 
 namespace BopAudioTests
 {
+
+    struct ValidActivateArgs
+    {
+        static constexpr auto m_validAudioObjectId{ BopAudio::AudioObjectId{
+            AZ_CRC_CE("testValidAudioObject") } };
+        static constexpr auto m_validAudioEventId{ BopAudio::AudioEventId{
+            AZ_CRC_CE("exploding") } };
+
+        [[nodiscard]] static auto GetTriggerData() -> BopAudio::SATLTriggerImplData_BopAudio
+        {
+            auto implTriggerData{ decltype(GetTriggerData()){} };
+            implTriggerData.SetImplAudioObjectId(m_validAudioObjectId);
+            implTriggerData.SetImplEventId(m_validAudioEventId);
+
+            return implTriggerData;
+        }
+
+        [[nodiscard]] static auto GetEventData() -> BopAudio::SATLEventData_BopAudio
+        {
+            auto implEventData{ decltype(GetEventData()){
+                static_cast<AZ::u32>(m_validAudioObjectId) } };
+
+            implEventData.SetImplEventId(m_validAudioEventId);
+
+            return implEventData;
+        }
+    };
+
+    TEST_F(BaseAudioTestFixture, SANITY_CHECK)
+    {
+    }
+
     TEST_F(BootstrapFixture, ASI_SANITY_CHECK)
     {
-        EXPECT_NE(AZ::Interface<Audio::IAudioSystem>::Get(), nullptr);
-        EXPECT_NE(BopAudio::AudioEngineInterface::Get(), nullptr);
+        EXPECT_EQ(BopAudio::SoundEngine::Get(), nullptr);
+        EXPECT_FALSE(BopAudio::BopAudioRequestBus::HasHandlers());
+        EXPECT_FALSE(Audio::Gem::EngineRequestBus::HasHandlers());
+    }
 
-        EXPECT_NE(BopAudio::AudioEngineInterface::Get(), nullptr);
-        EXPECT_EQ(BopAudio::BopAudioRequestBus::GetTotalNumOfEventHandlers(), 1);
-        EXPECT_EQ(Audio::Gem::EngineRequestBus::GetTotalNumOfEventHandlers(), 1);
+    TEST_F(BootstrapFixture, Bootstrap_InitShutdown_CleanSuccess)
+    {
+        BopAudio::MiniAudioEngine const soundEngine{};
+        EXPECT_NE(BopAudio::SoundEngine::Get(), nullptr);
+
+        EXPECT_FALSE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
+        EXPECT_FALSE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
+        BopAudio::AudioSystemImpl_miniaudio asiImpl{ "linux" };
+        EXPECT_TRUE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
+        EXPECT_TRUE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
+
+        EXPECT_EQ(asiImpl.Initialize(), Audio::EAudioRequestStatus::Success);
+        EXPECT_EQ(asiImpl.ShutDown(), Audio::EAudioRequestStatus::Success);
     }
 
     TEST_F(BootstrapFixture, Bootstrap_Configuration_FileAliasesAreValid)
@@ -38,7 +84,7 @@ namespace BopAudioTests
         EXPECT_NE(AZ::IO::FileIOBase::GetInstance()->GetAlias(BopAudio::SoundsAlias), nullptr);
     }
 
-    TEST_F(BootstrapFixture, Bootstrap_PostInit_InitBankIsLoaded)
+    TEST_F(BootstrapFixture, DISABLED_Bootstrap_PostInit_InitBankIsLoaded)
     {
         EXPECT_TRUE(false);
     }
@@ -68,30 +114,35 @@ namespace BopAudioTests
         bool const audioEventAssetHandlerConnected =
             AZ::AssetTypeInfoBus::HasHandlers(AZ::AzTypeInfo<BopAudio::AudioEventAsset>::Uuid());
         EXPECT_TRUE(audioEventAssetHandlerConnected);
+
+        EXPECT_NE(BopAudio::SoundEngine::Get(), nullptr);
+        EXPECT_NE(BopAudio::AsiInterface::Get(), nullptr);
     }
 
-    TEST_F(SimpleProjectFixture, Asi_ActivateEvent_IsSuccess)
-    {
-        Audio::EAudioRequestStatus result{};
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        Audio::AudioSystemImplementationRequestBus::BroadcastResult(
-            result,
-            &Audio::AudioSystemImplementationRequests::ActivateTrigger,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-        EXPECT_EQ(result, Audio::EAudioRequestStatus::Success);
-    }
-
-    TEST_F(SimpleProjectFixture, AudioEvents_ActivateEventContainingPlaySoundEvent_SoundPlays)
+    TEST_F(
+        SimpleProjectFixture, DISABLED_AudioEvents_ActivateEventContainingPlaySoundEvent_SoundPlays)
     {
         EXPECT_TRUE(false);
     }
 
-    TEST_F(SimpleProjectFixture, RequestActivate_BadActivateArgs_RequestFails)
+    TEST_F(SimpleProjectFixture, AsiTriggerActivation_GoodArgs_RequestsSucceed)
+    {
+        static constexpr Audio::SATLSourceData validSourceData{};
+
+        auto const validTriggerData{ ValidActivateArgs::GetTriggerData() };
+        auto validEventData{ ValidActivateArgs::GetEventData() };
+        auto validImplAudioObjData{ BopAudio::SATLAudioObjectData_BopAudio{
+            static_cast<AZ::u32>(ValidActivateArgs::m_validAudioObjectId),
+            ValidActivateArgs::m_validAudioObjectId,
+            "testObject" } };
+
+        auto activateWithValidArgsResult = BopAudio::AsiInterface::Get()->ActivateTrigger(
+            &validImplAudioObjData, &validTriggerData, &validEventData, &validSourceData);
+
+        EXPECT_EQ(activateWithValidArgsResult, Audio::EAudioRequestStatus::Success);
+    }
+
+    TEST_F(SimpleProjectFixture, AsiTriggerActivation_BadArgs_RequestsFail)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
         bool const activateWithAllNullptrArgResult = []() -> bool
@@ -102,38 +153,20 @@ namespace BopAudioTests
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(activateWithAllNullptrArgResult);
 
-        static constexpr auto validAudioObjectId{ BopAudio::AudioObjectId{ AZ_CRC_CE("test") } };
+        static constexpr Audio::SATLSourceData validSourceData{};
 
-        BopAudio::SATLTriggerImplData_BopAudio const validImplTriggerData =
-            []() -> decltype(validImplTriggerData)
+        bool const activateWithInvalidObjIdResult = []() -> bool
         {
-            auto implTriggerData{ decltype(validImplTriggerData){} };
-            implTriggerData.SetImplAudioObjectId(validAudioObjectId);
-
-            return implTriggerData;
-        }();
-
-        BopAudio::SATLEventData_BopAudio validImplEventData = []() -> decltype(validImplEventData)
-        {
-            auto implEventData{ decltype(validImplEventData){
-                static_cast<AZ::u32>(validAudioObjectId) } };
-
-            return implEventData;
-        }();
-
-        Audio::SATLSourceData const validAtlSourceData{};
-
-        bool const activateWithInvalidObjIdResult =
-            [&validImplTriggerData, &validImplEventData, &validAtlSourceData]() -> bool
-        {
+            auto validTriggerData{ ValidActivateArgs::GetTriggerData() };
+            auto validEventData{ ValidActivateArgs::GetEventData() };
             auto invalidImplAudioObjData{ BopAudio::SATLAudioObjectData_BopAudio{
                 INVALID_AUDIO_OBJECT_ID } };
 
             return BopAudio::AsiInterface::Get()->ActivateTrigger(
                        &invalidImplAudioObjData,
-                       &validImplTriggerData,
-                       &validImplEventData,
-                       &validAtlSourceData) == Audio::EAudioRequestStatus::Success;
+                       &validTriggerData,
+                       &validEventData,
+                       &validSourceData) == Audio::EAudioRequestStatus::Success;
         }();
         EXPECT_FALSE(activateWithInvalidObjIdResult);
     }

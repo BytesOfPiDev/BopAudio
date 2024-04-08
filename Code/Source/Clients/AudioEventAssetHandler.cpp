@@ -2,9 +2,9 @@
 
 #include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetTypeInfoBus.h"
 #include "AzCore/Serialization/Utils.h"
 
+#include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAsset.h"
 
 namespace BopAudio
@@ -16,14 +16,7 @@ namespace BopAudio
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset,
-            AZ::AzTypeInfo<AudioEventAsset>::Uuid());
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequests::AddExtension, AudioEventAsset::ProductExtension);
-
-        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AudioEventAsset>::Uuid());
+        AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::Data::AssetType{ AudioEventAssetTypeId });
     }
 
     AudioEventAssetHandler::~AudioEventAssetHandler()
@@ -31,10 +24,30 @@ namespace BopAudio
         AZ::AssetTypeInfoBus::Handler::BusDisconnect();
     }
 
+    void AudioEventAssetHandler::Register()
+    {
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AudioEventAssetType);
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::AddExtension,
+            AudioEventAsset::ProductExtension);
+
+        AZ_Assert(AZ::Data::AssetManager::IsReady(), "AssetManager isn't ready!");
+        AZ::Data::AssetManager::Instance().RegisterHandler(this, AudioEventAssetType);
+    }
+
+    void AudioEventAssetHandler::Unregister()
+    {
+        if (AZ::Data::AssetManager::IsReady())
+        {
+            AZ::Data::AssetManager::Instance().UnregisterHandler(this);
+        }
+    }
+
     auto AudioEventAssetHandler::CreateAsset(
         AZ::Data::AssetId const& /*id*/, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
-        if (aztypeid_cmp(type, AZ::AzTypeInfo<AudioEventAsset>::Uuid()))
+        if (aztypeid_cmp(type, AZ::Data::AssetType{ AudioEventAssetTypeId }))
         {
             return aznew AudioEventAsset{};
         }
@@ -56,7 +69,7 @@ namespace BopAudio
 
         if (!assetLoaded)
         {
-            AZ_Error("AudioEventAssetHandler", false, "Failed to load asset.");
+            AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
             return AZ::Data::AssetHandler::LoadResult::Error;
         }
 
@@ -73,18 +86,17 @@ namespace BopAudio
     void AudioEventAssetHandler::GetHandledAssetTypes(
         AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
-        assetTypes.push_back(AZ::AzTypeInfo<AudioEventAsset>::Uuid());
+        assetTypes.push_back(AZ::Data::AssetType{ AudioEventAssetTypeId });
     }
 
     auto AudioEventAssetHandler::GetAssetType() const -> AZ::Data::AssetType
     {
-        return AZ::AzTypeInfo<AudioEventAsset>::Uuid();
+        return AZ::Data::AssetType{ AudioEventAssetTypeId };
     }
 
     void AudioEventAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         extensions.push_back(AudioEventAsset::ProductExtension);
-        extensions.push_back(AudioEventAsset::SourceExtension);
     }
 
     auto AudioEventAssetHandler::GetAssetTypeDisplayName() const -> char const*

@@ -23,9 +23,13 @@ namespace BopAudio
     {
         AZ_DISABLE_COPY_MOVE(SATLAudioObjectData_BopAudio);
 
-        SATLAudioObjectData_BopAudio(Audio::TAudioObjectID atlAudioObjectId)
+        SATLAudioObjectData_BopAudio(
+            Audio::TAudioObjectID atlAudioObjectId,
+            AudioObjectId implAudioObjectId = {},
+            AZStd::string_view objectName = {})
             : m_atlAudioObjectId(atlAudioObjectId)
-            , m_objectName{}
+            , m_objectName{ objectName }
+            , m_implAudioObjectId{ implAudioObjectId }
         {
         }
 
@@ -87,7 +91,7 @@ namespace BopAudio
             return m_audioEventResourceId;
         }
 
-        void SetImplTriggerId(AudioEventId resourceId)
+        void SetImplEventId(AudioEventId resourceId)
         {
             m_audioEventResourceId = resourceId;
         }

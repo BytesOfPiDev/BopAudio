@@ -3,9 +3,9 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzTest/AzTest.h>
 
-#include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "AzFramework/Application/Application.h"
-#include "AzFramework/IO/LocalFileIO.h"
+#include "Clients/AudioEventAssetHandler.h"
+#include "Clients/SoundBankAssetHandler.h"
 
 namespace BopAudioTests
 {
@@ -31,10 +31,13 @@ namespace BopAudioTests
         void SetUp() override;
         void TearDown() override;
 
+    protected:
+        virtual void AssertHandlersConnected() final;
+
     private:
         AsiApplication m_app;
-        AZStd::unique_ptr<AZ::IO::LocalFileIO> m_fileIO;
         AZStd::string m_configFilePath;
-        AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
+        BopAudio::AudioEventAssetHandler m_eventAssetHandler;
+        BopAudio::SoundBankAssetHandler m_soundBankAssetHandler;
     };
 } // namespace BopAudioTests
