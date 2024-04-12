@@ -12,6 +12,7 @@
 #include "BopAudio/BopAudioBus.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/BootstrapFixture.h"
+#include "Clients/MockAudioEventAsset.h"
 #include "Clients/SimpleProjectFixture.h"
 #include "Clients/SoundBankAsset.h"
 #include "Engine/ATLEntities_BopAudio.h"
@@ -19,17 +20,18 @@
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
 
+using ::testing::AtLeast;
 using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace BopAudioTests
 {
-
     struct ValidActivateArgs
     {
         static constexpr auto m_validAudioObjectId{ BopAudio::AudioObjectId{
             AZ_CRC_CE("testValidAudioObject") } };
         static constexpr auto m_validAudioEventId{ BopAudio::AudioEventId{
-            AZ_CRC_CE("exploding") } };
+            AZ_CRC_CE("validTestAudioEventId") } };
 
         [[nodiscard]] static auto GetTriggerData() -> BopAudio::SATLTriggerImplData_BopAudio
         {
@@ -128,6 +130,13 @@ namespace BopAudioTests
     TEST_F(SimpleProjectFixture, AsiTriggerActivation_GoodArgs_RequestsSucceed)
     {
         static constexpr Audio::SATLSourceData validSourceData{};
+
+        MockAudioEventAsset eventAsset{};
+        eventAsset.BusConnect(ValidActivateArgs::m_validAudioEventId);
+        EXPECT_TRUE(eventAsset.BusIsConnected());
+        EXPECT_TRUE(eventAsset.BusIsConnectedId(ValidActivateArgs::m_validAudioEventId));
+
+        EXPECT_CALL(eventAsset, TryStartEvent).Times(1).WillOnce(Return(true));
 
         auto const validTriggerData{ ValidActivateArgs::GetTriggerData() };
         auto validEventData{ ValidActivateArgs::GetEventData() };
