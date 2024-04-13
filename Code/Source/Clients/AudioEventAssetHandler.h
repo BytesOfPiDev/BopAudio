@@ -2,14 +2,15 @@
 
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
-#include "AzCore/StringFunc/StringFunc.h"
+#include "AzFramework/Asset/GenericAssetHandler.h"
+
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAsset.h"
 
 namespace BopAudio
 {
     class AudioEventAssetHandler
-        : public AZ::Data::AssetHandler
+        : public AzFramework::GenericAssetHandlerBase
         , public AZ::AssetTypeInfoBus::Handler
     {
         static constexpr auto AudioEventAssetType = AZ::Data::AssetType{ AudioEventAssetTypeId };
@@ -26,22 +27,8 @@ namespace BopAudio
         void Register();
         void Unregister();
 
-        [[nodiscard]] auto CanHandleAsset(AZ::Data::AssetId const& id) const -> bool override
-        {
-            AZStd::string assetPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
-            if (!assetPath.empty())
-            {
-                AZStd::string assetExtension;
-                if (AZ::StringFunc::Path::GetExtension(assetPath.c_str(), assetExtension, false))
-                {
-                    return assetExtension == AudioEventAsset::ProductExtension;
-                }
-            }
+        [[nodiscard]] auto CanHandleAsset(AZ::Data::AssetId const& id) const -> bool override;
 
-            return false;
-        }
         auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
             -> AZ::Data::AssetPtr override;
 
@@ -50,6 +37,10 @@ namespace BopAudio
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             AZ::Data::AssetFilterCB const& assetLoadFilterCB)
             -> AZ::Data::AssetHandler::LoadResult override;
+
+        auto SaveAssetData(
+            const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
+            -> bool override;
 
         void DestroyAsset(AZ::Data::AssetPtr ptr) override;
 

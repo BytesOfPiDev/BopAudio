@@ -34,6 +34,11 @@ namespace BopAudio
         [[nodiscard]] auto CreateAudioObject() -> AudioObjectId override;
         void RemoveAudioObject(AudioObjectId targetAudioObjectId) override;
 
+        [[nodiscard]] auto IsInit() const -> bool override
+        {
+            return m_isInit;
+        }
+
     protected:
         void LoadSounds();
         void LoadEvents();
@@ -53,5 +58,6 @@ namespace BopAudio
         AZStd::unordered_map<SoundRef, AZStd::unique_ptr<SoundSource>> m_soundSourceMap{};
 
         AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_eventAssets{};
+        bool m_isInit{};
     };
 } // namespace BopAudio

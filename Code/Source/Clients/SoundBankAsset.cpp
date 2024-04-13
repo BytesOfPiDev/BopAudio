@@ -28,6 +28,7 @@ namespace BopAudio
 
             serialize->Class<SoundBankAsset, AZ::Data::AssetData>()
                 ->Version(2)
+                ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &SoundBankAsset::m_id)
                 ->Field("Sounds", &SoundBankAsset::m_soundSources)
                 ->Field("SoundData", &SoundBankAsset::m_soundData);

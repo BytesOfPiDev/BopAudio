@@ -6,7 +6,6 @@
 #include "BopAudio/BopAudioTypeIds.h"
 #include "BopAudioWidget.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
-#include "Tools/EditorAudioEventAsset.h"
 
 namespace BopAudio
 {
@@ -18,8 +17,6 @@ namespace BopAudio
 
     void BopAudioEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        EditorAudioEventAsset::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<BopAudioEditorSystemComponent, BopAudioSystemComponent>()
@@ -54,25 +51,15 @@ namespace BopAudio
     void BopAudioEditorSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
-        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
         BaseSystemComponent::GetDependentServices(dependent);
     }
 
     void BopAudioEditorSystemComponent::Init()
     {
-        m_editorAudioEventAssetHandler = AZStd::make_unique<EditorAudioEventAssetHandler>(
-            "Editor Audio Event",
-            "Sound",
-            EditorAudioEventAsset::SourceExtension,
-            AZ::Uuid{},
-            nullptr);
     }
 
     void BopAudioEditorSystemComponent::Activate()
     {
-        m_editorAudioEventAssetHandler->Register();
-
         BopAudioSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
@@ -83,8 +70,6 @@ namespace BopAudio
         BopAudioSystemComponent::Deactivate();
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-
-        m_editorAudioEventAssetHandler->Unregister();
     }
 
     void BopAudioEditorSystemComponent::NotifyRegisterViews()

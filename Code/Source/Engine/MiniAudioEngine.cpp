@@ -8,15 +8,14 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/OpenMode.h"
 #include "AzCore/Interface/Interface.h"
+#include "AzCore/Outcome/Outcome.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/Utils/Utils.h"
 #include "AzFramework/IO/LocalFileIO.h"
-#include "Engine/MiniAudioEngineBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "MiniAudio/MiniAudioBus.h"
 
-#include "AzCore/Outcome/Outcome.h"
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
@@ -24,6 +23,7 @@
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
+#include "Engine/MiniAudioEngineBus.h"
 #include "Engine/MiniAudioIncludes.h"
 
 namespace BopAudio
@@ -128,6 +128,7 @@ namespace BopAudio
             return MiniAudioEventRequestBus::FindFirstHandler(eventId) != nullptr;
         }
     } // namespace Internal
+
     class AudioSystemImpl_miniaudio;
 
     MiniAudioEngine::~MiniAudioEngine()
@@ -145,16 +146,23 @@ namespace BopAudio
 
         LoadEvents();
 
+        m_isInit = true;
         return AZ::Success();
     }
 
     auto MiniAudioEngine::Shutdown() -> NullOutcome
     {
+        if (!m_isInit)
+        {
+            return AZ::Success();
+        }
+
         m_controlEventMap.clear();
         m_audioObjects.clear();
         m_eventAssets.clear();
         m_soundSourceMap.clear();
         m_loadedSources.clear();
+        m_isInit = false;
 
         return AZ::Success();
     }

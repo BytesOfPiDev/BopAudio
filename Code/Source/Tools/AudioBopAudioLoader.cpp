@@ -50,7 +50,7 @@ namespace BopAudio
             else
             {
                 if (AZ::StringFunc::Equal(
-                        filePath.Extension().Native(), AudioEventAsset::ProductExtension))
+                        filePath.Extension().Native(), AudioEventAsset::ProductExtensionPattern))
                 {
                     AZ_Info(
                         "AudioBopAudioLoader",

@@ -1,13 +1,12 @@
 #include "BopAudioSystemComponent.h"
 
-#include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/PlatformId/PlatformDefaults.h"
-#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
-#include "AzCore/Utils/Utils.h"
+#include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAssetHandler.h"
@@ -16,7 +15,6 @@
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
-#include "IAudioSystem.h"
 
 namespace BopAudio
 {
@@ -54,12 +52,12 @@ namespace BopAudio
     {
         required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         required.push_back(AZ_CRC_CE("AssetCatalogService"));
+        required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     void BopAudioSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
         dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 
@@ -81,27 +79,26 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
-        RegisterFileAliases();
     }
 
     void BopAudioSystemComponent::RegisterFileAliases()
     {
-        AZ::IO::Path const banksPath = []() -> decltype(banksPath)
+        auto const banksPath = []()
         {
-            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
-            return path / "sounds/bopaudio/banks";
+            static constexpr auto path{ "@products@/sounds/bopaudio/banks" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
         }();
 
-        AZ::IO::Path const eventsPath = []() -> decltype(eventsPath)
+        auto const eventsPath = []()
         {
-            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
-            return path / "sounds/bopaudio/events";
+            static constexpr auto path{ "@products@/sounds/bopaudio/events" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
         }();
 
-        AZ::IO::Path const projectPath = []() -> decltype(projectPath)
+        auto const projectPath = []()
         {
-            auto path{ decltype(banksPath){ AZ::Utils::GetProjectProductPathForPlatform() } };
-            return path / "sounds/bopaudio";
+            static constexpr auto path{ "@products@/sounds/bopaudio" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
         }();
 
         AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksPath.c_str());
@@ -111,14 +108,22 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Activate()
     {
+        RegisterFileAliases();
+
+        m_audioEventAssetHandler.Register();
+        m_soundBankAssetHandler.Register();
+
         Audio::Gem::EngineRequestBus::Handler::BusConnect();
         BopAudioRequestBus::Handler::BusConnect();
     }
 
     void BopAudioSystemComponent::Deactivate()
     {
-        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
         BopAudioRequestBus::Handler::BusDisconnect();
+        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
+
+        m_soundBankAssetHandler.Unregister();
+        m_audioEventAssetHandler.Unregister();
     }
 
     auto BopAudioSystemComponent::Initialize() -> bool
@@ -126,7 +131,11 @@ namespace BopAudio
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
             AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
+        m_miniAudioEngine.reset();
         m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
+
+        AZ_Verify(
+            m_miniAudioEngine->Initialize().IsSuccess(), "Failed to initialize MiniAudio engine!");
 
         if (m_audioSystemImpl =
                 AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
@@ -139,17 +148,19 @@ namespace BopAudio
             AZLOG_INFO("AudioEngineBopAudio created!");
             return true;
         }
-        else
-        {
-            AZLOG_ERROR("Could not create AudioEngineBopAudio!");
-        }
+
+        AZLOG_ERROR("Could not create AudioEngineBopAudio!");
+
         return false;
     }
 
     void BopAudioSystemComponent::Release()
     {
         m_audioSystemImpl = nullptr;
-        m_miniAudioEngine = nullptr;
+
+        AZ_Verify(
+            m_miniAudioEngine->Shutdown().IsSuccess(),
+            "MiniAudioEngine failed to shutdown properly.");
     }
 
 } // namespace BopAudio

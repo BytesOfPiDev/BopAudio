@@ -309,7 +309,7 @@ namespace BopAudio
         {
             AZ::IO::Path path{ request.m_tempDirPath };
             path /= request.m_sourceFile;
-            path.ReplaceExtension(AudioEventAsset::ProductExtension);
+            path.ReplaceExtension(AudioEventAsset::ProductExtensionPattern);
             return path;
         }();
 

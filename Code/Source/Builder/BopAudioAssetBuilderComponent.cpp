@@ -5,6 +5,7 @@
 
 #include "Builder/AudioEventAssetBuilderWorker.h"
 #include "Builder/SoundBankAssetBuilderWorker.h"
+#include "Clients/BopAudioSystemComponent.h"
 #include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
@@ -34,6 +35,7 @@ namespace BopAudio
 
     void BopAudioAssetBuilderComponent::Activate()
     {
+        BopAudioSystemComponent::RegisterFileAliases();
         m_taskFactories.push_back(PlaySoundTask::CreateFactory());
 
         ConfigureAudioControlBuilder();
@@ -67,14 +69,10 @@ namespace BopAudio
     }
 
     void BopAudioAssetBuilderComponent::GetRequiredServices(
-        AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
-    {
-    }
+        AZ::ComponentDescriptor::DependencyArrayType& /*required*/){};
 
     void BopAudioAssetBuilderComponent::GetDependentServices(
-        AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
-    {
-    }
+        AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/){};
 
     void BopAudioAssetBuilderComponent::ConfigureSoundBankBuilder()
     {

@@ -4,7 +4,6 @@
 
 #include "AzToolsFramework/API/ToolsApplicationAPI.h"
 #include "IAudioSystemEditor.h"
-#include "Tools/EditorAudioEventAsset.h"
 
 namespace BopAudio
 {
@@ -50,6 +49,5 @@ namespace BopAudio
 
     private:
         AZStd::unique_ptr<AudioControls::IAudioSystemEditor> m_editorImplPlugin;
-        AZStd::unique_ptr<EditorAudioEventAssetHandler> m_editorAudioEventAssetHandler;
     };
 } // namespace BopAudio

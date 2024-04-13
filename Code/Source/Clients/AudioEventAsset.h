@@ -2,10 +2,11 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/RTTI/TypeInfoSimple.h"
 
+#include "BopAudio/BopAudioTypeIds.h"
 #include "Engine/AudioEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/Common.h"
@@ -14,6 +15,8 @@
 namespace BopAudio
 {
     class AudioObject;
+
+    AZ_ENUM_CLASS(AudioEventTaskType, None, Play, Stop);
 
     class AudioEventAsset
         : public AZ::Data::AssetData
@@ -24,13 +27,15 @@ namespace BopAudio
         friend class MiniAudioEngine;
 
     public:
-        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_CLASS_ALLOCATOR(AudioEventAsset, Audio::AudioImplAllocator);
         AZ_DISABLE_COPY_MOVE(AudioEventAsset);
-        AZ_RTTI_NO_TYPE_INFO_DECL();
-        AZ_TYPE_INFO_WITH_NAME_DECL(AudioEventAsset);
+        AZ_RTTI(
+            AudioEventAsset, AudioEventAssetTypeId, AZ::Data::AssetData, MiniAudioEventRequests);
 
-        static constexpr auto SourceExtension{ ".audioeventsource" };
-        static constexpr auto ProductExtension{ ".audioevent" };
+        static constexpr auto SourceExt{ "audioeventsource" };
+        static constexpr auto ProductExt{ "audioevent" };
+        static constexpr auto SourceExtensionPattern{ ".audioeventsource" };
+        static constexpr auto ProductExtensionPattern{ ".audioevent" };
         static constexpr auto AssetGroup = "Sound";
         static constexpr auto AssetSubId = 1u;
 
@@ -50,14 +55,14 @@ namespace BopAudio
             return m_name;
         }
 
-        [[nodiscard]] auto GetEventId() const -> AudioEventId
+        [[nodiscard]] constexpr auto GetEventId() const -> AudioEventId
         {
             return m_id;
         }
 
         void operator()(AudioObject& audioObject) const;
 
-        [[nodiscard]] auto GetTasks() const -> TaskContainer const&
+        [[nodiscard]] constexpr auto GetTasks() const -> TaskContainer const&
         {
             return m_tasks;
         }
@@ -81,6 +86,9 @@ namespace BopAudio
         TaskContainer m_tasks{};
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
         AudioEventState m_eventState{};
+        AZ::IO::Path m_sourceFile{};
+
+        AudioEventTaskType m_taskToAdd;
     };
 
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;

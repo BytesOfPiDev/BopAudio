@@ -2,7 +2,9 @@
 
 #include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
+#include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Serialization/Utils.h"
+#include "AzFramework/Asset/GenericAssetHandler.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAsset.h"
@@ -12,7 +14,8 @@ namespace BopAudio
     AZ_CLASS_ALLOCATOR_IMPL(AudioEventAssetHandler, Audio::AudioImplAllocator);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioEventAssetHandler, "AudioEventAssetHandler", "{AD28F187-2EA4-465E-BB3E-6854696CB135}");
-    AZ_RTTI_NO_TYPE_INFO_IMPL(AudioEventAssetHandler, AZ::Data::AssetHandler);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(
+        AudioEventAssetHandler, AzFramework::GenericAssetHandlerBase, AZ::Data::AssetHandler);
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
@@ -30,7 +33,7 @@ namespace BopAudio
             &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AudioEventAssetType);
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::AddExtension,
-            AudioEventAsset::ProductExtension);
+            AudioEventAsset::ProductExtensionPattern);
 
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "AssetManager isn't ready!");
         AZ::Data::AssetManager::Instance().RegisterHandler(this, AudioEventAssetType);
@@ -42,6 +45,26 @@ namespace BopAudio
         {
             AZ::Data::AssetManager::Instance().UnregisterHandler(this);
         }
+    }
+
+    auto AudioEventAssetHandler::CanHandleAsset(AZ::Data::AssetId const& id) const -> bool
+    {
+        AZ::IO::Path const assetPath = [&id]() -> decltype(assetPath)
+        {
+            auto result{ decltype(assetPath){} };
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                result, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
+
+            return result;
+        }();
+
+        if (!assetPath.empty())
+        {
+            return assetPath.Match(AudioEventAsset::ProductExtensionPattern) ||
+                assetPath.Match(AudioEventAsset::SourceExtensionPattern);
+        }
+
+        return false;
     }
 
     auto AudioEventAssetHandler::CreateAsset(
@@ -62,10 +85,15 @@ namespace BopAudio
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         AZ::Data::AssetFilterCB const& /*assetLoadFilterCB*/) -> AZ::Data::AssetHandler::LoadResult
     {
-        auto& audioEventAsset{ *asset.GetAs<AudioEventAsset>() };
+        auto* audioEventAssetData{ asset.GetAs<AudioEventAsset>() };
+
+        AZ_Error(
+            "AudioEventAssetHandler",
+            audioEventAssetData != nullptr,
+            "Asset is of the wrong type.");
 
         bool const assetLoaded =
-            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, audioEventAsset);
+            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, *audioEventAssetData);
 
         if (!assetLoaded)
         {
@@ -73,9 +101,36 @@ namespace BopAudio
             return AZ::Data::AssetHandler::LoadResult::Error;
         }
 
-        audioEventAsset.RegisterAudioEvent();
+        audioEventAssetData->RegisterAudioEvent();
 
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+    }
+
+    auto AudioEventAssetHandler::SaveAssetData(
+        const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream) -> bool
+    {
+        auto* audioEventAssetData = asset.GetAs<AudioEventAsset>();
+        AZ_Error(
+            "AudioEventAssetHandler",
+            audioEventAssetData != nullptr,
+            "Asset is of the wrong type.");
+
+        AZ::SerializeContext* const serializeContext = []() -> decltype(serializeContext)
+        {
+            auto result{ decltype(serializeContext){} };
+            AZ::ComponentApplicationBus::BroadcastResult(
+                result, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            return result;
+        }();
+
+        if (audioEventAssetData && serializeContext)
+        {
+            return AZ::Utils::SaveObjectToStream(
+                *stream, AZ::ObjectStream::ST_JSON, audioEventAssetData, serializeContext);
+        }
+
+        return false;
     }
 
     void AudioEventAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)
@@ -96,7 +151,7 @@ namespace BopAudio
 
     void AudioEventAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
-        extensions.push_back(AudioEventAsset::ProductExtension);
+        extensions.push_back(AudioEventAsset::ProductExtensionPattern);
     }
 
     auto AudioEventAssetHandler::GetAssetTypeDisplayName() const -> char const*

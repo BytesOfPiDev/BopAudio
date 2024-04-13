@@ -50,6 +50,8 @@ namespace BopAudio
 
         [[nodiscard]] virtual auto GetSoundEngine() -> ma_engine* = 0;
         [[nodiscard]] virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;
+
+        [[nodiscard]] virtual constexpr auto IsInit() const -> bool = 0;
     };
 
     using SoundEngine = AZ::Interface<SoundEngineRequests>;

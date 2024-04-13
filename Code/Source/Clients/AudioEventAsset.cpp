@@ -3,11 +3,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
 
-#include "AudioAllocators.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 
-#include "BopAudio/BopAudioTypeIds.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
@@ -15,10 +13,6 @@
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AudioEventAsset, Audio::AudioImplAllocator);
-    AZ_RTTI_NO_TYPE_INFO_IMPL(AudioEventAsset, AZ::Data::AssetData, MiniAudioEventRequests);
-    AZ_TYPE_INFO_WITH_NAME_IMPL(AudioEventAsset, "AudioEventAsset", AudioEventAssetTypeId);
-
     void AudioEventAsset::Reflect(AZ::ReflectContext* context)
     {
         PlaySoundTask::Reflect(context);
@@ -35,10 +29,8 @@ namespace BopAudio
             {
                 editContext->Class<AudioEventAsset>("Audio Event Asset", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                     ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_id, "Id", "");
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }

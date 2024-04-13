@@ -2,6 +2,8 @@
 
 #include "AzCore/Component/Component.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "Clients/AudioEventAssetHandler.h"
+#include "Clients/SoundBankAssetHandler.h"
 #include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioBus.h"
@@ -48,6 +50,9 @@ namespace BopAudio
     private:
         AZStd::unique_ptr<BopAudio::AudioSystemImpl_miniaudio> m_audioSystemImpl;
         AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
+
+        AudioEventAssetHandler m_audioEventAssetHandler;
+        SoundBankAssetHandler m_soundBankAssetHandler;
     };
 
 } // namespace BopAudio

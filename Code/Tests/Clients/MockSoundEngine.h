@@ -20,5 +20,6 @@ namespace BopAudioTests
 
         MOCK_METHOD0(GetSoundEngine, ma_engine*(void));
         MOCK_METHOD1(LoadSound, BopAudio::NullOutcome(BopAudio::SoundRef const& resourceRef));
+        MOCK_CONST_METHOD0(IsInit, bool());
     };
 } // namespace BopAudioTests
