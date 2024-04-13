@@ -81,6 +81,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
+        RegisterFileAliases();
     }
 
     void BopAudioSystemComponent::RegisterFileAliases()

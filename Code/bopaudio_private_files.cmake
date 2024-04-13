@@ -40,7 +40,6 @@ set(FILES
     Source/Engine/MiniAudioEngine.cpp
     Source/Engine/MiniAudioEngine.h
     Source/Engine/MiniAudioEngineBus.h
-    Source/Engine/MiniAudioEngineRequests.h
     Source/Engine/MiniAudioIncludes.h
     Source/Engine/Rtpc.cpp
     Source/Engine/Rtpc.h

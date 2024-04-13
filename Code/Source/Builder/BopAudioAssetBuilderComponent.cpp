@@ -9,11 +9,8 @@
 
 namespace BopAudio
 {
-
     void BopAudioAssetBuilderComponent::Reflect(AZ::ReflectContext* context)
     {
-        PlaySoundTask::Reflect(context);
-
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BopAudioAssetBuilderComponent, AZ::Component>()->Version(0)->Attribute(

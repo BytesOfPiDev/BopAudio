@@ -5,6 +5,7 @@
 
 #include "AudioAllocators.h"
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/Serialization/EditContextConstants.inl"
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Engine/ATLEntities_BopAudio.h"
@@ -26,12 +27,18 @@ namespace BopAudio
         {
             serialize->Class<AudioEventAsset, AZ::Data::AssetData, MiniAudioEventRequests>()
                 ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &AudioEventAsset::m_id)
                 ->Field("Tasks", &AudioEventAsset::m_tasks);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<AudioEventAsset>("Audio Event Asset", "");
+                editContext->Class<AudioEventAsset>("Audio Event Asset", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
+                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_id, "Id", "");
             }
         }
     }

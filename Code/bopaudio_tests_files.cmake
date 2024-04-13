@@ -8,6 +8,7 @@ set(FILES
     Tests/Clients/BootstrapFixture.cpp
     Tests/Clients/BootstrapFixture.h
     Tests/Clients/MockAudioEventAsset.h
+    Tests/Clients/MockSoundEngine.h
     Tests/Clients/SimpleProjectFixture.cpp
     Tests/Clients/SimpleProjectFixture.h
 )

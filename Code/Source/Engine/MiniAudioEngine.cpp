@@ -1,6 +1,5 @@
 #include "Engine/MiniAudioEngine.h"
 
-#include "AudioAllocators.h"
 #include "AudioFileUtils.h"
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Asset/AssetManager.h"
@@ -25,9 +24,7 @@
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
-#include "Engine/MiniAudioEngineRequests.h"
 #include "Engine/MiniAudioIncludes.h"
-#include <AzCore/Memory/SystemAllocator.h>
 
 namespace BopAudio
 {
@@ -151,7 +148,7 @@ namespace BopAudio
         return AZ::Success();
     }
 
-    auto MiniAudioEngine::Shutdown() -> bool
+    auto MiniAudioEngine::Shutdown() -> NullOutcome
     {
         m_controlEventMap.clear();
         m_audioObjects.clear();
@@ -159,7 +156,7 @@ namespace BopAudio
         m_soundSourceMap.clear();
         m_loadedSources.clear();
 
-        return true;
+        return AZ::Success();
     }
 
     auto MiniAudioEngine::GetSoundEngine() -> ma_engine*

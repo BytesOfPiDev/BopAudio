@@ -7,6 +7,7 @@
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace BopAudio
 {

@@ -2,6 +2,8 @@
 #include "AzCore/Asset/AssetTypeInfoBus.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/UnitTest/UnitTest.h"
+#include "BopAudio/Util.h"
+#include "Clients/MockSoundEngine.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngine.h"
@@ -64,9 +66,9 @@ namespace BopAudioTests
         EXPECT_FALSE(Audio::Gem::EngineRequestBus::HasHandlers());
     }
 
-    TEST_F(BootstrapFixture, Bootstrap_InitShutdown_CleanSuccess)
+    TEST_F(BootstrapFixture, Asi_InitAfterBootstrap_ShutdownSuccess)
     {
-        BopAudio::MiniAudioEngine const soundEngine{};
+        MockSoundEngine soundEngine{};
         EXPECT_NE(BopAudio::SoundEngine::Get(), nullptr);
 
         EXPECT_FALSE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
@@ -74,6 +76,9 @@ namespace BopAudioTests
         BopAudio::AudioSystemImpl_miniaudio asiImpl{ "linux" };
         EXPECT_TRUE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
         EXPECT_TRUE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
+
+        EXPECT_CALL(soundEngine, Initialize).Times(1).WillOnce(Return(AZ::Success()));
+        EXPECT_CALL(soundEngine, Shutdown).Times(1).WillOnce(Return(AZ::Success()));
 
         EXPECT_EQ(asiImpl.Initialize(), Audio::EAudioRequestStatus::Success);
         EXPECT_EQ(asiImpl.ShutDown(), Audio::EAudioRequestStatus::Success);

@@ -9,18 +9,17 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
-#include "BopAudio/BopAudioBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemImplementation.h"
-#include "MiniAudio/SoundAsset.h"
 
+#include "BopAudio/BopAudioBus.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
-#include "Engine/MiniAudioEngineRequests.h"
+#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {

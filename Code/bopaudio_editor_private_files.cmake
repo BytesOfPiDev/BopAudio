@@ -13,6 +13,8 @@ set(FILES
     Source/Tools/AudioSystemControl_BopAudio.h
     Source/Tools/AudioSystemEditor_BopAudio.cpp
     Source/Tools/AudioSystemEditor_BopAudio.h
+    Source/Tools/EditorAudioEventAsset.cpp
+    Source/Tools/EditorAudioEventAsset.h
 
     Source/Builder/AudioControlBuilderWorker.cpp
     Source/Builder/AudioControlBuilderWorker.h

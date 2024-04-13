@@ -24,7 +24,7 @@ namespace BopAudio
 
         [[nodiscard]] auto Initialize() -> AudioOutcome<void> override;
         [[nodiscard]] auto RegisterFile(RegisterFileData const&) -> NullOutcome override;
-        [[nodiscard]] auto Shutdown() -> bool override;
+        [[nodiscard]] auto Shutdown() -> NullOutcome override;
 
         [[nodiscard]] auto GetSoundEngine() -> ma_engine* override;
 

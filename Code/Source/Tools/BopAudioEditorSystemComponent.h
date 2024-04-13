@@ -4,6 +4,7 @@
 
 #include "AzToolsFramework/API/ToolsApplicationAPI.h"
 #include "IAudioSystemEditor.h"
+#include "Tools/EditorAudioEventAsset.h"
 
 namespace BopAudio
 {
@@ -31,6 +32,7 @@ namespace BopAudio
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
@@ -48,5 +50,6 @@ namespace BopAudio
 
     private:
         AZStd::unique_ptr<AudioControls::IAudioSystemEditor> m_editorImplPlugin;
+        AZStd::unique_ptr<EditorAudioEventAssetHandler> m_editorAudioEventAssetHandler;
     };
 } // namespace BopAudio

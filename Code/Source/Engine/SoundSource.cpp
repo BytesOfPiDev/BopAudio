@@ -4,12 +4,12 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Outcome/Outcome.h"
-#include "BopAudio/Util.h"
-#include "MiniAudio/MiniAudioBus.h"
-#include "MiniAudio/SoundAsset.h"
 
+#include "BopAudio/Util.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
+#include "MiniAudio/MiniAudioBus.h"
+#include "MiniAudio/SoundAsset.h"
 #include "MiniAudioIncludes.h"
 
 namespace BopAudio
