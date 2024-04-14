@@ -16,8 +16,9 @@ namespace BopAudio
 
     struct PlaySoundTask : public AudioTaskBase<PlaySoundTask>
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(PlaySoundTask);
         AZ_CLASS_ALLOCATOR_DECL;
+        AZ_TYPE_INFO_WITH_NAME_DECL(PlaySoundTask);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* context);
 

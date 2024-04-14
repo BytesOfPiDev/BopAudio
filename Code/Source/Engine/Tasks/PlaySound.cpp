@@ -7,8 +7,10 @@
 #include "Engine/AudioObject.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/MiniAudioEngineBus.h"
+#include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/TaskBus.h"
+#include <AzCore/RTTI/RTTIMacros.h>
 
 namespace BopAudio
 {
@@ -17,16 +19,21 @@ namespace BopAudio
 
     AZ_CLASS_ALLOCATOR_IMPL(PlaySoundTask, Audio::AudioImplAllocator);
 
+    AZ_RTTI_NO_TYPE_INFO_IMPL(PlaySoundTask, IAudioTask);
+
     void PlaySoundTask::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<PlaySoundTask>()->Version(4)->Field(
+            serialize->Class<PlaySoundTask, IAudioTask>()->Version(4)->Field(
                 "TargetResource", &PlaySoundTask::m_resourceToPlay);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<PlaySoundTask>("PlaySoundTask", "");
+                editContext->Class<PlaySoundTask>("PlaySoundTask", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio/Tasks")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }

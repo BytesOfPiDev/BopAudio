@@ -1,19 +1,30 @@
 #pragma once
 
-#include "AzCore/Preprocessor/Enum.h"
-
-#include "Engine/Id.h"
+#include <AzCore/RTTI/RTTI.h>
 
 namespace BopAudio
 {
     AZ_ENUM_CLASS(TaskState, Invalid, Executing, Finished, Error);
     class AudioObject;
 
-    template<typename DerivedTask>
-    struct AudioTaskBase
+    class IAudioTask
     {
-        AudioObjectId m_targetObject;
-        TaskState m_state;
+    public:
+        AZ_DEFAULT_COPY_MOVE(IAudioTask);
+        AZ_RTTI(IAudioTask, "{10B1622F-C67B-49C7-9D78-E0C729F15A6E}");
+
+        IAudioTask() = default;
+        virtual ~IAudioTask() = default;
+
+        virtual void Reset() = 0;
+    };
+
+    template<typename DerivedTask>
+    struct AudioTaskBase : public IAudioTask
+    {
+        void Reset() override
+        {
+        }
 
         [[nodiscard]] auto TryStart(AudioObject& obj) const -> bool
         {

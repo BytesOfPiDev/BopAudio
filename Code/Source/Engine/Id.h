@@ -35,7 +35,10 @@ namespace BopAudio
                     "Id", &ResourceRefBase::m_name);
                 if (AZ::EditContext* editContext = serialize->GetEditContext())
                 {
-                    editContext->Class<ResourceRefBase>("ResourceRefBase", "");
+                    editContext->Class<ResourceRefBase>("ResourceRefBase", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 }
             }
         }

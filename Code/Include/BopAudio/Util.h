@@ -48,4 +48,16 @@ namespace BopAudio
         return result;
     }
 
+    static inline auto GetAssetPath(AZ::Data::AssetId const& id) -> AZ::IO::Path
+    {
+        return [&id]() -> decltype(GetAssetPath(id))
+        {
+            auto result{ decltype(GetAssetPath(id)){} };
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                result, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
+
+            return result;
+        }();
+    }
+
 } // namespace BopAudio

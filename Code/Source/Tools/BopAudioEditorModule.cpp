@@ -31,8 +31,10 @@ namespace BopAudio
             // through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
-                { BopAudioEditorSystemComponent::CreateDescriptor(),
-                  BopAudioAssetBuilderComponent::CreateDescriptor() });
+                {
+                    BopAudioEditorSystemComponent::CreateDescriptor(),
+                    BopAudioAssetBuilderComponent::CreateDescriptor(),
+                });
         }
 
         /**

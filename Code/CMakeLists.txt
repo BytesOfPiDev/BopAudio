@@ -74,6 +74,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
+            Legacy::CryCommon
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
@@ -135,9 +136,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::stb_vorbis
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
+                AZ::SceneCore
                 Gem::AudioSystem.API
                 Gem::AudioSystem.Editor.API
                 Gem::MiniAudio.Editor
+                Legacy::CryCommon
     )
 
   ly_add_target(
@@ -154,15 +157,44 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${gem_name}.Editor.API
+                Legacy::CryCommon
             PRIVATE
                 Gem::${gem_name}.Editor.Private.Object
     )
 
+  ly_add_target(
+      NAME ${gem_name}.Scene.Static STATIC
+      NAMESPACE Gem
+      FILES_CMAKE
+            bopaudio_scene_files.cmake
+      INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+      BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzCore
+                AZ::SceneCore
+                Legacy::CryCommon
+  )
+
+  ly_add_target(
+      NAME ${gem_name}.Scene ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+      NAMESPACE Gem
+      FILES_CMAKE
+            bopaudio_scene_shared_files.cmake
+      INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+      BUILD_DEPENDENCIES
+            PUBLIC
+                ${gem_name}.Scene.Static
+  )
+
   # By default, we will specify that the above target ${gem_name} would be used by
   # Tool and Builder type targets when this gem is enabled.  If you don't want it
   # active in Tools or Builders by default, delete one of both of the following lines:
-  ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
-  ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+  ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor Gem::${gem_name}.Scene)
+  ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor Gem::${gem_name}.Scene)
 
   # For the Tools and Builders variants of ${gem_name} Gem, an alias to the ${gem_name}.Editor API target will be made
   ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
@@ -174,9 +206,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# # # # # # ##########################################################################
+################################################################################
 # Tests
-# # # # # # ##########################################################################
+################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests

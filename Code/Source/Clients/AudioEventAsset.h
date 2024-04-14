@@ -80,15 +80,23 @@ namespace BopAudio
 
         void UnregisterAudioEvent();
 
+        void AddTask();
+        void OnTaskSelectionChanged();
+        void Cleanup();
+
+        [[nodiscard]] auto GetTaskNames() const -> AZStd::vector<AZStd::string> const;
+
     private:
         AudioEventId m_id{};
         AZ::Name m_name{};
         TaskContainer m_tasks{};
+        AZStd::vector<IAudioTask*> m_eventTasks{};
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
         AudioEventState m_eventState{};
-        AZ::IO::Path m_sourceFile{};
 
         AudioEventTaskType m_taskToAdd;
+        AZStd::string m_assetExt;
+        bool m_hasSource{};
     };
 
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;

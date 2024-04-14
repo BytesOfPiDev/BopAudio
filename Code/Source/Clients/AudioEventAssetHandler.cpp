@@ -7,6 +7,7 @@
 #include "AzFramework/Asset/GenericAssetHandler.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
+#include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
 
 namespace BopAudio
@@ -16,6 +17,48 @@ namespace BopAudio
         AudioEventAssetHandler, "AudioEventAssetHandler", "{AD28F187-2EA4-465E-BB3E-6854696CB135}");
     AZ_RTTI_NO_TYPE_INFO_IMPL(
         AudioEventAssetHandler, AzFramework::GenericAssetHandlerBase, AZ::Data::AssetHandler);
+
+    namespace Internal
+    {
+        auto IsProductAsset(AZ::IO::PathView assetPath) -> bool
+        {
+            if (assetPath.empty())
+            {
+                return false;
+            }
+            return assetPath.Match(AudioEventAsset::ProductExtensionPattern);
+        }
+
+        auto IsProductAsset(AZ::Data::AssetId assetId) -> bool
+        {
+            auto const assetPath{ GetAssetPath(assetId) };
+            if (assetPath.empty())
+            {
+                return false;
+            }
+            return assetPath.Match(AudioEventAsset::ProductExtensionPattern);
+        }
+
+        auto IsSourceAsset(AZ::IO::PathView assetPath) -> bool
+        {
+            if (assetPath.empty())
+            {
+                return false;
+            }
+            return assetPath.Match(AudioEventAsset::SourceExtensionPattern);
+        }
+
+        auto IsSourceAsset(AZ::Data::AssetId assetId) -> bool
+        {
+            auto const assetPath{ GetAssetPath(assetId) };
+            if (assetPath.empty())
+            {
+                return false;
+            }
+            return assetPath.Match(AudioEventAsset::SourceExtensionPattern);
+        }
+
+    } // namespace Internal
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
@@ -49,22 +92,8 @@ namespace BopAudio
 
     auto AudioEventAssetHandler::CanHandleAsset(AZ::Data::AssetId const& id) const -> bool
     {
-        AZ::IO::Path const assetPath = [&id]() -> decltype(assetPath)
-        {
-            auto result{ decltype(assetPath){} };
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                result, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, id);
-
-            return result;
-        }();
-
-        if (!assetPath.empty())
-        {
-            return assetPath.Match(AudioEventAsset::ProductExtensionPattern) ||
-                assetPath.Match(AudioEventAsset::SourceExtensionPattern);
-        }
-
-        return false;
+        AZ::IO::Path const assetPath = GetAssetPath(id);
+        return Internal::IsProductAsset(assetPath) || Internal::IsSourceAsset(assetPath);
     }
 
     auto AudioEventAssetHandler::CreateAsset(
@@ -92,16 +121,26 @@ namespace BopAudio
             audioEventAssetData != nullptr,
             "Asset is of the wrong type.");
 
-        bool const assetLoaded =
-            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, *audioEventAssetData);
-
-        if (!assetLoaded)
+        if (Internal::IsProductAsset(asset.GetId()))
         {
-            AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
-            return AZ::Data::AssetHandler::LoadResult::Error;
+            bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(
+                *stream, *audioEventAssetData);
+
+            if (!assetLoaded)
+            {
+                AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
+                return AZ::Data::AssetHandler::LoadResult::Error;
+            }
+        }
+        else if (Internal::IsSourceAsset(asset.GetId()))
+        {
+            AZ_Error(
+                "AudioEventAssetHandler",
+                false,
+                "LoadAssetData for SourceAsset is not yet implemented.");
         }
 
-        audioEventAssetData->RegisterAudioEvent();
+        //        audioEventAssetData->RegisterAudioEvent();
 
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }
