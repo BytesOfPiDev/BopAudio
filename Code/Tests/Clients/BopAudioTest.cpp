@@ -169,12 +169,13 @@ namespace BopAudioTests
 
         static constexpr Audio::SATLSourceData validSourceData{};
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         bool const activateWithInvalidObjIdResult = []() -> bool
         {
             auto validTriggerData{ ValidActivateArgs::GetTriggerData() };
             auto validEventData{ ValidActivateArgs::GetEventData() };
             auto invalidImplAudioObjData{ BopAudio::SATLAudioObjectData_BopAudio{
-                INVALID_AUDIO_OBJECT_ID } };
+                INVALID_AUDIO_OBJECT_ID, BopAudio::GlobalAudioObjectId } };
 
             return BopAudio::AsiInterface::Get()->ActivateTrigger(
                        &invalidImplAudioObjData,
@@ -182,6 +183,7 @@ namespace BopAudioTests
                        &validEventData,
                        &validSourceData) == Audio::EAudioRequestStatus::Success;
         }();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(activateWithInvalidObjIdResult);
     }
 

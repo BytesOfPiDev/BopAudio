@@ -11,7 +11,7 @@ namespace BopAudio
     struct EventFinishedData;
     class AudioObject;
 
-    AZ_ENUM_CLASS(AudioEventState, Idle, Active);
+    AZ_ENUM_CLASS(AudioEventState, Idle, Active, Stopping);
 
     struct EventNotificationIdType
     {

@@ -64,7 +64,7 @@ namespace BopAudio
                         if (!task.TryStart(audioObject))
                         {
                             AZ_Error("AudioEventAsset", false, "Failed to start task");
-                        };
+                        }
                     },
                     taskVariant);
             });
@@ -72,18 +72,27 @@ namespace BopAudio
 
     auto AudioEventAsset::TryStartEvent(AudioObject& obj) -> bool
     {
-        AZLOG(LOG_AudioEventAsset, "Received TryStartEvent");
-        auto const& self(*this);
-        self(obj);
+        if (m_eventState != AudioEventState::Idle)
+        {
+            return false;
+        }
+
+        m_eventState = AudioEventState::Active;
+        (*this)(obj);
 
         return true;
     }
 
     auto AudioEventAsset::TryStopEvent(AudioObject& obj) -> bool
     {
-        AZ_Error("AudioEventAsset", false, "TryStopEvent");
-        auto const& self(*this);
-        self(obj);
+        if (m_eventState != AudioEventState::Active)
+        {
+            return false;
+        }
+
+        m_eventState = AudioEventState::Stopping;
+        (*this)(obj);
+        m_eventState = AudioEventState::Idle;
 
         return true;
     }

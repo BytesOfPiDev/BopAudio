@@ -25,7 +25,7 @@ namespace BopAudio
 
         SATLAudioObjectData_BopAudio(
             Audio::TAudioObjectID atlAudioObjectId,
-            AudioObjectId implAudioObjectId = {},
+            AudioObjectId implAudioObjectId,
             AZStd::string_view objectName = {})
             : m_atlAudioObjectId(atlAudioObjectId)
             , m_objectName{ objectName }

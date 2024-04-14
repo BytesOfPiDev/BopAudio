@@ -283,11 +283,13 @@ namespace BopAudio
 
         if (!implAudioObjectData->GetImplAudioObjectId().IsValid())
         {
+            AZ_Error("ASI", false, "Invalid impl object id.");
             return Audio::EAudioRequestStatus::FailureInvalidObjectId;
         }
 
         if (implAudioObjectData->GetAtlAudioObjectId() == INVALID_AUDIO_OBJECT_ID)
         {
+            AZ_Error("ASI", false, "Invalid control id.");
             return Audio::EAudioRequestStatus::FailureInvalidControlId;
         }
 
@@ -617,13 +619,19 @@ namespace BopAudio
         Audio::TAudioObjectID const atlObjectId) -> Audio::IATLAudioObjectData*
     {
         AZLOG_INFO("ASI: NewGlobalAudioObjectData. [objectId: %llu].", atlObjectId);
-        return azcreate(SATLAudioObjectData_BopAudio, (atlObjectId), Audio::AudioImplAllocator);
+        return azcreate(
+            SATLAudioObjectData_BopAudio,
+            (atlObjectId, GlobalAudioObjectId),
+            Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_miniaudio::NewAudioObjectData(Audio::TAudioObjectID const atlObjectId)
         -> Audio::IATLAudioObjectData*
     {
-        return azcreate(SATLAudioObjectData_BopAudio, (atlObjectId), Audio::AudioImplAllocator);
+        return azcreate(
+            SATLAudioObjectData_BopAudio,
+            (atlObjectId, AudioObjectId(atlObjectId)),
+            Audio::AudioImplAllocator);
     }
 
     void AudioSystemImpl_miniaudio::DeleteAudioObjectData(

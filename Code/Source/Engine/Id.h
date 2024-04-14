@@ -155,7 +155,8 @@ namespace BopAudio
     };
 
     using AudioObjectId = TaggedId<AudioObjectTag>;
-    static constexpr auto InvalidAudioObjectId = AudioObjectId{};
+    static constexpr auto InvalidAudioObjectId = AudioObjectId{ INVALID_AUDIO_OBJECT_ID };
+    static constexpr auto GlobalAudioObjectId = AudioObjectId{ 1 };
 
     using AudioEventId = Audio::TAudioEventID;
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;
