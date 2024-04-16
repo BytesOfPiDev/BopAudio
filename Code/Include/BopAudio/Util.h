@@ -4,7 +4,6 @@
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/Outcome/Outcome.h"
-#include "AzCore/Utils/Utils.h"
 #include "AzCore/std/string/string.h"
 
 #include "Engine/ConfigurationSettings.h"

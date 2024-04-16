@@ -53,15 +53,6 @@ namespace BopAudio
         [[maybe_unused]] AudioEventId m_id{};
 
         /*
-         * Stores implementation data that implements the event.
-         *
-         * It is type-erased to avoid putting the, potentially many, template/variant types in the
-         * header, allowing the implementation to be be held entirely in the source file. A PIMPL
-         * pattern may be better, which can be evaluated at a later time.
-         */
-        [[maybe_unused]] AZStd::any m_internalData{};
-
-        /*
          * The current state of the event.
          *
          * It is not serialized, as it is only meaningful at run-time.

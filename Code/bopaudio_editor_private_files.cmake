@@ -6,7 +6,6 @@ set(FILES
     Source/Tools/BopAudioWidget.h
     Source/Tools/BopAudio.qrc
 
-
     Source/Tools/AudioBopAudioLoader.cpp
     Source/Tools/AudioBopAudioLoader.h
     Source/Tools/AudioSystemControl_BopAudio.cpp

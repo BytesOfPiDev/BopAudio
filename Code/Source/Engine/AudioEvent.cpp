@@ -1,12 +1,14 @@
 #include "Engine/AudioEvent.h"
-#include "AudioAllocators.h"
+
+#include "AzCore/Memory/SystemAllocator.h"
+
 #include "Clients/AudioEventAsset.h"
-#include "Engine/Tasks/PlaySound.h"
+#include "Engine/Tasks/AudioTaskBase.h"
 
 namespace BopAudio
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(AudioEvent, "AudioEvent", "{5E28282D-485B-4B1B-9F8C-8AC8C4A77340}");
-    AZ_CLASS_ALLOCATOR_IMPL(AudioEvent, Audio::AudioImplAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(AudioEvent, AZ::SystemAllocator);
 
     auto TryLoadEventAsset(AZ::Data::Asset<AudioEventAsset> eventAsset) -> AudioEventAsset*
     {
@@ -22,10 +24,7 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AudioEvent>()
-                ->Version(0)
-                ->Field("Id", &AudioEvent::m_id)
-                ->Field("Data", &AudioEvent::m_internalData);
+            serialize->Class<AudioEvent>()->Version(0)->Field("Id", &AudioEvent::m_id);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {

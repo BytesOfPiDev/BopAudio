@@ -1,16 +1,16 @@
 #include "SoundBankAssetHandler.h"
 
-#include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
+#include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Asset/AssetTypeInfoBus.h"
+#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/Utils.h"
 
 #include "Clients/SoundBankAsset.h"
-#include <AzCore/Asset/AssetManagerBus.h>
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, Audio::AudioImplAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAssetHandler, AZ::SystemAllocator);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         SoundBankAssetHandler, "SoundBankAssetHandler", "{3F1E6E35-4791-4A6A-81B7-D57DAF82E761}");
     AZ_RTTI_NO_TYPE_INFO_IMPL(SoundBankAssetHandler, AZ::Data::AssetHandler);

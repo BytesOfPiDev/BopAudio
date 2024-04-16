@@ -20,7 +20,6 @@ set(FILES
     Source/Engine/Tasks/PlaySound.h
     Source/Engine/Tasks/PlaySound.cpp
     Source/Engine/Tasks/StopSound.h
-    Source/Engine/Tasks/TaskBus.h
 
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEvent.cpp

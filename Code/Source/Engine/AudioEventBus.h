@@ -63,7 +63,6 @@ namespace BopAudio
     {
     public:
         AZ_DISABLE_COPY_MOVE(MiniAudioEventRequests);
-        AZ_RTTI(MiniAudioEventRequests, "{4E60C34B-EBD3-47BE-87CA-42E4500BCD29}");
 
         MiniAudioEventRequests() = default;
         virtual ~MiniAudioEventRequests() = default;

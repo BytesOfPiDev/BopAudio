@@ -37,6 +37,10 @@ namespace BopAudio
         }
     };
 
+    SoundInstance::SoundInstance(SoundSource const&)
+    {
+    }
+
     SoundInstance::SoundInstance(SoundInstance const& other)
         : m_resourceRef{ AZStd::move(other.m_resourceRef) }
         , m_sound{ new ma_sound }

@@ -5,14 +5,15 @@
 #include "Builder/AudioControlBuilderWorker.h"
 #include "Builder/AudioEventAssetBuilderWorker.h"
 #include "Builder/SoundBankAssetBuilderWorker.h"
-#include "Engine/Tasks/TaskBus.h"
 
 namespace BopAudio
 {
+
     class BopAudioAssetBuilderComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT(BopAudioAssetBuilderComponent, "{A8D75486-FC8B-4F61-8F61-DB78CD424264}");
+        AZ_DISABLE_COPY_MOVE(BopAudioAssetBuilderComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -30,13 +31,13 @@ namespace BopAudio
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
     protected:
+        void CreateFactories();
+
         void ConfigureSoundBankBuilder();
         void ConfigureAudioEventBuilder();
         void ConfigureAudioControlBuilder();
 
     private:
-        AZStd::vector<AZStd::unique_ptr<TaskFactoryRequests>> m_taskFactories;
-
         SoundBankAssetBuilderWorker m_bankBuilderWorker;
         AudioEventAssetBuilderWorker m_eventBuilder;
         AudioControlBuilderWorker m_audioControlBuilder;

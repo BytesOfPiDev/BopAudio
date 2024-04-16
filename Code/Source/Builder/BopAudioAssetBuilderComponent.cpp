@@ -3,13 +3,16 @@
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/RTTI/RTTIMacros.h"
 
+#include "AzCore/RTTI/ReflectContext.h"
+#include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/SerializeContext.h"
 #include "Builder/AudioEventAssetBuilderWorker.h"
 #include "Builder/SoundBankAssetBuilderWorker.h"
 #include "Clients/BopAudioSystemComponent.h"
-#include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
 {
+
     void BopAudioAssetBuilderComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -36,7 +39,6 @@ namespace BopAudio
     void BopAudioAssetBuilderComponent::Activate()
     {
         BopAudioSystemComponent::RegisterFileAliases();
-        m_taskFactories.push_back(PlaySoundTask::CreateFactory());
 
         ConfigureAudioControlBuilder();
         ConfigureAudioEventBuilder();
@@ -48,8 +50,6 @@ namespace BopAudio
         m_bankBuilderWorker.BusDisconnect();
         m_audioControlBuilder.BusDisconnect();
         m_eventBuilder.BusDisconnect();
-
-        m_taskFactories.clear();
     }
 
     void BopAudioAssetBuilderComponent::GetProvidedServices(
@@ -112,6 +112,10 @@ namespace BopAudio
 
         builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(
             R"((.*sounds\/bopaudio\/events\/).*\.audioeventsource)",
+            AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
+
+        builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(
+            R"((.*sounds\/bopaudio\/events\/).*\.audioevent)",
             AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
 
         builderDescriptor.m_busId = azrtti_typeid<AudioEventAssetBuilderWorker>();

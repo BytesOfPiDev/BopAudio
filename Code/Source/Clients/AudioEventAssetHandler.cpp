@@ -1,7 +1,7 @@
 #include "Clients/AudioEventAssetHandler.h"
 
-#include "AudioAllocators.h"
 #include "AzCore/Asset/AssetManager.h"
+#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Serialization/Utils.h"
 #include "AzFramework/Asset/GenericAssetHandler.h"
@@ -12,7 +12,7 @@
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AudioEventAssetHandler, Audio::AudioImplAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(AudioEventAssetHandler, AZ::SystemAllocator);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         AudioEventAssetHandler, "AudioEventAssetHandler", "{AD28F187-2EA4-465E-BB3E-6854696CB135}");
     AZ_RTTI_NO_TYPE_INFO_IMPL(
@@ -93,7 +93,7 @@ namespace BopAudio
     auto AudioEventAssetHandler::CanHandleAsset(AZ::Data::AssetId const& id) const -> bool
     {
         AZ::IO::Path const assetPath = GetAssetPath(id);
-        return Internal::IsProductAsset(assetPath) || Internal::IsSourceAsset(assetPath);
+        return Internal::IsProductAsset(assetPath);
     }
 
     auto AudioEventAssetHandler::CreateAsset(
@@ -121,26 +121,14 @@ namespace BopAudio
             audioEventAssetData != nullptr,
             "Asset is of the wrong type.");
 
-        if (Internal::IsProductAsset(asset.GetId()))
-        {
-            bool const assetLoaded = AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(
-                *stream, *audioEventAssetData);
+        bool const assetLoaded =
+            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, *audioEventAssetData);
 
-            if (!assetLoaded)
-            {
-                AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
-                return AZ::Data::AssetHandler::LoadResult::Error;
-            }
-        }
-        else if (Internal::IsSourceAsset(asset.GetId()))
+        if (!assetLoaded)
         {
-            AZ_Error(
-                "AudioEventAssetHandler",
-                false,
-                "LoadAssetData for SourceAsset is not yet implemented.");
+            AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
+            return AZ::Data::AssetHandler::LoadResult::Error;
         }
-
-        //        audioEventAssetData->RegisterAudioEvent();
 
         return AZ::Data::AssetHandler::LoadResult::LoadComplete;
     }

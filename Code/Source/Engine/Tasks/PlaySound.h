@@ -2,31 +2,31 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/std/smart_ptr/unique_ptr.h"
 
-#include "Engine/Id.h"
+#include "Engine/SoundSource.h"
 #include "Engine/Tasks/AudioTaskBase.h"
-#include "Engine/Tasks/TaskBus.h"
 
 namespace BopAudio
 {
     class AudioObject;
 
-    struct PlaySoundTask : public AudioTaskBase<PlaySoundTask>
+    struct PlaySoundTask final : public IAudioTask
     {
-        AZ_CLASS_ALLOCATOR_DECL;
-        AZ_TYPE_INFO_WITH_NAME_DECL(PlaySoundTask);
-        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(PlaySoundTask, AZ::SystemAllocator);
+        AZ_DEFAULT_COPY_MOVE(PlaySoundTask);
+        AZ_RTTI(PlaySoundTask, "{CF25AD9C-001B-4571-BC55-230A8A1DB6B9}", IAudioTask)
 
+        PlaySoundTask() = default;
+        ~PlaySoundTask() override = default;
         static void Reflect(AZ::ReflectContext* context);
 
-        static auto CreateFactory() -> AZStd::unique_ptr<TaskFactoryRequests>;
+        void operator()(AudioObject&) const override;
+        void Reset() override{};
 
-        void operator()(AudioObject&) const;
-
-        SoundRef m_resourceToPlay{};
+        SoundSource m_soundSource;
     };
 
 } // namespace BopAudio

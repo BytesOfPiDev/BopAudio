@@ -9,7 +9,7 @@ namespace BopAudio
     public:
         AZ_RTTI(AudioEventAssetBuilderWorker, "{DEBDCF13-0949-49D0-979D-B05288A4FB25}");
 
-        AudioEventAssetBuilderWorker() = default;
+        AudioEventAssetBuilderWorker();
 
         void CreateJobs(
             AssetBuilderSDK::CreateJobsRequest const& request,
@@ -21,6 +21,16 @@ namespace BopAudio
         {
             m_isShuttingDown = true;
         }
+
+    protected:
+        void CreateFactories();
+
+        void Copy(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response) const;
+        void Build(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response) const;
 
     private:
         AZStd::atomic_bool m_isShuttingDown{};

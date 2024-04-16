@@ -2,13 +2,14 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
-#include "AudioAllocators.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
+#include "Engine/SoundSource.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/PlaySound.h"
@@ -17,21 +18,19 @@ namespace BopAudio
 {
     void AudioEventAsset::Reflect(AZ::ReflectContext* context)
     {
-        PlaySoundTask::Reflect(context);
+        SoundSource::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<IAudioTask>();
+            serialize->Class<IAudioTask>()->Version(0);
+            serialize->RegisterGenericType<decltype(AudioEventAsset::m_eventTasks)>();
 
-            serialize->Class<AudioEventAsset, AZ::Data::AssetData, MiniAudioEventRequests>()
-                ->Version(1)
+            serialize->Class<AudioEventAsset, AZ::Data::AssetData>()
+                ->Version(4)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &AudioEventAsset::m_id)
-                ->Field("Tasks", &AudioEventAsset::m_tasks)
                 ->Field("EventTasks", &AudioEventAsset::m_eventTasks)
-                ->Field("Name", &AudioEventAsset::m_name)
-                ->Field("SelectedTask", &AudioEventAsset::m_taskToAdd)
-                ->Field("HasSource", &AudioEventAsset::m_hasSource);
+                ->Field("Name", &AudioEventAsset::m_name);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -42,8 +41,6 @@ namespace BopAudio
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_name, "Name", "")
 
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_tasks, "Tasks", "")
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
                         AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -53,21 +50,14 @@ namespace BopAudio
                         &AudioEventAsset::m_eventTasks,
                         "Event Tasks",
                         "")
+                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::EntireTree)
-
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Add Task", "")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Task")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AudioEventAsset::AddTask)
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::EntireTree)
-
-                    ;
+                        AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
             }
         }
+
+        PlaySoundTask::Reflect(context);
     }
 
     AudioEventAsset::AudioEventAsset() = default;
@@ -91,18 +81,13 @@ namespace BopAudio
             EventStartedData{});
 
         AZStd::ranges::for_each(
-            m_tasks,
-            [&audioObject](Task const& taskVariant)
+            m_eventTasks,
+            [&audioObject](IAudioTask* audioTask)
             {
-                AZStd::visit(
-                    [&audioObject](auto const& task)
-                    {
-                        if (!task.TryStart(audioObject))
-                        {
-                            AZ_Error("AudioEventAsset", false, "Failed to start task");
-                        }
-                    },
-                    taskVariant);
+                if (audioTask)
+                {
+                    (*audioTask)(audioObject);
+                }
             });
     }
 
@@ -152,11 +137,6 @@ namespace BopAudio
         MiniAudioEventRequestBus::Handler::BusDisconnect();
     };
 
-    void AudioEventAsset::AddTask()
-    {
-        m_tasks.push_back(PlaySoundTask{});
-    }
-
     void AudioEventAsset::OnTaskSelectionChanged()
     {
     }
@@ -169,7 +149,7 @@ namespace BopAudio
             [](IAudioTask* task) -> void
             {
                 task->~IAudioTask();
-                azfree(static_cast<void*>(task), Audio::AudioImplAllocator);
+                azfree(static_cast<void*>(task), AZ::SystemAllocator);
             });
 
         m_eventTasks.clear();

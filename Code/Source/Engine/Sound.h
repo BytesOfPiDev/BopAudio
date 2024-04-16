@@ -2,6 +2,7 @@
 
 #include "Engine/Id.h"
 #include "Engine/MiniAudioIncludes.h"
+#include "Engine/SoundSource.h"
 
 struct ma_sound;
 
@@ -26,6 +27,7 @@ namespace BopAudio
         ~SoundInstance() = default;
 
         SoundInstance(SoundRef const& soundName);
+        SoundInstance(SoundSource const& soundSource);
 
         SoundInstance(SoundInstance const&);
         SoundInstance(SoundInstance&&);

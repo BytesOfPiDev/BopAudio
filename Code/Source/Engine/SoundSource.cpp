@@ -11,6 +11,9 @@
 #include "MiniAudio/MiniAudioBus.h"
 #include "MiniAudio/SoundAsset.h"
 #include "MiniAudioIncludes.h"
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace BopAudio
 {
@@ -51,7 +54,33 @@ namespace BopAudio
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         SoundSource, "SoundSource", "{5779BE60-D6EE-4A6C-9C1E-5875675A2ED5}");
 
-    AZ_CLASS_ALLOCATOR_IMPL(SoundSource, Audio::AudioImplAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SoundSource, AZ::SystemAllocator);
+
+    void SoundSource::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<SoundSource>()
+                ->Version(0)
+                ->Field("SoundRef", &SoundSource::m_soundRef)
+                ->Field("SoundAsset", &SoundSource::m_soundAsset);
+
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<SoundSource>("SoundSource", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SoundSource::m_soundAsset,
+                        "Sound Asset",
+                        "")
+                    ->Attribute(
+                        AZ::Edit::Attributes::ChangeNotify, &SoundSource::OnSoundAssetChanged);
+            }
+        }
+    }
 
     SoundSource::SoundSource() = default;
 
@@ -60,18 +89,6 @@ namespace BopAudio
         ma_engine* const engine{ SoundEngine::Get()->GetSoundEngine() };
         ma_resource_manager_unregister_data(
             ma_engine_get_resource_manager(engine), m_soundRef.GetCStr());
-    }
-    void SoundSource::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serialize->Class<SoundSource>()->Version(0);
-
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
-            {
-                editContext->Class<SoundSource>("SoundSource", "");
-            }
-        }
     }
 
     SoundSource::SoundSource(SoundRef soundResourceRef)
@@ -105,6 +122,11 @@ namespace BopAudio
             m_soundRef.GetCStr());
 
         return m_registered;
+    }
+
+    void SoundSource::OnSoundAssetChanged()
+    {
+        AZ_Info("SoundSource", "OnSoundAssetChanged");
     }
 
     auto SoundSource::Load() -> AZ::Outcome<void, char const*>

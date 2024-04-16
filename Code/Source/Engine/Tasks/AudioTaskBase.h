@@ -2,6 +2,11 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
+
 namespace BopAudio
 {
     AZ_ENUM_CLASS(TaskState, Invalid, Executing, Finished, Error);
@@ -17,18 +22,12 @@ namespace BopAudio
         virtual ~IAudioTask() = default;
 
         virtual void Reset() = 0;
-    };
-
-    template<typename DerivedTask>
-    struct AudioTaskBase : public IAudioTask
-    {
-        void Reset() override
+        virtual void operator()(AudioObject&) const
         {
         }
-
         [[nodiscard]] auto TryStart(AudioObject& obj) const -> bool
         {
-            auto const& self{ static_cast<DerivedTask const&>(*this) };
+            auto const& self{ *this };
             self(obj);
 
             return true;
@@ -44,5 +43,4 @@ namespace BopAudio
             return true;
         }
     };
-
 } // namespace BopAudio

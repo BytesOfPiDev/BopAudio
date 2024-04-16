@@ -55,6 +55,7 @@ namespace BopAudio
 
     protected:
         auto RegisterSound() -> bool;
+        void OnSoundAssetChanged();
 
     private:
         SoundRef m_soundRef{};

@@ -11,6 +11,7 @@
 
 #include "Engine/ConfigurationSettings.h"
 #include "IAudioInterfacesCommonData.h"
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace BopAudio
 {
@@ -24,6 +25,7 @@ namespace BopAudio
     class ResourceRefBase
     {
     public:
+        AZ_DEFAULT_COPY_MOVE(ResourceRefBase);
         AZ_CLASS_ALLOCATOR(ResourceRefBase, AZ::SystemAllocator);
         AZ_TYPE_INFO(ResourceRefBase, "{7ED165C7-85D0-46F3-8D11-18B19DDA3A2E}");
 
@@ -31,19 +33,25 @@ namespace BopAudio
         {
             if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serialize->Class<ResourceRefBase>()->Version(1)->Field(
-                    "Id", &ResourceRefBase::m_name);
+                serialize->Class<ResourceRefBase>()
+                    ->Version(1)
+                    ->Field("Id", &ResourceRefBase::m_name)
+                    ->Field("path", &ResourceRefBase::m_data);
+
                 if (AZ::EditContext* editContext = serialize->GetEditContext())
                 {
                     editContext->Class<ResourceRefBase>("ResourceRefBase", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &ResourceRefBase::m_data, "Path", "");
                 }
             }
         }
 
         ResourceRefBase() = default;
+        ~ResourceRefBase() = default;
 
         explicit ResourceRefBase(AZStd::string_view resourceName)
             : m_name{ resourceName } {};
@@ -92,7 +100,8 @@ namespace BopAudio
         }
 
     private:
-        AZ::Name m_name{};
+        AZ::Name m_name{ "test" };
+        AZStd::string m_data;
     };
 
     template<typename Tag>
@@ -102,7 +111,7 @@ namespace BopAudio
 
     public:
         AZ_DEFAULT_COPY_MOVE(TaggedResource<Tag>);
-        AZ_CLASS_ALLOCATOR(TaggedResource<Tag>, Audio::AudioImplAllocator);
+        AZ_CLASS_ALLOCATOR(TaggedResource<Tag>, AZ::SystemAllocator);
 
         constexpr TaggedResource() = default;
         ~TaggedResource() = default;

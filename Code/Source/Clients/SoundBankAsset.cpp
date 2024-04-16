@@ -1,17 +1,18 @@
 #include "Clients/SoundBankAsset.h"
 
-#include "AudioAllocators.h"
 #include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
+
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
-#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace BopAudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, Audio::AudioImplAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SoundBankAsset, AZ::SystemAllocator);
     AZ_RTTI_NO_TYPE_INFO_IMPL(SoundBankAsset, AZ::Data::AssetData);
     AZ_TYPE_INFO_WITH_NAME_IMPL(SoundBankAsset, "SoundBankAsset", SoundBankAssetTypeId);
 

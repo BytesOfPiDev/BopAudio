@@ -27,8 +27,6 @@ namespace BopAudio
 
         if (auto* const serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<MiniAudioEventRequests>()->Version(0);
-
             serialize->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
         }
     }
