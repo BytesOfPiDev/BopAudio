@@ -198,7 +198,7 @@ namespace BopAudio
 
         auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
-        SoundEngine::Get()->RemoveAudioObject(implOldObjectData->GetAtlAudioObjectId());
+        SoundEngine::Get()->RemoveAudioObject(static_cast<AZ::u32>(implOldObjectData->GetAtlAudioObjectId()));
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -630,7 +630,7 @@ namespace BopAudio
     {
         return azcreate(
             SATLAudioObjectData_BopAudio,
-            (atlObjectId, AudioObjectId(atlObjectId)),
+            (atlObjectId, static_cast<AZ::u32>(atlObjectId)),
             Audio::AudioImplAllocator);
     }
 

@@ -50,7 +50,7 @@ namespace BopAudio
     auto SoundBankAssetHandler::CreateAsset(
         AZ::Data::AssetId const& /*id*/, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
-        if (aztypeid_cmp(type, AZ::AzTypeInfo<SoundBankAsset>::Uuid()))
+        if (type == AZ::AzTypeInfo<SoundBankAsset>::Uuid())
         {
             return aznew SoundBankAsset{};
         }

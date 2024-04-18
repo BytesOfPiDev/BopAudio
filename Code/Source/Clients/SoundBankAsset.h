@@ -40,12 +40,12 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] constexpr auto operator==(ResourceRef const& resourceId) const
+        [[nodiscard]] auto operator==(ResourceRef const& resourceId) const
         {
             return (m_id.IsValid() && m_id.IsValid()) && (m_id.GetHash() == resourceId.GetHash());
         }
 
-        [[nodiscard]] constexpr auto operator==(BankRef const& resourceId) const
+        [[nodiscard]] auto operator==(BankRef const& resourceId) const
         {
             return m_id == resourceId;
         }

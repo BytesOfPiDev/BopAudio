@@ -21,17 +21,17 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] explicit constexpr operator size_t() const
+        [[nodiscard]] explicit operator size_t() const
         {
             return m_soundRef.GetHash();
         }
 
-        [[nodiscard]] constexpr auto operator==(SoundSource const& other) const
+        [[nodiscard]] auto operator==(SoundSource const& other) const
         {
             return m_soundRef == other.m_soundRef;
         }
 
-        [[nodiscard]] constexpr auto operator!=(SoundSource const& other) const
+        [[nodiscard]] auto operator!=(SoundSource const& other) const
         {
             return !((*this) == other);
         }
@@ -43,7 +43,7 @@ namespace BopAudio
 
         auto Load() -> AZ::Outcome<void, char const*>;
 
-        [[nodiscard]] constexpr auto IsReady() const -> bool
+        [[nodiscard]] auto IsReady() const -> bool
         {
             return m_soundAsset.IsReady();
         }

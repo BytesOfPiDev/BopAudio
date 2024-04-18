@@ -13,6 +13,7 @@ namespace BopAudio
         : public AzFramework::GenericAssetHandlerBase
         , public AZ::AssetTypeInfoBus::Handler
     {
+        using Base = AzFramework::GenericAssetHandlerBase;
         static constexpr auto AudioEventAssetType = AZ::Data::AssetType{ AudioEventAssetTypeId };
 
     public:
@@ -54,5 +55,8 @@ namespace BopAudio
         [[nodiscard]] auto GetComponentTypeId() const -> AZ::Uuid override;
         [[nodiscard]] auto CanCreateComponent(AZ::Data::AssetId const& assetId) const
             -> bool override;
+        
+        private:
+        AZ::SerializeContext* m_serializeContext;
     };
 } // namespace BopAudio

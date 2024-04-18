@@ -6,6 +6,18 @@
 #include "AzCore/Serialization/Utils.h"
 #include "AzFramework/Asset/GenericAssetHandler.h"
 
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/GenericStreams.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
+
+#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+
 #include "BopAudio/BopAudioTypeIds.h"
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
@@ -62,6 +74,9 @@ namespace BopAudio
 
     AudioEventAssetHandler::AudioEventAssetHandler()
     {
+        AZ::ComponentApplicationBus::BroadcastResult(
+            m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
         AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::Data::AssetType{ AudioEventAssetTypeId });
     }
 
@@ -99,7 +114,7 @@ namespace BopAudio
     auto AudioEventAssetHandler::CreateAsset(
         AZ::Data::AssetId const& /*id*/, AZ::Data::AssetType const& type) -> AZ::Data::AssetPtr
     {
-        if (aztypeid_cmp(type, AZ::Data::AssetType{ AudioEventAssetTypeId }))
+        if (type == AZ::Data::AssetType{ AudioEventAssetTypeId })
         {
             return aznew AudioEventAsset{};
         }
@@ -112,49 +127,34 @@ namespace BopAudio
     auto AudioEventAssetHandler::LoadAssetData(
         AZ::Data::Asset<AZ::Data::AssetData> const& asset,
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-        AZ::Data::AssetFilterCB const& /*assetLoadFilterCB*/) -> AZ::Data::AssetHandler::LoadResult
+        AZ::Data::AssetFilterCB const& assetLoadFilterCB) -> AZ::Data::AssetHandler::LoadResult
     {
-        auto* audioEventAssetData{ asset.GetAs<AudioEventAsset>() };
-
-        AZ_Error(
-            "AudioEventAssetHandler",
-            audioEventAssetData != nullptr,
-            "Asset is of the wrong type.");
-
-        bool const assetLoaded =
-            AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(*stream, *audioEventAssetData);
-
-        if (!assetLoaded)
+        AudioEventAsset* assetData = asset.GetAs<AudioEventAsset>();
+        AZ_Assert(assetData, "Asset is of the wrong type.");
+        AZ_Assert(m_serializeContext, "Unable to retrieve serialize context.");
+        if (assetData)
         {
-            AZ_Error("AudioEventAssetHandler", false, "Failed to load given asset.");
-            return AZ::Data::AssetHandler::LoadResult::Error;
+            return AZ::Utils::LoadObjectFromStreamInPlace<AudioEventAsset>(
+                       *stream,
+                       *assetData,
+                       m_serializeContext,
+                       AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB))
+                ? AZ::Data::AssetHandler::LoadResult::LoadComplete
+                : AZ::Data::AssetHandler::LoadResult::Error;
         }
 
-        return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+        return AZ::Data::AssetHandler::LoadResult::Error;
     }
 
     auto AudioEventAssetHandler::SaveAssetData(
         const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream) -> bool
     {
-        auto* audioEventAssetData = asset.GetAs<AudioEventAsset>();
-        AZ_Error(
-            "AudioEventAssetHandler",
-            audioEventAssetData != nullptr,
-            "Asset is of the wrong type.");
-
-        AZ::SerializeContext* const serializeContext = []() -> decltype(serializeContext)
+        auto* assetData = asset.GetAs<AudioEventAsset>();
+        AZ_Assert(assetData, "Asset is of the wrong type.");
+        if (assetData && m_serializeContext)
         {
-            auto result{ decltype(serializeContext){} };
-            AZ::ComponentApplicationBus::BroadcastResult(
-                result, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            return result;
-        }();
-
-        if (audioEventAssetData && serializeContext)
-        {
-            return AZ::Utils::SaveObjectToStream(
-                *stream, AZ::ObjectStream::ST_JSON, audioEventAssetData, serializeContext);
+            return AZ::Utils::SaveObjectToStream<AudioEventAsset>(
+                *stream, AZ::ObjectStream::ST_JSON, assetData, m_serializeContext);
         }
 
         return false;

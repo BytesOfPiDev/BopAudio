@@ -40,8 +40,8 @@ namespace BopAudio
             return m_atlAudioObjectId;
         }
 
-        constexpr void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
-        constexpr void SetImplAudioObjectId(AudioObjectId implAudioObjectId)
+         void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
+         void SetImplAudioObjectId(AudioObjectId implAudioObjectId)
         {
             m_implAudioObjectId = implAudioObjectId;
         }
@@ -51,7 +51,7 @@ namespace BopAudio
             return m_implAudioObjectId;
         }
 
-        constexpr void ChangeName(AZStd::string_view objectName)
+         void ChangeName(AZStd::string_view objectName)
         {
             m_objectName = objectName;
         }

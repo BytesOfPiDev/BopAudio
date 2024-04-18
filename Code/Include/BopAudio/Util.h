@@ -21,7 +21,7 @@ namespace BopAudio
      *
      * @note The result has the same lifetime as the given argument.
      */
-    static constexpr auto GetResourceName(ResourceRef const& ref) -> AZStd::string_view
+    static inline auto GetResourceName(ResourceRef const& ref) -> AZStd::string_view
     {
         AZ::IO::PathView path{ ref.GetCStr() };
         return path.Filename().Native();

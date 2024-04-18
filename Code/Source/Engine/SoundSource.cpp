@@ -86,9 +86,6 @@ namespace BopAudio
 
     SoundSource::~SoundSource()
     {
-        ma_engine* const engine{ SoundEngine::Get()->GetSoundEngine() };
-        ma_resource_manager_unregister_data(
-            ma_engine_get_resource_manager(engine), m_soundRef.GetCStr());
     }
 
     SoundSource::SoundSource(SoundRef soundResourceRef)
@@ -105,21 +102,7 @@ namespace BopAudio
             return false;
         }
 
-        ma_engine* const miniAudioEngine{ SoundEngine::Get()->GetSoundEngine() };
-
-        ma_result const result = ma_resource_manager_register_encoded_data(
-            ma_engine_get_resource_manager(miniAudioEngine),
-            m_soundRef.GetCStr(),
-            m_soundAsset->m_data.data(),
-            m_soundAsset->m_data.size());
-
-        m_registered = (result == MA_SUCCESS);
-
-        AZ_Error(
-            "SoundSource",
-            m_registered,
-            "Failed to register sound '%' with miniaudio!",
-            m_soundRef.GetCStr());
+        AZ_Warning("SoundSource", m_registered, "RegisterSound is unimplemented.");
 
         return m_registered;
     }
@@ -131,23 +114,7 @@ namespace BopAudio
 
     auto SoundSource::Load() -> AZ::Outcome<void, char const*>
     {
-        auto const path{ AZ::IO::Path{ BanksAlias } / m_soundRef.GetCStr() };
-
-        m_soundAsset = Internal::LoadSoundAsset(
-            FindAssetId(path, AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid()));
-
-        if (!m_soundAsset.IsReady())
-        {
-            return AZ::Failure("Failed to load sound.");
-        }
-
-        if (!RegisterSound())
-        {
-            m_soundAsset.Reset();
-            return AZ::Failure("Loaded sound, but failed registration failed.");
-        }
-
-        AZLOG_INFO("Registered sound '%s' to miniaudio", m_soundRef.GetCStr());
+        AZ_Warning("SoundSource", false, "Load is unimplemented.");
         return AZ::Success();
     }
 

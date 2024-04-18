@@ -59,17 +59,17 @@ namespace BopAudio
         explicit ResourceRefBase(AZ::Name resourceName)
             : m_name{ AZStd::move(resourceName) } {};
 
-        [[nodiscard]] explicit constexpr operator size_t() const
+        [[nodiscard]] explicit operator size_t() const
         {
             return m_name.GetHash();
         }
 
-        constexpr auto operator==(ResourceRefBase const& other) const -> bool
+        auto operator==(ResourceRefBase const& other) const -> bool
         {
             return m_name == other.m_name;
         }
 
-        constexpr auto operator==(AZ::Name const& resourceName) const -> bool
+        auto operator==(AZ::Name const& resourceName) const -> bool
         {
             return m_name == resourceName;
         };
@@ -79,22 +79,22 @@ namespace BopAudio
             return m_name;
         }
 
-        [[nodiscard]] constexpr auto GetCStr() const -> char const*
+        [[nodiscard]] auto GetCStr() const -> char const*
         {
             return m_name.GetCStr();
         }
 
-        [[nodiscard]] constexpr auto c_str() const -> char const*
+        [[nodiscard]] auto c_str() const -> char const*
         {
             return GetCStr();
         }
 
-        [[nodiscard]] constexpr auto GetHash() const -> AZ::u32
+        [[nodiscard]] auto GetHash() const -> AZ::u32
         {
             return m_name.GetHash();
         }
 
-        [[nodiscard]] constexpr auto IsValid() const -> bool
+        [[nodiscard]] auto IsValid() const -> bool
         {
             return !m_name.IsEmpty();
         }
