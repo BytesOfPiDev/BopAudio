@@ -165,8 +165,7 @@ namespace BopAudio
                 std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
         };
 
-        // (optimization) this builder does not emit source dependencies:
-        builderDescriptor.m_flags |= AssetBuilderSDK::AssetBuilderDesc::BF_EmitsNoDependencies;
+        builderDescriptor.m_flags |= AssetBuilderSDK::AssetBuilderDesc::BF_DeleteLastKnownGoodProductOnFailure;
 
         m_audioControlBuilder.BusConnect(builderDescriptor.m_busId);
 

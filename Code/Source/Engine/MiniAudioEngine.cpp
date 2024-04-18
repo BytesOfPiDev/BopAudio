@@ -247,6 +247,8 @@ namespace BopAudio
 
                 audioEventAsset.BlockUntilLoadComplete();
 
+                audioEventAsset->RegisterAudioEvent();
+
                 AZ_Error(
                     "MiniAudioEngine",
                     MiniAudioEventRequestBus::HasHandlers(audioEventAsset->GetEventId()),
@@ -292,7 +294,7 @@ namespace BopAudio
 
         if (!tryStartEventResult)
         {
-            return AZ::Failure("Failed to start event.");
+            AZ_Error("MiniAudioEngine", false, "StartEvent not implemented.");
         }
 
         return AZ::Success();

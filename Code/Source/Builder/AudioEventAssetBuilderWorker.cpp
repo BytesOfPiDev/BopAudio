@@ -186,7 +186,7 @@ namespace BopAudio
         AssetBuilderSDK::JobProduct jobProduct{ absProductPath.c_str() };
         jobProduct.m_productAssetType = AZ::AzTypeInfo<AudioEventAsset>::Uuid();
         jobProduct.m_productSubID = AudioEventAsset::AssetSubId;
-        jobProduct.m_dependenciesHandled = true;
+        jobProduct.m_dependenciesHandled = false;
 
         response.m_outputProducts.push_back(jobProduct);
 
@@ -257,6 +257,17 @@ namespace BopAudio
             return path;
         }();
 
+        auto asset = AZStd::unique_ptr<AudioEventAsset>{
+            AZ::Utils::LoadObjectFromFile<AudioEventAsset>(request.m_fullPath)
+        };
+        if (asset == nullptr)
+        {
+            AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Failed to load asset.");
+
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            return;
+        }
+        
         auto const successfulCopy{ AZ::IO::FileIOBase::GetInstance()->Copy(
             request.m_fullPath.c_str(), absProductPath.c_str()) };
 
@@ -276,7 +287,7 @@ namespace BopAudio
         AssetBuilderSDK::JobProduct jobProduct{ absProductPath.c_str() };
         jobProduct.m_productAssetType = AZ::AzTypeInfo<AudioEventAsset>::Uuid();
         jobProduct.m_productSubID = AudioEventAsset::AssetSubId;
-        jobProduct.m_dependenciesHandled = true;
+        jobProduct.m_dependenciesHandled = false;
 
         response.m_outputProducts.push_back(jobProduct);
 

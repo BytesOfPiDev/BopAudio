@@ -171,6 +171,8 @@ namespace BopAudio
     static constexpr auto GlobalAudioObjectId = AudioObjectId{ 1 };
 
     using AudioEventId = Audio::TAudioEventID;
+    static constexpr auto InvalidAudioEventId{ 0 };
+
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 
 } // namespace BopAudio

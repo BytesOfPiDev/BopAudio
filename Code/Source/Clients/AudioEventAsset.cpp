@@ -9,9 +9,9 @@
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
+#include "Engine/Id.h"
 #include "Engine/SoundSource.h"
 #include "Engine/Tasks/AudioTaskBase.h"
-#include "Engine/Tasks/Common.h"
 #include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
@@ -120,12 +120,25 @@ namespace BopAudio
 
     void AudioEventAsset::RegisterAudioEvent()
     {
-        AZ_Error(
-            "AudioEventAsset",
-            MiniAudioEventRequestBus::HasHandlers(m_id),
-            "Event [%s | %zu] already has a handler!",
-            m_name.GetCStr(),
-            m_id);
+        if (m_id == InvalidAudioEventId)
+        {
+            AZ_Error(
+                "AudioEventAsset", false, "Unable to register audio event. The id is invalid.\n");
+
+            return;
+        }
+
+        if (MiniAudioEventRequestBus::HasHandlers(m_id))
+        {
+            AZ_Warning(
+                "AudioEventAsset",
+                false,
+                "Unable to register audio event. Handler already exists [%s | %zu].\n",
+                m_name.GetCStr(),
+                m_id);
+
+            return;
+        }
 
         MiniAudioEventRequestBus::HasHandlers()
             ? MiniAudioEventRequestBus::Handler::BusConnect(m_id)
