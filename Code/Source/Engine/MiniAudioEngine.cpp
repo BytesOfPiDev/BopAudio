@@ -12,6 +12,7 @@
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/Utils/Utils.h"
 #include "AzFramework/IO/LocalFileIO.h"
+#include "Clients/AudioEventBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 #include "MiniAudio/MiniAudioBus.h"
@@ -19,12 +20,11 @@
 #include "BopAudio/Util.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/SoundBankAsset.h"
-#include "Engine/AudioEventBus.h"
+#include "Engine/AudioEngineEventBus.h"
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
-#include "Engine/MiniAudioIncludes.h"
 
 namespace BopAudio
 {
@@ -160,7 +160,6 @@ namespace BopAudio
         m_controlEventMap.clear();
         m_audioObjects.clear();
         m_eventAssets.clear();
-        m_soundSourceMap.clear();
         m_loadedSources.clear();
         m_isInit = false;
 
@@ -300,13 +299,16 @@ namespace BopAudio
         return AZ::Success();
     }
 
-    auto MiniAudioEngine::StopEvent(AudioEventId eventId) -> bool
+    auto MiniAudioEngine::StopEvent([[maybe_unused]] AudioEventId eventId) -> bool
     {
         bool const result = [&eventId, this]() -> decltype(result)
         {
             bool callResult{};
             MiniAudioEventRequestBus::EventResult(
-                callResult, eventId, &MiniAudioEventRequests::TryStopEvent, m_globalObject);
+                callResult,
+                eventId,
+                &MiniAudioEventRequestBus::Events::TryStopEvent,
+                m_globalObject);
 
             return callResult;
         }();
@@ -344,22 +346,7 @@ namespace BopAudio
 
     auto MiniAudioEngine::LoadSound(SoundRef const& resourceRef) -> NullOutcome
     {
-        if (m_soundSourceMap.contains(resourceRef))
-        {
-            return AZ::Success();
-        }
-
-        auto source{ AZStd::make_unique<SoundSource>(resourceRef) };
-        auto const loadResult{ source->Load() };
-
-        if (!loadResult.IsSuccess())
-        {
-            return AZ::Failure(loadResult.GetError());
-        }
-
-        m_soundSourceMap[resourceRef] = AZStd::move(source);
-
-        return AZ::Success();
+        return AZ::Failure("Unimplemented.");
     }
 
 } // namespace BopAudio

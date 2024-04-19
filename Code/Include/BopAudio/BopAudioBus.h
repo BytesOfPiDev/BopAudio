@@ -9,11 +9,14 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(
         Audio::AudioSystemImplementationRequests, "{51746815-C8EE-4FA8-965B-6EE541840F0A}")
-
 }
 
 namespace BopAudio
 {
+    class SoundSource
+    {
+    };
+
     class BopAudioRequests
     {
     public:

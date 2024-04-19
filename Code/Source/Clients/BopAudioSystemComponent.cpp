@@ -6,6 +6,7 @@
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "Clients/AudioEventAsset.h"
 #include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
@@ -15,6 +16,7 @@
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
+#include "ScriptCanvas/Nodes/AudioEventNode.h"
 
 namespace BopAudio
 {
@@ -23,6 +25,11 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        AudioEventId::Reflect(context);
+        StartEventData::Reflect(context);
+        StopEventData::Reflect(context);
+
+        AudioEventAsset::Reflect(context);
         SoundBankAsset::Reflect(context);
 
         if (auto* const serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -77,6 +84,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
+        AZStd::make_unique<Nodes::AudioEventNode>();
     }
 
     void BopAudioSystemComponent::RegisterFileAliases()

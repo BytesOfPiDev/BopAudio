@@ -3,7 +3,6 @@
 #include "ATLEntityData.h"
 #include "AzCore/Math/Crc.h"
 #include "Engine/Id.h"
-#include "Engine/Sound.h"
 
 #include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/SoundAsset.h"
@@ -40,8 +39,8 @@ namespace BopAudio
             return m_atlAudioObjectId;
         }
 
-         void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
-         void SetImplAudioObjectId(AudioObjectId implAudioObjectId)
+        void SetAtlAudioObjectId(Audio::TAudioObjectID) = delete;
+        void SetImplAudioObjectId(AudioObjectId implAudioObjectId)
         {
             m_implAudioObjectId = implAudioObjectId;
         }
@@ -51,7 +50,7 @@ namespace BopAudio
             return m_implAudioObjectId;
         }
 
-         void ChangeName(AZStd::string_view objectName)
+        void ChangeName(AZStd::string_view objectName)
         {
             m_objectName = objectName;
         }
@@ -169,7 +168,6 @@ namespace BopAudio
 
         ~SATLAudioFileEntryData_BopAudio() override
         {
-            m_sounds.clear();
             m_soundAssets.clear();
             m_soundNames.clear();
         };
@@ -177,15 +175,6 @@ namespace BopAudio
         ResourceRef m_bankId{};
         AZStd::unordered_set<ResourceRef> m_soundNames{};
         AZStd::unordered_map<ResourceRef, MiniAudio::SoundDataAsset> m_soundAssets{};
-        AZStd::unordered_map<ResourceRef, SoundInstance> m_sounds{};
-    };
-
-    struct EventStartedData
-    {
-    };
-
-    struct EventFinishedData
-    {
     };
 
 } // namespace BopAudio

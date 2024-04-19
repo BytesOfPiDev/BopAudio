@@ -1,12 +1,11 @@
 
 #include "AzCore/Memory/Memory_fwd.h"
+#include "AzCore/Module/Module.h"
 #include "AzCore/RTTI/RTTIMacros.h"
-#include "AzCore/RTTI/TypeInfoSimple.h"
-#include "IGem.h"
 
 namespace BopAudio
 {
-    class BopAudioModuleInterface : public CryHooksModule
+    class BopAudioModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(BopAudioModuleInterface)

@@ -8,7 +8,6 @@
 #include "Engine/AudioObject.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
-#include "Engine/SoundSource.h"
 
 namespace BopAudio
 {
@@ -55,7 +54,6 @@ namespace BopAudio
 
         AZStd::map<Audio::TAudioControlID, AZ::Data::Asset<AudioEventAsset>> m_controlEventMap{};
         AZStd::unordered_set<Audio::TAudioSourceId> m_loadedSources{};
-        AZStd::unordered_map<SoundRef, AZStd::unique_ptr<SoundSource>> m_soundSourceMap{};
 
         AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_eventAssets{};
         bool m_isInit{};

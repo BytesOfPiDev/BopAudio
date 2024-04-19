@@ -2,15 +2,13 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
-#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
+#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
+#include "IAudioInterfacesCommonData.h"
 
-#include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/AudioEventBus.h"
 #include "Engine/AudioObject.h"
-#include "Engine/Id.h"
-#include "Engine/SoundSource.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "Engine/Tasks/PlaySound.h"
 
@@ -18,10 +16,10 @@ namespace BopAudio
 {
     void AudioEventAsset::Reflect(AZ::ReflectContext* context)
     {
-        SoundSource::Reflect(context);
-
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            PlaySoundTask::Reflect(context);
+
             serialize->Class<IAudioTask>()->Version(0);
             serialize->RegisterGenericType<decltype(AudioEventAsset::m_eventTasks)>();
 
@@ -56,8 +54,6 @@ namespace BopAudio
                         AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
             }
         }
-
-        PlaySoundTask::Reflect(context);
     }
 
     AudioEventAsset::AudioEventAsset() = default;
@@ -70,15 +66,10 @@ namespace BopAudio
 
     void AudioEventAsset::operator()(AudioObject& audioObject) const
     {
-        if (m_eventState != AudioEventState::Idle)
+        if (m_eventState != Audio::EAudioEventState::eAES_NONE)
         {
             return;
         }
-
-        AudioEventNotificationBus::Event(
-            EventNotificationIdType(Audio::TAudioControlID{}, nullptr),
-            &MiniAudioEventNotifications::ReportEventStarted,
-            EventStartedData{});
 
         AZStd::ranges::for_each(
             m_eventTasks,
@@ -93,12 +84,12 @@ namespace BopAudio
 
     auto AudioEventAsset::TryStartEvent(AudioObject& obj) -> bool
     {
-        if (m_eventState != AudioEventState::Idle)
+        if (m_eventState != Audio::EAudioEventState::eAES_NONE)
         {
             return false;
         }
 
-        m_eventState = AudioEventState::Active;
+        m_eventState = Audio::EAudioEventState::eAES_NONE;
         (*this)(obj);
 
         return true;
@@ -106,14 +97,14 @@ namespace BopAudio
 
     auto AudioEventAsset::TryStopEvent(AudioObject& obj) -> bool
     {
-        if (m_eventState != AudioEventState::Active)
+        if (m_eventState != Audio::EAudioEventState::eAES_PLAYING)
         {
             return false;
         }
 
-        m_eventState = AudioEventState::Stopping;
+        m_eventState = Audio::EAudioEventState::eAES_UNLOADING;
         (*this)(obj);
-        m_eventState = AudioEventState::Idle;
+        m_eventState = Audio::EAudioEventState::eAES_NONE;
 
         return true;
     }
@@ -172,4 +163,44 @@ namespace BopAudio
     {
         return { "Play", "Stop" };
     }
+
+    void StartEventData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<StartEventData>()->Version(0);
+
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<StartEventData>("Start AudioEvent Data", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<StartEventData>("StartAudioEventData");
+        }
+    }
+
+    void StopEventData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<StopEventData>()->Version(0);
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<StopEventData>("Stop AudioEvent Data", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<StopEventData>("StopAudioEventData");
+        }
+    }
+
 } // namespace BopAudio

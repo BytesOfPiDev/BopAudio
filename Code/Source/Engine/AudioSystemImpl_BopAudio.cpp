@@ -14,12 +14,14 @@
 #include "IAudioSystemImplementation.h"
 
 #include "BopAudio/BopAudioBus.h"
+#include "Clients/AudioEventBus.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "MiniAudio/SoundAsset.h"
+#include <cstdint>
 
 namespace BopAudio
 {
@@ -198,7 +200,8 @@ namespace BopAudio
 
         auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
 
-        SoundEngine::Get()->RemoveAudioObject(static_cast<AZ::u32>(implOldObjectData->GetAtlAudioObjectId()));
+        SoundEngine::Get()->RemoveAudioObject(
+            static_cast<AZ::u32>(implOldObjectData->GetAtlAudioObjectId()));
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -295,20 +298,20 @@ namespace BopAudio
 
         implEventData->SetImplEventId(implTriggerData->GetEventId());
 
-        StartEventData activateTriggerRequest{};
-        activateTriggerRequest.m_owner = eventData->m_owner;
-        activateTriggerRequest.m_audioControlId = eventData->m_triggerId;
-        activateTriggerRequest.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
-        activateTriggerRequest.m_audioEventId = implTriggerData->GetEventId();
+        StartEventData startEventData{};
+        startEventData.m_owner = eventData->m_owner;
+        startEventData.m_audioControlId = eventData->m_triggerId;
+        startEventData.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
+        startEventData.m_audioEventId = implTriggerData->GetEventId();
 
-        auto const activateOutcome{ SoundEngine::Get()->StartEvent(activateTriggerRequest) };
+        auto const busId{ AudioEventBusIdType(implTriggerData->GetEventId()) };
 
-        AZ_Error(
-            "ASI",
-            activateOutcome.IsSuccess(),
-            "Failed to activate event. [EventId: %zu]': '[Error: %s]'",
-            implTriggerData->GetEventId(),
-            activateOutcome.GetError().c_str());
+        AZLOG(
+            LOG_AudioEventBus,
+            "Sending AudioEventRequests::StartEvent with [ControlId: %u] ",
+            static_cast<AZ::u32>(busId.m_eventId));
+
+        AudioEventRequestBus::Event(busId, &AudioEventRequests::StartEvent, startEventData);
 
         return Audio::EAudioRequestStatus::Success;
     }
@@ -555,7 +558,7 @@ namespace BopAudio
             SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
 
         implAudioTriggerData->SetImplEventId(
-            Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.GetCStr()));
+            Audio::AudioStringToID<AudioEventId>(triggerName.GetCStr()));
 
         return implAudioTriggerData;
     }
@@ -765,8 +768,6 @@ namespace BopAudio
 
         m_sourceAssetMap[sourceConfig.m_sourceId] = soundAsset;
 
-        auto const& assetBuffer = soundAsset->m_data;
-
         auto* const engine = SoundEngine::Get()->GetSoundEngine();
 
         if (!engine)
@@ -775,17 +776,9 @@ namespace BopAudio
             return false;
         }
 
-        ma_result const result = ma_resource_manager_register_encoded_data(
-            ma_engine_get_resource_manager(engine),
-            sourceConfig.m_sourceFilename.c_str(),
-            assetBuffer.data(),
-            assetBuffer.size());
-
-        bool const isSuccess(result == MA_SUCCESS);
-
         AZLOG_ERROR("ASI failed to register sound with miniaudio resource manager");
 
-        return isSuccess;
+        return true;
     }
 
     void AudioSystemImpl_miniaudio::DestroyAudioSource(Audio::TAudioSourceId sourceId)

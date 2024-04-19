@@ -26,7 +26,5 @@
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "BopAudio",
-    "external_subdirectories": [
-        "Code/Source/ScriptCanvasNodes"
-    ]
+    "external_subdirectories": []
 }

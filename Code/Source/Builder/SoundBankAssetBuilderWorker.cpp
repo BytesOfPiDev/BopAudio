@@ -3,6 +3,7 @@
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/Asset/AssetDataStream.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "BopAudio/BopAudioBus.h"
 #include "rapidjson/document.h"
 
 #include "Clients/SoundBankAsset.h"
@@ -21,28 +22,7 @@ namespace BopAudio
         auto const soundNames = GetSoundNamesFromSoundBankFile(doc);
         AZStd::vector<SoundSource> sounds{};
 
-        AZStd::ranges::for_each(
-            soundNames,
-            [&sounds](auto const& soundName) -> bool
-            {
-                SoundSource soundSource{ AZ::IO::Path{ soundName.GetCStr() } };
-                soundSource.Load();
-
-                if (!soundSource.IsReady())
-                {
-                    AZ_Error(
-                        "SoundBank",
-                        false,
-                        "Failed to find sound asset '%s'.",
-                        soundName.GetCStr());
-                    return false;
-                }
-
-                sounds.emplace_back(soundSource);
-
-                return true;
-            });
-
+        AZ_Error("LoadSounds", false, "Unimplemented.\n");
         return sounds;
     }
 
@@ -168,9 +148,8 @@ namespace BopAudio
         }();
 
         SoundBankAsset soundBank{};
-        // Sound banks are referenced by their path relative to the DefaultBanksPath.
+        // Sound banks are referenced by their path relative to @soundbanks@.
         soundBank.m_id = BankRef{ productPath.Native() };
-        soundBank.m_soundSources = LoadSounds(doc);
 
         bool const successfullySaved = AZ::Utils::SaveObjectToFile<SoundBankAsset>(
             tempPath.c_str(), AZ::DataStream::ST_JSON, &soundBank);

@@ -3,10 +3,10 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <MiniAudio/SoundAsset.h>
 
 #include "AzCore/Asset/AssetCommon.h"
 
-#include "Engine/SoundSource.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 
 namespace BopAudio
@@ -26,7 +26,7 @@ namespace BopAudio
         void operator()(AudioObject&) const override;
         void Reset() override{};
 
-        SoundSource m_soundSource;
+        MiniAudio::SoundDataAsset m_soundSource;
     };
 
 } // namespace BopAudio

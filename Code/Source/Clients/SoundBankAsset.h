@@ -8,7 +8,6 @@
 
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
-#include "Engine/SoundSource.h"
 
 namespace BopAudio
 {
@@ -16,7 +15,6 @@ namespace BopAudio
     {
         friend class SoundBankAssetBuilderWorker;
         friend class SoundBankAssetHandler;
-        using SoundAssetMap = AZStd::unordered_map<ResourceRef, SoundSource>;
 
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -55,11 +53,6 @@ namespace BopAudio
             return m_id;
         }
 
-        [[nodiscard]] auto GetSoundSources() const -> AZStd::vector<SoundSource> const&
-        {
-            return m_soundSources;
-        }
-
         [[nodiscard]] auto GetSoundAsset(ResourceRef const& soundName) const
             -> MiniAudio::SoundDataAsset;
 
@@ -71,7 +64,7 @@ namespace BopAudio
 
         [[nodiscard]] auto IsEmpty() const -> bool
         {
-            return m_events.empty() && m_soundSources.empty();
+            return m_events.empty();
         };
 
     protected:
@@ -84,7 +77,6 @@ namespace BopAudio
         BankRef m_id{};
         AZStd::vector<AZStd::byte> m_soundData{};
 
-        AZStd::vector<SoundSource> m_soundSources{};
         AZStd::vector<AZ::Data::Asset<AudioEventAsset>> m_events{};
         AZStd::unordered_map<Audio::TAudioControlID, AudioEventId> m_controlToEventMap{};
     };

@@ -2,7 +2,6 @@
 
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
-#include "Engine/Sound.h"
 
 namespace BopAudio
 {
@@ -35,10 +34,7 @@ namespace BopAudio
             return m_audioObjectId;
         }
 
-        void PlaySound(SoundInstance&& soundInstance);
-
     private:
-        SoundInstance m_sound{};
         AudioObjectId m_audioObjectId{};
     };
 

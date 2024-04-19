@@ -1,9 +1,10 @@
 #pragma once
 
 #include <AzTest/AzTest.h>
+#include <IAudioInterfacesCommonData.h>
 
 #include "Clients/AudioEventAsset.h"
-#include "Engine/AudioEventBus.h"
+#include "Engine/AudioEngineEventBus.h"
 #include "Engine/AudioObject.h"
 
 namespace BopAudioTests
@@ -13,6 +14,6 @@ namespace BopAudioTests
     public:
         MOCK_METHOD1(TryStartEvent, bool(BopAudio::AudioObject& obj));
         MOCK_METHOD1(TryStopEvent, bool(BopAudio::AudioObject& obj));
-        MOCK_CONST_METHOD0(GetEventState, BopAudio::AudioEventState(void));
+        MOCK_CONST_METHOD0(GetEventState, Audio::EAudioEventState(void));
     };
 } // namespace BopAudioTests

@@ -4,14 +4,6 @@
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/BopAudioSystemComponent.h"
 
-/////////////////////////////////////////////////////////////
-// This registration only needs to happen once per module
-// You can keep it here, or move it into this module's
-// system component
-#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
-
-/////////////////////////////////////////////////////////////
-
 namespace BopAudio
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(

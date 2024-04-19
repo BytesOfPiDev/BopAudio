@@ -4,11 +4,12 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <IAudioInterfacesCommonData.h>
 
 #include "AzCore/Asset/AssetCommon.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "Engine/AudioEventBus.h"
+#include "Engine/AudioEngineEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 #include "MiniAudio/SoundAsset.h"
@@ -63,7 +64,7 @@ namespace BopAudio
         void operator()(AudioObject& audioObject) const;
 
     protected:
-        [[nodiscard]] auto GetEventState() const -> AudioEventState override
+        [[nodiscard]] auto GetEventState() const -> Audio::EAudioEventState override
         {
             return m_eventState;
         }
@@ -85,9 +86,30 @@ namespace BopAudio
         AZ::Name m_name{};
         AZStd::vector<IAudioTask*> m_eventTasks{};
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
-        AudioEventState m_eventState{};
+        Audio::EAudioEventState m_eventState{};
     };
 
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
     using AudioEventAssets = AZStd::vector<AudioEventAssetDataPtr>;
+
+    struct StartEventData
+    {
+        AZ_TYPE_INFO(StartEventData, "{25492250-BAB6-4D5E-85F0-34B64F1F06DF}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::Data::Asset<AudioEventAsset> m_eventAsset{};
+        void* m_owner{};
+        Audio::TAudioControlID m_audioControlId{};
+        AudioEventId m_audioEventId{};
+        AudioObjectId m_audioObjectId{};
+    };
+
+    struct StopEventData
+    {
+        AZ_TYPE_INFO(StopEventData, "{9E2A41C2-E2DD-498B-9D46-857204B20DC0}");
+
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
 } // namespace BopAudio

@@ -161,7 +161,7 @@ namespace BopAudio
         auto const newId = absProductPath.Filename().Stem().String();
 
         AudioEventAsset event{};
-        event.m_id = Audio::AudioStringToID<Audio::TAudioControlID>(newId.c_str());
+        event.m_id = Audio::AudioStringToID<AudioEventId>(newId.c_str());
 
         AZ_Info(
             AssetBuilderSDK::InfoWindow,
@@ -267,7 +267,7 @@ namespace BopAudio
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
         }
-        
+
         auto const successfulCopy{ AZ::IO::FileIOBase::GetInstance()->Copy(
             request.m_fullPath.c_str(), absProductPath.c_str()) };
 

@@ -6,9 +6,9 @@
 #include "IAudioSystemImplementation.h"
 #include "MiniAudio/SoundAsset.h"
 
+#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/MiniAudioEngine.h"
-#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace BopAudio
 {

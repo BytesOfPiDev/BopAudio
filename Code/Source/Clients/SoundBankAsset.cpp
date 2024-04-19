@@ -7,7 +7,6 @@
 #include "AzCore/Serialization/SerializeContext.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
 
 namespace BopAudio
@@ -19,7 +18,6 @@ namespace BopAudio
     void SoundBankAsset::Reflect(AZ::ReflectContext* context)
     {
         ResourceRefBase::Reflect(context);
-        AudioEventAsset::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -31,7 +29,6 @@ namespace BopAudio
                 ->Version(2)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &SoundBankAsset::m_id)
-                ->Field("Sounds", &SoundBankAsset::m_soundSources)
                 ->Field("SoundData", &SoundBankAsset::m_soundData);
 
             serialize->RegisterGenericType<AZ::Data::Asset<SoundBankAsset>>();

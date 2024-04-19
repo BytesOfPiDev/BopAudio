@@ -21,15 +21,6 @@ namespace BopAudio
         AZStd::string_view m_fileName;
     };
 
-    struct StartEventData
-    {
-        AZ::Data::Asset<AudioEventAsset> m_eventAsset{};
-        void* m_owner{};
-        Audio::TAudioControlID m_audioControlId{};
-        AudioEventId m_audioEventId{};
-        AudioObjectId m_audioObjectId{};
-    };
-
     class SoundEngineRequests
     {
     public:

@@ -170,8 +170,65 @@ namespace BopAudio
     static constexpr auto InvalidAudioObjectId = AudioObjectId{ INVALID_AUDIO_OBJECT_ID };
     static constexpr auto GlobalAudioObjectId = AudioObjectId{ 1 };
 
-    using AudioEventId = Audio::TAudioEventID;
-    static constexpr auto InvalidAudioEventId{ 0 };
+    struct AudioEventId
+    {
+        AZ_TYPE_INFO(AudioEventId, "{AE4B6702-02F6-434D-AFD5-0B9995D58C18}");
+
+        AudioEventId() = default;
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serialize->Class<AudioEventId>()->Version(1);
+                if (AZ::EditContext* editContext = serialize->GetEditContext())
+                {
+                    editContext->Class<AudioEventId>("AudioEventId", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+                }
+            }
+        }
+
+        constexpr AudioEventId(AZ::Crc32 crc)
+            : m_data(crc){};
+
+        explicit constexpr operator Audio::TAudioEventID() const
+        {
+            return m_data;
+        }
+
+        constexpr auto operator==(AudioEventId const& rhs) const -> bool
+        {
+            return m_data == rhs.m_data;
+        }
+
+        constexpr auto operator!=(AudioEventId const& rhs) const -> bool
+        {
+            return !((*this) == rhs);
+        }
+
+        explicit constexpr operator size_t() const
+        {
+            return m_data;
+        }
+
+        explicit constexpr operator AZ::Crc32() const
+        {
+            return AZ::Crc32{ static_cast<AZ::u32>(m_data) };
+        }
+
+        explicit constexpr operator AZ::u32() const
+        {
+            return m_data;
+        }
+
+        Audio::TAudioEventID m_data;
+    };
+
+    static_assert(AZStd::is_pod_v<AudioEventId>);
+
+    static constexpr auto InvalidAudioEventId{ AudioEventId{} };
 
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 

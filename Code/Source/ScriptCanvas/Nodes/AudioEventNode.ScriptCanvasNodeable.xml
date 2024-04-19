@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="ScriptCanvas/Nodes/AudioEventNode.h"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../AutoGen/ScriptCanvasNodeable.xsd">
+
+  <Class Name="AudioEventNode"
+    QualifiedName="BopAudio::Nodes::AudioEventNode"
+    PreferredClassName="Audio Event"
+    Category="BopAudio Nodes"
+    Namespace="BopAudio"
+    Description=""
+    Uuid="{C2A01796-17F6-418B-8D89-6BFCBB10C4BD}">
+
+    <Input Name="Connect Audio Event" OutputName="OnConnect" Description="Entry point into the node">
+      <Parameter Name="Control Name" Type="AZStd::string" Description="" />
+    </Input>
+
+    <Input
+      Name="Disconnect Audio Event" OutputName="OnDisconnect" Description="" />
+
+    <Input
+      Name="ToggleConnect"
+      OutputName="OnToggleConnect" Description="" />
+
+    <Output
+      Name="StartEvent" Description="">
+      <Parameter Name="owner" Type="BopAudio::StartEventData"
+        Description="The entity that started the event." />
+    </Output>
+
+    <Output
+      Name="StopEvent" Description="">
+      <Parameter Name="Data" Type="BopAudio::StopEventData"
+        Description="The entity that stopped the event." />
+    </Output>
+
+    <Output
+      Name="OnPause" Description=""></Output>
+    <Output Name="SetVolume" Description="">
+      <Parameter Name="newVolume" Type="double"
+        Description="The volume (0.0 ... 1.0) to set the event's volume." />
+    </Output>
+    <Output
+      Name="MuteAudioEvent " Description="The event needs to be muted."></Output>
+
+  </Class>
+</ScriptCanvas>

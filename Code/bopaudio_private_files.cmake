@@ -10,6 +10,7 @@ set(FILES
     Source/Clients/AudioEventAsset.h
     Source/Clients/AudioEventAssetHandler.cpp
     Source/Clients/AudioEventAssetHandler.h
+    Source/Clients/AudioEventBus.h
     Source/Clients/SoundBankAsset.cpp
     Source/Clients/SoundBankAsset.h
     Source/Clients/SoundBankAssetHandler.cpp
@@ -22,9 +23,9 @@ set(FILES
     Source/Engine/Tasks/StopSound.h
 
     Source/Engine/ATLEntities_BopAudio.h
+    Source/Engine/AudioEngineEventBus.h
     Source/Engine/AudioEvent.cpp
     Source/Engine/AudioEvent.h
-    Source/Engine/AudioEventBus.h
     Source/Engine/AudioObject.cpp
     Source/Engine/AudioObject.h
     Source/Engine/AudioSystemImpl_BopAudio.cpp
@@ -35,17 +36,11 @@ set(FILES
     Source/Engine/DocumentReader.h
     Source/Engine/Id.cpp
     Source/Engine/Id.h
-    Source/Engine/MiniAudio.cpp
     Source/Engine/MiniAudioEngine.cpp
     Source/Engine/MiniAudioEngine.h
     Source/Engine/MiniAudioEngineBus.h
-    Source/Engine/MiniAudioIncludes.h
     Source/Engine/Rtpc.cpp
     Source/Engine/Rtpc.h
-    Source/Engine/Sound.cpp
-    Source/Engine/Sound.h
     Source/Engine/SoundBankUtil.cpp
     Source/Engine/SoundBankUtil.h
-    Source/Engine/SoundSource.cpp
-    Source/Engine/SoundSource.h
 )

@@ -5,7 +5,6 @@
 #include "AzCore/Serialization/EditContextConstants.inl"
 
 #include "Engine/AudioObject.h"
-#include "Engine/Sound.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 
 namespace BopAudio
@@ -38,22 +37,7 @@ namespace BopAudio
 
     void PlaySoundTask::operator()(AudioObject& audioObject) const
     {
-        auto soundToPlay = SoundInstance(m_soundSource);
-        if (!soundToPlay.IsValid())
-        {
-            AZ_Error(
-                "PlaySoundTask",
-                false,
-                "Failed to create sound instance with resource '%s'",
-                m_soundSource.GetResourceId().GetCStr());
-
-            return;
-        }
-
-        soundToPlay.SetVolume(1.0f);
-        audioObject.PlaySound(AZStd::move(soundToPlay));
-
-        AZ_Info("PlaySoundTask", "Play: [%s]", m_soundSource.GetResourceId().c_str());
+        AZ_Info("PlaySoundTask", "Call operator is unimplemented.\n");
     }
 
 } // namespace BopAudio
