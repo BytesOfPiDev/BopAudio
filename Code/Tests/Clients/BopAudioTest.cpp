@@ -141,7 +141,13 @@ namespace BopAudioTests
         EXPECT_TRUE(eventAsset.BusIsConnected());
         EXPECT_TRUE(eventAsset.BusIsConnectedId(ValidActivateArgs::GetAudioEventId()));
 
-        EXPECT_CALL(eventAsset, TryStartEvent).Times(1).WillOnce(Return(true));
+        EXPECT_CALL(eventAsset, TryStartEvent)
+            .Times(1)
+            .WillOnce(Return(
+                [](BopAudio::AudioObject const&) -> bool
+                {
+                    return true;
+                }));
 
         auto const validTriggerData{ ValidActivateArgs::GetTriggerData() };
         auto validEventData{ ValidActivateArgs::GetEventData() };

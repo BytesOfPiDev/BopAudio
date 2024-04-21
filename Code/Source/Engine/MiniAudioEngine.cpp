@@ -293,15 +293,18 @@ namespace BopAudio
                 &MiniAudioEventRequests::TryStartEvent,
                 (audioObj != nullptr) ? *audioObj : m_globalObject);
 
-            return AZ::Failure("The event indicated that it failed ");
+            if (!result)
+            {
+                return AZ::Failure("The event tried to start, but failed.");
+            }
+
+            return AZ::Success();
         }();
 
         if (!tryStartEventResult)
         {
-            AZ_Error("MiniAudioEngine", false, tryStartEventResult.GetError().c_str());
             return tryStartEventResult;
         }
-        AZ_Error("MiniAudioEngine", false, "????");
         return AZ::Success();
     }
 

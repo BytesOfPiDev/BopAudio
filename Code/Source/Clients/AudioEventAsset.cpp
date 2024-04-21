@@ -6,6 +6,7 @@
 
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
+#include "Engine/AudioEngineEventBus.h"
 #include "IAudioInterfacesCommonData.h"
 
 #include "Engine/AudioObject.h"
@@ -111,6 +112,18 @@ namespace BopAudio
 
     void AudioEventAsset::RegisterAudioEvent()
     {
+        if (MiniAudioEventRequestBus::Handler::BusIsConnected())
+        {
+            AZ_Error(
+                "AudioEventAsset",
+                false,
+                "Unable to register audio event. Handler already exists [Id: %s | AssetId: %s].\n",
+                m_name.GetCStr(),
+                GetId().ToFixedString().c_str());
+
+            return;
+        }
+
         if (m_id == InvalidAudioEventId)
         {
             AZ_Error(
@@ -119,20 +132,7 @@ namespace BopAudio
             return;
         }
 
-        if (MiniAudioEventRequestBus::HasHandlers(m_id))
-        {
-            AZ_Error(
-                "AudioEventAsset",
-                false,
-                "Unable to register audio event. Handler already exists [%s | %zu].\n",
-                m_name.GetCStr(),
-                m_id);
-
-            return;
-        }
-
-        auto const alreadyConnected{ MiniAudioEventRequestBus::Handler::BusIsConnected() };
-        !alreadyConnected ? MiniAudioEventRequestBus::Handler::BusConnect(m_id) : void();
+        MiniAudioEventRequestBus::Handler::BusConnect(m_id);
     }
 
     void AudioEventAsset::UnregisterAudioEvent()
