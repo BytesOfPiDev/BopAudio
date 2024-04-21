@@ -30,6 +30,16 @@ namespace BopAudio
 
         [[nodiscard]] auto CanHandleAsset(AZ::Data::AssetId const& id) const -> bool override;
 
+        // Called after the data loading stage and after all dependencies have been fulfilled.
+        // Override this if the asset needs post-load init.
+        // WARN: If overriden, the handler is responsible
+        // for notifying the asset manager when the asset is ready via
+        // AssetDatabaseBus::OnAssetReady.
+        void InitAsset(
+            AZ::Data::Asset<AZ::Data::AssetData> const& asset,
+            bool loadStageSucceeded,
+            bool isReload) override;
+
         auto CreateAsset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type)
             -> AZ::Data::AssetPtr override;
 
@@ -55,8 +65,8 @@ namespace BopAudio
         [[nodiscard]] auto GetComponentTypeId() const -> AZ::Uuid override;
         [[nodiscard]] auto CanCreateComponent(AZ::Data::AssetId const& assetId) const
             -> bool override;
-        
-        private:
+
+    private:
         AZ::SerializeContext* m_serializeContext;
     };
 } // namespace BopAudio

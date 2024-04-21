@@ -121,7 +121,7 @@ namespace BopAudio
 
         if (MiniAudioEventRequestBus::HasHandlers(m_id))
         {
-            AZ_Warning(
+            AZ_Error(
                 "AudioEventAsset",
                 false,
                 "Unable to register audio event. Handler already exists [%s | %zu].\n",
@@ -131,9 +131,8 @@ namespace BopAudio
             return;
         }
 
-        MiniAudioEventRequestBus::HasHandlers()
-            ? MiniAudioEventRequestBus::Handler::BusConnect(m_id)
-            : void();
+        auto const alreadyConnected{ MiniAudioEventRequestBus::Handler::BusIsConnected() };
+        !alreadyConnected ? MiniAudioEventRequestBus::Handler::BusConnect(m_id) : void();
     }
 
     void AudioEventAsset::UnregisterAudioEvent()

@@ -42,7 +42,7 @@ namespace BopAudio
         void LoadSounds();
         void LoadEvents();
 
-        auto StopEvent(AudioEventId eventId) -> bool override;
+        auto StopEvent(AudioEventId eventId) -> NullOutcome override;
 
         [[nodiscard]] auto FindAudioObject(AudioObjectId targetAudioObjectId) -> AudioObject*;
         auto LoadSound(SoundRef const& resourceRef) -> NullOutcome override;

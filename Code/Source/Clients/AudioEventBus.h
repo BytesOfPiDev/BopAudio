@@ -3,16 +3,12 @@
 #include "AzCore/EBus/EBus.h"
 #include "AzCore/std/hash.h"
 #include "Engine/Id.h"
-#include "IAudioInterfacesCommonData.h"
-#include <cstdint>
 
 namespace BopAudio
 {
     struct StartEventData;
     struct StopEventData;
     class AudioObject;
-
-    AZ_ENUM_CLASS(AudioEventState, Idle, Active, Stopping);
 
     struct AudioEventBusIdType
     {

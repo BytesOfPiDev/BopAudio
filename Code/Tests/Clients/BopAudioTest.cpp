@@ -3,6 +3,7 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/UnitTest/UnitTest.h"
 #include "Clients/MockSoundEngine.h"
+#include "Engine/AudioEngineEventBus.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/Id.h"
 #include "IAudioInterfacesCommonData.h"
@@ -19,6 +20,7 @@
 #include "Engine/AudioObject.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngineBus.h"
+#include <AzCore/Outcome/Outcome.h>
 
 using ::testing::AtLeast;
 using ::testing::NiceMock;
@@ -28,26 +30,26 @@ namespace BopAudioTests
 {
     struct ValidActivateArgs
     {
-        static constexpr auto m_validAudioObjectId{ BopAudio::AudioObjectId{
-            AZ_CRC_CE("testValidAudioObject") } };
-        static constexpr auto m_validAudioEventId{ BopAudio::AudioEventId{
-            AZ_CRC_CE("validTestAudioEventId") } };
+        static auto GetAudioObjectId() -> BopAudio::AudioObjectId
+        {
+            return BopAudio::AudioObjectId{ AZ_CRC_CE("testValidAudioObject") };
+        }
+        static auto GetAudioEventId() -> BopAudio::AudioEventId
+        {
+            return Audio::AudioStringToID<BopAudio::AudioEventId>("testValidAudioObject");
+        }
 
         [[nodiscard]] static auto GetTriggerData() -> BopAudio::SATLTriggerImplData_BopAudio
         {
             auto implTriggerData{ decltype(GetTriggerData()){} };
-            implTriggerData.SetImplAudioObjectId(m_validAudioObjectId);
-            implTriggerData.SetImplEventId(m_validAudioEventId);
+            implTriggerData.SetImplEventId(GetAudioEventId());
 
             return implTriggerData;
         }
 
         [[nodiscard]] static auto GetEventData() -> BopAudio::SATLEventData_BopAudio
         {
-            auto implEventData{ decltype(GetEventData()){
-                static_cast<AZ::u32>(m_validAudioObjectId) } };
-
-            implEventData.SetImplEventId(m_validAudioEventId);
+            auto implEventData{ decltype(GetEventData()){ GetAudioEventId() } };
 
             return implEventData;
         }
@@ -134,18 +136,18 @@ namespace BopAudioTests
     {
         static constexpr Audio::SATLSourceData validSourceData{};
 
-        MockAudioEventAsset eventAsset{};
-        eventAsset.BusConnect(ValidActivateArgs::m_validAudioEventId);
+        MockAudioEventAsset eventAsset{ ValidActivateArgs::GetAudioEventId() };
+        eventAsset.RegisterAudioEvent();
         EXPECT_TRUE(eventAsset.BusIsConnected());
-        EXPECT_TRUE(eventAsset.BusIsConnectedId(ValidActivateArgs::m_validAudioEventId));
+        EXPECT_TRUE(eventAsset.BusIsConnectedId(ValidActivateArgs::GetAudioEventId()));
 
         EXPECT_CALL(eventAsset, TryStartEvent).Times(1).WillOnce(Return(true));
 
         auto const validTriggerData{ ValidActivateArgs::GetTriggerData() };
         auto validEventData{ ValidActivateArgs::GetEventData() };
         auto validImplAudioObjData{ BopAudio::SATLAudioObjectData_BopAudio{
-            static_cast<AZ::u32>(ValidActivateArgs::m_validAudioObjectId),
-            ValidActivateArgs::m_validAudioObjectId,
+            static_cast<AZ::u32>(ValidActivateArgs::GetAudioObjectId()),
+            ValidActivateArgs::GetAudioObjectId(),
             "testObject" } };
 
         auto activateWithValidArgsResult = BopAudio::AsiInterface::Get()->ActivateTrigger(

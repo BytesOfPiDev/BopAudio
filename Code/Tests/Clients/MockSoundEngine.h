@@ -2,6 +2,7 @@
 
 #include <AzTest/AzTest.h>
 
+#include "BopAudio/Util.h"
 #include "Engine/MiniAudioEngineBus.h"
 
 namespace BopAudioTests
@@ -16,7 +17,7 @@ namespace BopAudioTests
         MOCK_METHOD0(CreateAudioObject, BopAudio::AudioObjectId(void));
         MOCK_METHOD1(RemoveAudioObject, void(BopAudio::AudioObjectId));
         MOCK_METHOD1(StartEvent, BopAudio::NullOutcome(BopAudio::StartEventData const&));
-        MOCK_METHOD1(StopEvent, bool(BopAudio::AudioEventId eventId));
+        MOCK_METHOD1(StopEvent, BopAudio::NullOutcome(BopAudio::AudioEventId eventId));
 
         MOCK_METHOD0(GetSoundEngine, ma_engine*(void));
         MOCK_METHOD1(LoadSound, BopAudio::NullOutcome(BopAudio::SoundRef const& resourceRef));

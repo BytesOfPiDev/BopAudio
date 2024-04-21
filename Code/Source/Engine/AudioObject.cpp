@@ -12,7 +12,7 @@ namespace BopAudio
     static auto GetNextAudioObjectId() -> AudioObjectId
     {
         static AZStd::atomic_uint32_t NextAudioObjectId{ 2 };
-        return NextAudioObjectId++;
+        return AudioObjectId{ NextAudioObjectId++ };
     }
 
     AudioObject::AudioObject()

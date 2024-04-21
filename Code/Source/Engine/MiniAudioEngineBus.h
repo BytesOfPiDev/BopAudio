@@ -36,8 +36,8 @@ namespace BopAudio
         [[nodiscard]] virtual auto RegisterFile(RegisterFileData const&) -> NullOutcome = 0;
         [[nodiscard]] virtual auto CreateAudioObject() -> AudioObjectId = 0;
         virtual void RemoveAudioObject(AudioObjectId) = 0;
-        [[nodiscard]] virtual auto StartEvent(StartEventData const&) -> NullOutcome = 0;
-        virtual auto StopEvent(AudioEventId eventId) -> bool = 0;
+        virtual auto StartEvent(StartEventData const&) -> NullOutcome = 0;
+        virtual auto StopEvent(AudioEventId eventId) -> NullOutcome = 0;
 
         [[nodiscard]] virtual auto GetSoundEngine() -> ma_engine* = 0;
         [[nodiscard]] virtual auto LoadSound(SoundRef const& resourceRef) -> NullOutcome = 0;

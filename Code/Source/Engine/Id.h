@@ -133,8 +133,11 @@ namespace BopAudio
         AZ_DEFAULT_COPY_MOVE(TaggedId);
 
         constexpr TaggedId() = default;
-        constexpr TaggedId(AZ::u32 id)
+        explicit constexpr TaggedId(AZ::u32 id)
             : m_value{ id } {};
+        explicit constexpr TaggedId(AZ::Crc32 id)
+            : m_value{ id } {};
+
         ~TaggedId() = default;
 
         [[nodiscard]] explicit constexpr operator size_t() const
@@ -228,7 +231,7 @@ namespace BopAudio
 
     static_assert(AZStd::is_pod_v<AudioEventId>);
 
-    static constexpr auto InvalidAudioEventId{ AudioEventId{} };
+    static constexpr auto InvalidAudioEventId{ AudioEventId{ 0 } };
 
     using AudioEventIdContainer = AZStd::vector<AudioEventId>;
 

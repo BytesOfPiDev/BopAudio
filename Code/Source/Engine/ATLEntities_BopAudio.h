@@ -6,6 +6,7 @@
 
 #include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/SoundAsset.h"
+#include <AudioAllocators.h>
 
 namespace BopAudio
 {
@@ -63,42 +64,24 @@ namespace BopAudio
 
     struct SATLTriggerImplData_BopAudio : public Audio::IATLTriggerImplData
     {
+        AZ_CLASS_ALLOCATOR(SATLTriggerImplData_BopAudio, Audio::AudioImplAllocator);
+
         SATLTriggerImplData_BopAudio() = default;
-
-        [[nodiscard]] constexpr auto GetAtlAudioObjectId() const -> Audio::TAudioObjectID
-        {
-            return m_atlAudioObjectId;
-        }
-
-        constexpr void SetAtlAudioObjectId(Audio::TAudioObjectID atlAudioObjectId)
-        {
-            m_atlAudioObjectId = atlAudioObjectId;
-        }
-
-        [[nodiscard]] constexpr auto GetImplAudioObjectId() const -> AudioObjectId
-        {
-            return m_implAudioObjectId;
-        }
-
-        constexpr void SetImplAudioObjectId(AudioObjectId implAudioObjectIde)
-        {
-            m_implAudioObjectId = implAudioObjectIde;
-        }
+        SATLTriggerImplData_BopAudio(AudioEventId audioEventId)
+            : m_audioEventId(audioEventId){};
 
         [[nodiscard]] auto GetEventId() const -> AudioEventId
         {
-            return m_audioEventResourceId;
+            return m_audioEventId;
         }
 
         void SetImplEventId(AudioEventId resourceId)
         {
-            m_audioEventResourceId = resourceId;
+            m_audioEventId = resourceId;
         }
 
     private:
-        AudioEventId m_audioEventResourceId{};
-        AudioObjectId m_implAudioObjectId{};
-        Audio::TAudioObjectID m_atlAudioObjectId{};
+        AudioEventId m_audioEventId{};
     };
 
     struct SATLListenerData_BopAudio : public Audio::IATLListenerData
@@ -117,7 +100,12 @@ namespace BopAudio
         AZ_DEFAULT_COPY_MOVE(SATLEventData_BopAudio);
 
         explicit SATLEventData_BopAudio(Audio::TAudioEventID const atlEventId)
-            : m_atlEventId(atlEventId)
+            : BopAudio::SATLEventData_BopAudio(AudioEventId{ atlEventId })
+        {
+        }
+
+        explicit SATLEventData_BopAudio(AudioEventId const implEventId)
+            : m_atlEventId(implEventId)
             , m_sourceId(INVALID_AUDIO_SOURCE_ID)
         {
         }

@@ -63,7 +63,15 @@ namespace BopAudio
 
         void operator()(AudioObject& audioObject) const;
 
+        void RegisterAudioEvent();
+        void UnregisterAudioEvent();
+
     protected:
+        void OverrideEventId(AudioEventId eventId)
+        {
+            m_id = eventId;
+        }
+
         [[nodiscard]] auto GetEventState() const -> Audio::EAudioEventState override
         {
             return m_eventState;
@@ -71,10 +79,6 @@ namespace BopAudio
 
         [[nodiscard]] auto TryStartEvent(AudioObject& obj) -> bool override;
         [[nodiscard]] auto TryStopEvent(AudioObject& obj) -> bool override;
-
-        void RegisterAudioEvent();
-
-        void UnregisterAudioEvent();
 
         void OnTaskSelectionChanged();
         void Cleanup();

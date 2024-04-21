@@ -20,15 +20,18 @@ namespace BopAudio
         eventAsset.BlockUntilLoadComplete();
         return eventAsset.Get();
     }
+
     void AudioEvent::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AudioEvent>()->Version(0)->Field("Id", &AudioEvent::m_id);
+            serialize->Class<AudioEvent>()->Version(0);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<AudioEvent>("AudioEvent", "");
+                editContext->Class<AudioEvent>("AudioEvent", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }

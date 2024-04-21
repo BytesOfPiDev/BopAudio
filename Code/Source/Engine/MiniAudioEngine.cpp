@@ -246,7 +246,7 @@ namespace BopAudio
 
                 audioEventAsset.BlockUntilLoadComplete();
 
-                audioEventAsset->RegisterAudioEvent();
+                // audioEventAsset->RegisterAudioEvent();
 
                 AZ_Error(
                     "MiniAudioEngine",
@@ -277,30 +277,42 @@ namespace BopAudio
             return targetAudioObject ? targetAudioObject : &m_globalObject;
         }();
 
-        bool const tryStartEventResult =
+        NullOutcome tryStartEventResult =
             [&startEventRequest, this, &audioObj]() -> decltype(tryStartEventResult)
         {
-            bool result{};
+            if (!MiniAudioEventRequestBus::HasHandlers(startEventRequest.m_audioEventId))
+            {
+                return AZ::Failure("Failed to start the event because there is no event connected "
+                                   "with the given id.");
+            }
 
+            bool result{ true };
             MiniAudioEventRequestBus::EventResult(
                 result,
                 startEventRequest.m_audioEventId,
                 &MiniAudioEventRequests::TryStartEvent,
                 (audioObj != nullptr) ? *audioObj : m_globalObject);
 
-            return result;
+            return AZ::Failure("The event indicated that it failed ");
         }();
 
         if (!tryStartEventResult)
         {
-            AZ_Error("MiniAudioEngine", false, "StartEvent not implemented.");
+            AZ_Error("MiniAudioEngine", false, tryStartEventResult.GetError().c_str());
+            return tryStartEventResult;
         }
-
+        AZ_Error("MiniAudioEngine", false, "????");
         return AZ::Success();
     }
 
-    auto MiniAudioEngine::StopEvent([[maybe_unused]] AudioEventId eventId) -> bool
+    auto MiniAudioEngine::StopEvent([[maybe_unused]] AudioEventId eventId) -> NullOutcome
     {
+        if (MiniAudioEventRequestBus::HasHandlers(eventId))
+        {
+            return AZ::Failure(
+                "Failed to stop the event because there is no event connected with the given id.");
+        }
+
         bool const result = [&eventId, this]() -> decltype(result)
         {
             bool callResult{};
@@ -313,7 +325,12 @@ namespace BopAudio
             return callResult;
         }();
 
-        return result;
+        if (!result)
+        {
+            AZ::Failure("The call to the event's stop function failed.");
+        }
+
+        return AZ::Success();
     }
 
     auto MiniAudioEngine::CreateAudioObject() -> AudioObjectId
