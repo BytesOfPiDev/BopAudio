@@ -193,4 +193,60 @@ namespace BopAudioTests
         EXPECT_FALSE(activateWithInvalidObjIdResult);
     }
 
+    TEST(AudioEventIdComparisonTests, ValidId_ComparedToSameAtlId_IsEqual)
+    {
+        static constexpr auto theSameName{ "something_something_something_darkside" };
+        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(
+            theSameName) };
+        static auto const atlEventId{ Audio::AudioStringToID<Audio::TAudioEventID>(theSameName) };
+
+        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(atlEventId));
+        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(atlEventId));
+    }
+
+    TEST(AudioEventIdComparisonTests, ValidId_ComparedToNullAtlId_IsNotEqual)
+    {
+        static constexpr auto particularName{ "something_something_something_darkside" };
+        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(
+            particularName) };
+        static auto const nullAtlId{ INVALID_AUDIO_EVENT_ID };
+
+        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(nullAtlId));
+        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(nullAtlId));
+    }
+
+    TEST(AudioEventIdComparisonTests, NullId_ComparedToNullAtlId_IsEqual)
+    {
+        static constexpr auto nullImplEventId{ BopAudio::InvalidAudioEventId };
+        static constexpr auto nullAtlId{ INVALID_AUDIO_EVENT_ID };
+
+        EXPECT_TRUE(static_cast<AZ::u32>(nullImplEventId) == static_cast<AZ::u32>(nullAtlId));
+        EXPECT_FALSE(static_cast<AZ::u32>(nullImplEventId) != static_cast<AZ::u32>(nullAtlId));
+    }
+
+    TEST(AudioEventIdComparisonTests, ValidId_ComparedToValidButDifferentAtlId_IsNotEqual)
+    {
+        static constexpr auto someName{ "something_something_something_darkside" };
+        static constexpr auto someOtherName{ "something_something_something_lightside" };
+        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(someName) };
+        static auto const atlEventId{ Audio::AudioStringToID<Audio::TAudioEventID>(someOtherName) };
+
+        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(atlEventId));
+        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(atlEventId));
+    }
+
+    TEST(ImplAudioObjectDataTests, ContructWithValidIds_CallArgGetters_ReturnsGivenIds)
+    {
+        constexpr auto objectIdName{ "oh_my_these_chocodiles" };
+        static auto const givenImplObjectId{ Audio::AudioStringToID<BopAudio::AudioObjectId>(
+            objectIdName) };
+        static auto const givenAtlObjectId{ Audio::AudioStringToID<Audio::TAudioObjectID>(
+            objectIdName) };
+
+        BopAudio::SATLAudioObjectData_BopAudio const obj{ givenAtlObjectId, givenImplObjectId };
+
+        EXPECT_EQ(obj.GetImplAudioObjectId(), givenImplObjectId);
+        EXPECT_EQ(obj.GetAtlAudioObjectId(), givenAtlObjectId);
+    }
+
 } // namespace BopAudioTests

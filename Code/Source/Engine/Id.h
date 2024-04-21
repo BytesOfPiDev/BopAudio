@@ -150,12 +150,12 @@ namespace BopAudio
             return m_value;
         }
 
-        [[nodiscard]] constexpr auto operator==(TaggedId const& other) -> bool
+        [[nodiscard]] constexpr auto operator==(TaggedId const& other) const -> bool
         {
             return m_value == other.m_value;
         }
 
-        [[nodiscard]] constexpr auto operator!=(TaggedId const& other) -> bool
+        [[nodiscard]] constexpr auto operator!=(TaggedId const& other) const -> bool
         {
             return !(m_value == other.m_value);
         }
