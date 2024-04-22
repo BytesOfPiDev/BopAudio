@@ -32,15 +32,14 @@ namespace BopAudio::Nodes
 
     void AudioEventNode::DisconnectAudioEvent()
     {
+        AudioEventRequestBus::Handler::BusDisconnect();
     }
 
     void AudioEventNode::ToggleConnection()
     {
         auto const busIsConnected{ AudioEventRequestBus::Handler::BusIsConnected() };
-        auto const targetEventIsInvalid{ (m_targetEvent == InvalidAudioEventId) };
-        auto const shouldDisconnect{ busIsConnected || targetEventIsInvalid };
 
-        shouldDisconnect
+        busIsConnected
             ? AudioEventRequestBus::Handler::BusDisconnect()
             : AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_targetEvent });
     }
