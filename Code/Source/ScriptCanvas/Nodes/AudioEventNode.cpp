@@ -49,19 +49,4 @@ namespace BopAudio::Nodes
         CallStart(startData);
     }
 
-    void AudioEventNode::StopAudioEvent(StopEventData stopData)
-    {
-        CallStop(stopData);
-    }
-
-    void AudioEventNode::SetVolume(double newVolume)
-    {
-        CallSetVolume(newVolume);
-    }
-
-    void AudioEventNode::MuteAudioEvent()
-    {
-        CallMute();
-    }
-
 } // namespace BopAudio::Nodes

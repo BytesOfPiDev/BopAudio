@@ -27,9 +27,6 @@ namespace BopAudio::Nodes
         void OnDeactivate() override;
 
         void StartAudioEvent(StartEventData) override;
-        void StopAudioEvent(StopEventData) override;
-        void SetVolume(double newVolume);
-        void MuteAudioEvent();
 
     private:
         AudioEventId m_targetEvent{};
