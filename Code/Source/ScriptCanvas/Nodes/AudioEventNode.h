@@ -33,7 +33,5 @@ namespace BopAudio::Nodes
 
     private:
         AudioEventId m_targetEvent{};
-        AudioTasks m_tasks{};
-        TypedNodePropertyInterface<AudioTasks> m_tasksInterface{};
     };
 } // namespace BopAudio::Nodes

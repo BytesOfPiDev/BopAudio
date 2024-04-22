@@ -3,7 +3,6 @@
 #include "AzCore/Memory/SystemAllocator.h"
 
 #include "Clients/AudioEventAsset.h"
-#include "Engine/Tasks/AudioTaskBase.h"
 
 namespace BopAudio
 {

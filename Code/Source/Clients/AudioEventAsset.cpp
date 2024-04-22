@@ -12,8 +12,6 @@
 #include "IAudioInterfacesCommonData.h"
 
 #include "Engine/AudioObject.h"
-#include "Engine/Tasks/AudioTaskBase.h"
-#include "Engine/Tasks/PlaySound.h"
 
 namespace BopAudio
 {
@@ -21,20 +19,13 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            PlaySoundTask::Reflect(context);
-
-            serialize->Class<IAudioTask>()->SerializeWithNoData();
-            serialize->RegisterGenericType<AudioTasks>();
-            serialize->RegisterGenericType<TaskContainer>();
-            serialize->RegisterGenericType<AudioTask>();
-
             serialize->Class<AudioEventAsset, AZ::Data::AssetData>()
                 ->Version(4)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &AudioEventAsset::m_id)
-                ->Field("EventTasks", &AudioEventAsset::m_eventTasks)
                 ->Field("Name", &AudioEventAsset::m_name)
-                ->Field("TaskContainer", &AudioEventAsset::m_taskContainer);
+
+                ;
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -44,25 +35,9 @@ namespace BopAudio
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_name, "Name", "")
-
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::EntireTree)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &AudioEventAsset::m_eventTasks,
-                        "Event Tasks",
-                        "")
-                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement("TaskContainer", &AudioEventAsset::m_taskContainer)
-                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
-
-                    ;
+                        AZ::Edit::PropertyRefreshLevels::EntireTree);
             }
         }
     }
@@ -72,7 +47,6 @@ namespace BopAudio
     AudioEventAsset::~AudioEventAsset()
     {
         UnregisterAudioEvent();
-        Cleanup();
     }
 
     void AudioEventAsset::operator()(AudioObject& audioObject) const
@@ -81,16 +55,6 @@ namespace BopAudio
         {
             return;
         }
-
-        AZStd::ranges::for_each(
-            m_eventTasks,
-            [&audioObject](IAudioTask* audioTask)
-            {
-                if (audioTask)
-                {
-                    (*audioTask)(audioObject);
-                }
-            });
     }
 
     auto AudioEventAsset::TryStartEvent(AudioObject& obj) -> bool
@@ -149,29 +113,6 @@ namespace BopAudio
     {
         MiniAudioEventRequestBus::Handler::BusDisconnect();
     };
-
-    void AudioEventAsset::OnTaskSelectionChanged()
-    {
-    }
-
-    void AudioEventAsset::Cleanup()
-    {
-        // NOTE: See InputEventGroup::Cleanup()
-        AZStd::ranges::for_each(
-            m_eventTasks,
-            [](IAudioTask* task) -> void
-            {
-                task->~IAudioTask();
-                azfree(static_cast<void*>(task), AZ::SystemAllocator);
-            });
-
-        m_eventTasks.clear();
-    }
-
-    auto AudioEventAsset::GetTaskNames() const -> AZStd::vector<AZStd::string> const
-    {
-        return { "Play", "Stop" };
-    }
 
     void StartEventData::Reflect(AZ::ReflectContext* context)
     {

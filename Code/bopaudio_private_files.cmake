@@ -16,12 +16,6 @@ set(FILES
     Source/Clients/SoundBankAssetHandler.cpp
     Source/Clients/SoundBankAssetHandler.h
 
-    Source/Engine/Tasks/AudioTaskBase.h
-    Source/Engine/Tasks/Common.h
-    Source/Engine/Tasks/PlaySound.h
-    Source/Engine/Tasks/PlaySound.cpp
-    Source/Engine/Tasks/StopSound.h
-
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEngineEventBus.h
     Source/Engine/AudioEvent.cpp

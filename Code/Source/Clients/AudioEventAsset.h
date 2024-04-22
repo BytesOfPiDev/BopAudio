@@ -12,14 +12,11 @@
 #include "Clients/AudioEventBus.h"
 #include "Engine/AudioEngineEventBus.h"
 #include "Engine/Id.h"
-#include "Engine/Tasks/AudioTaskBase.h"
-#include "Engine/Tasks/Common.h"
 #include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
     class AudioObject;
-    using AudioTasks = AZStd::vector<IAudioTask*>;
 
     AZ_ENUM_CLASS(AudioEventTaskType, None, Play, Stop);
 
@@ -83,17 +80,9 @@ namespace BopAudio
         [[nodiscard]] auto TryStartEvent(AudioObject& obj) -> bool override;
         [[nodiscard]] auto TryStopEvent(AudioObject& obj) -> bool override;
 
-        void OnTaskSelectionChanged();
-        void Cleanup();
-
-        [[nodiscard]] auto GetTaskNames() const -> AZStd::vector<AZStd::string> const;
-
     private:
         AudioEventId m_id{};
         AZ::Name m_name{};
-        AudioTasks m_eventTasks{};
-        MiniAudio::SoundDataAssetVector m_dependentSounds{};
-        TaskContainer m_taskContainer{};
         Audio::EAudioEventState m_eventState{};
     };
 

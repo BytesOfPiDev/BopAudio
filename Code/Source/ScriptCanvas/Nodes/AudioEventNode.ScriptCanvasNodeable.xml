@@ -14,7 +14,6 @@
 
     <Input Name="Connect Audio Event" OutputName="OnConnect" Description="Entry point into the node">
       <Parameter Name="Control Name" Type="AZStd::string" Description="" />
-      <Parameter Name="Tasks" Type="BopAudio::AudioTasks" Description="" />
     </Input>
 
     <Input

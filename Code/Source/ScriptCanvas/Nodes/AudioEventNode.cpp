@@ -17,7 +17,7 @@ namespace BopAudio::Nodes
 
     // TODO: Try and find a way to allow selecting controls located in the ATl. May have to create a
     // new type.
-    void AudioEventNode::ConnectAudioEvent(AZStd::string controlName, AudioTasks tasks)
+    void AudioEventNode::ConnectAudioEvent(AZStd::string controlName)
     {
         m_targetEvent = Audio::AudioStringToID<AudioEventId>(controlName.c_str());
 
