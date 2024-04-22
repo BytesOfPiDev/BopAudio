@@ -7,6 +7,7 @@
 #include "AzCore/Settings/SettingsRegistry.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "Clients/AudioEventAsset.h"
+#include "Engine/Id.h"
 #include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
@@ -26,6 +27,7 @@ namespace BopAudio
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         AudioEventId::Reflect(context);
+        AudioObjectId::Reflect(context);
         StartEventData::Reflect(context);
         StopEventData::Reflect(context);
 

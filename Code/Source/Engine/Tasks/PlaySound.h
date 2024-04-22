@@ -15,7 +15,6 @@ namespace BopAudio
 
     struct PlaySoundTask final : public IAudioTask
     {
-        AZ_CLASS_ALLOCATOR(PlaySoundTask, AZ::SystemAllocator);
         AZ_DEFAULT_COPY_MOVE(PlaySoundTask);
         AZ_RTTI(PlaySoundTask, "{CF25AD9C-001B-4571-BC55-230A8A1DB6B9}", IAudioTask)
 

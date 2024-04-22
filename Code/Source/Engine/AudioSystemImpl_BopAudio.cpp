@@ -286,7 +286,7 @@ namespace BopAudio
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        if (!implAudioObjectData->GetImplAudioObjectId().IsValid())
+        if (implAudioObjectData->GetImplAudioObjectId() == InvalidAudioObjectId)
         {
             AZ_Error("ASI", false, "Invalid impl object id.");
             return Audio::EAudioRequestStatus::FailureInvalidObjectId;
@@ -300,7 +300,6 @@ namespace BopAudio
 
         StartEventData startEventData{};
         startEventData.m_owner = eventData->m_owner;
-        startEventData.m_audioControlId = eventData->m_triggerId;
         startEventData.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
         startEventData.m_audioEventId = implTriggerData->GetEventId();
 
@@ -313,7 +312,7 @@ namespace BopAudio
             "Sending AudioEventRequests::StartEvent with [ControlId: %u] ",
             static_cast<AZ::u32>(busId.m_eventId));
 
-        AudioEventRequestBus::Event(busId, &AudioEventRequests::StartEvent, startEventData);
+        AudioEventRequestBus::Event(busId, &AudioEventRequests::StartAudioEvent, startEventData);
 
         if (!engineStartEventOutcome.IsSuccess())
         {

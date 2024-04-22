@@ -13,8 +13,10 @@
 
 namespace BopAudio::Nodes
 {
+    using namespace ScriptCanvas;
+
     class AudioEventNode
-        : public ScriptCanvas::Nodeable
+        : public Nodeable
         , public AudioEventRequestBus::Handler
     {
     public:
@@ -24,12 +26,14 @@ namespace BopAudio::Nodes
     protected:
         void OnDeactivate() override;
 
-        void StartEvent(StartEventData) override;
-        void StopEvent(StopEventData) override;
+        void StartAudioEvent(StartEventData) override;
+        void StopAudioEvent(StopEventData) override;
         void SetVolume(double newVolume);
         void MuteAudioEvent();
 
     private:
         AudioEventId m_targetEvent{};
+        AudioTasks m_tasks{};
+        TypedNodePropertyInterface<AudioTasks> m_tasksInterface{};
     };
 } // namespace BopAudio::Nodes

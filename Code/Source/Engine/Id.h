@@ -126,50 +126,64 @@ namespace BopAudio
     using BankRef = TaggedResource<SoundBankTag>;
     using BankRefContainer = AZStd::vector<BankRef>;
 
-    template<typename Tag = void>
-    class TaggedId
+    struct AudioObjectId
     {
-    public:
-        AZ_DEFAULT_COPY_MOVE(TaggedId);
+        AZ_TYPE_INFO(AudioObjectId, "{70AFF12C-5FE9-4295-9FF1-E59F24F2429E}");
 
-        constexpr TaggedId() = default;
-        explicit constexpr TaggedId(AZ::u32 id)
-            : m_value{ id } {};
-        explicit constexpr TaggedId(AZ::Crc32 id)
-            : m_value{ id } {};
+        AudioObjectId() = default;
 
-        ~TaggedId() = default;
-
-        [[nodiscard]] explicit constexpr operator size_t() const
+        static void Reflect(AZ::ReflectContext* context)
         {
-            return m_value;
+            if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serialize->Class<AudioObjectId>()->Version(1);
+                if (AZ::EditContext* editContext = serialize->GetEditContext())
+                {
+                    editContext->Class<AudioObjectId>("Audio Object Id", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+                }
+            }
         }
 
-        [[nodiscard]] explicit constexpr operator AZ::u32() const
+        constexpr AudioObjectId(AZ::Crc32 crc)
+            : m_data(crc){};
+
+        explicit constexpr operator Audio::TAudioObjectID() const
         {
-            return m_value;
+            return m_data;
         }
 
-        [[nodiscard]] constexpr auto operator==(TaggedId const& other) const -> bool
+        constexpr auto operator==(AudioObjectId const& rhs) const -> bool
         {
-            return m_value == other.m_value;
+            return m_data == rhs.m_data;
         }
 
-        [[nodiscard]] constexpr auto operator!=(TaggedId const& other) const -> bool
+        constexpr auto operator!=(AudioObjectId const& rhs) const -> bool
         {
-            return !(m_value == other.m_value);
+            return !((*this) == rhs);
         }
 
-        [[nodiscard]] constexpr auto IsValid() const
+        explicit constexpr operator size_t() const
         {
-            return m_value != 0;
+            return m_data;
         }
 
-    private:
-        AZ::u32 m_value;
+        explicit constexpr operator AZ::Crc32() const
+        {
+            return AZ::Crc32{ static_cast<AZ::u32>(m_data) };
+        }
+
+        explicit constexpr operator AZ::u32() const
+        {
+            return m_data;
+        }
+
+        Audio::TAudioObjectID m_data;
     };
 
-    using AudioObjectId = TaggedId<AudioObjectTag>;
+    static_assert(AZStd::is_pod_v<AudioObjectId>);
+
     static constexpr auto InvalidAudioObjectId = AudioObjectId{ INVALID_AUDIO_OBJECT_ID };
     static constexpr auto GlobalAudioObjectId = AudioObjectId{ 1 };
 

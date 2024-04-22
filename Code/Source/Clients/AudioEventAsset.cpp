@@ -3,9 +3,11 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/pointer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContextAttributes.h>
 
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
+#include "BopAudio/Util.h"
 #include "Engine/AudioEngineEventBus.h"
 #include "IAudioInterfacesCommonData.h"
 
@@ -21,15 +23,18 @@ namespace BopAudio
         {
             PlaySoundTask::Reflect(context);
 
-            serialize->Class<IAudioTask>()->Version(0);
-            serialize->RegisterGenericType<decltype(AudioEventAsset::m_eventTasks)>();
+            serialize->Class<IAudioTask>()->SerializeWithNoData();
+            serialize->RegisterGenericType<AudioTasks>();
+            serialize->RegisterGenericType<TaskContainer>();
+            serialize->RegisterGenericType<AudioTask>();
 
             serialize->Class<AudioEventAsset, AZ::Data::AssetData>()
                 ->Version(4)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &AudioEventAsset::m_id)
                 ->Field("EventTasks", &AudioEventAsset::m_eventTasks)
-                ->Field("Name", &AudioEventAsset::m_name);
+                ->Field("Name", &AudioEventAsset::m_name)
+                ->Field("TaskContainer", &AudioEventAsset::m_taskContainer);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -52,7 +57,12 @@ namespace BopAudio
                     ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
+                        AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->DataElement("TaskContainer", &AudioEventAsset::m_taskContainer)
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
+
+                    ;
             }
         }
     }
@@ -167,7 +177,10 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<StartEventData>()->Version(0);
+            serialize->Class<StartEventData>()
+                ->Version(0)
+                ->Field("AudioEngineEventId", &StartEventData::m_audioEventId)
+                ->Field("AudioEngineObjectId", &StartEventData::m_audioObjectId);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -179,7 +192,14 @@ namespace BopAudio
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<StartEventData>("StartAudioEventData");
+            behaviorContext->Class<StartEventData>("StartAudioEventData")
+                ->Attribute(
+                    AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
+                ->Property("AudioEngineEventId", &StartEventData::GetAudioEventId, nullptr)
+                ->Property("AudioEngineObjectId", &StartEventData::GetAudioObjectId, nullptr);
         }
     }
 
@@ -198,7 +218,11 @@ namespace BopAudio
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<StopEventData>("StopAudioEventData");
+            auto classBuilder{ behaviorContext->Class<StopEventData>("StopAudioEventData") };
+
+            EnableTypeForScriptEventUsage(classBuilder)
+                ->Property("AudioEngineEventId", &StopEventData::GetAudioEventId, nullptr)
+                ->Property("AudioEngineObjectId", &StopEventData::GetAudioObjectId, nullptr);
         }
     }
 

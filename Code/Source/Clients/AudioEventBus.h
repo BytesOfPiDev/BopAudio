@@ -55,8 +55,8 @@ namespace BopAudio
         AudioEventRequests() = default;
         virtual ~AudioEventRequests() = default;
 
-        virtual void StartEvent(StartEventData) = 0;
-        virtual void StopEvent(StopEventData) = 0;
+        virtual void StartAudioEvent(StartEventData) = 0;
+        virtual void StopAudioEvent(StopEventData) = 0;
     };
 
     struct AudioEventRequestBusTraits : public AZ::EBusTraits

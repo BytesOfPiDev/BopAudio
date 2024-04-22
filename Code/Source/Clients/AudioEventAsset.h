@@ -9,14 +9,17 @@
 #include "AzCore/Asset/AssetCommon.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/AudioEventBus.h"
 #include "Engine/AudioEngineEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/Tasks/AudioTaskBase.h"
+#include "Engine/Tasks/Common.h"
 #include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
     class AudioObject;
+    using AudioTasks = AZStd::vector<IAudioTask*>;
 
     AZ_ENUM_CLASS(AudioEventTaskType, None, Play, Stop);
 
@@ -88,8 +91,9 @@ namespace BopAudio
     private:
         AudioEventId m_id{};
         AZ::Name m_name{};
-        AZStd::vector<IAudioTask*> m_eventTasks{};
+        AudioTasks m_eventTasks{};
         MiniAudio::SoundDataAssetVector m_dependentSounds{};
+        TaskContainer m_taskContainer{};
         Audio::EAudioEventState m_eventState{};
     };
 
@@ -102,11 +106,19 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<AudioEventAsset> m_eventAsset{};
-        void* m_owner{};
-        Audio::TAudioControlID m_audioControlId{};
-        AudioEventId m_audioEventId{};
-        AudioObjectId m_audioObjectId{};
+        [[nodiscard]] auto GetAudioEventId() const -> AudioEventId
+        {
+            return m_audioEventId;
+        }
+
+        [[nodiscard]] auto GetAudioObjectId() const -> AudioObjectId
+        {
+            return m_audioObjectId;
+        }
+
+        void* m_owner;
+        AudioEventId m_audioEventId;
+        AudioObjectId m_audioObjectId;
     };
 
     struct StopEventData
@@ -114,6 +126,23 @@ namespace BopAudio
         AZ_TYPE_INFO(StopEventData, "{9E2A41C2-E2DD-498B-9D46-857204B20DC0}");
 
         static void Reflect(AZ::ReflectContext* context);
+
+        [[nodiscard]] auto GetAudioEventId() const -> AudioEventId
+        {
+            return m_audioEventId;
+        }
+
+        [[nodiscard]] auto GetAudioObjectId() const -> AudioObjectId
+        {
+            return m_audioObjectId;
+        }
+
+        void* m_owner;
+        AudioEventId m_audioEventId;
+        AudioObjectId m_audioObjectId;
     };
+
+    static_assert(AZStd::is_pod_v<StartEventData>);
+    static_assert(AZStd::is_pod_v<StopEventData>);
 
 } // namespace BopAudio

@@ -4,6 +4,7 @@
 #include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 
+#include "BopAudio/ReflectionAttributes.h"
 #include "Engine/AudioObject.h"
 #include "Engine/Tasks/AudioTaskBase.h"
 
@@ -13,6 +14,8 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->RegisterGenericType<decltype(PlaySoundTask::m_soundSource)>();
+
             serialize->Class<PlaySoundTask, IAudioTask>()->Version(6)->Field(
                 "SoundSource", &PlaySoundTask::m_soundSource);
 
@@ -23,6 +26,8 @@ namespace BopAudio
                     ->Attribute(AZ::Edit::Attributes::Category, "BopAudio/Tasks")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Target")
+                    ->Attribute(AZ::Edit::Attributes::ShowAsKeyValuePairs, false)
+                    ->Attribute(Attributes::AudioTaskFactory, true)
                     ->Attribute(
                         AZ::Edit::Attributes::Visibility,
                         AZ::Edit::PropertyVisibility::ShowChildrenOnly)

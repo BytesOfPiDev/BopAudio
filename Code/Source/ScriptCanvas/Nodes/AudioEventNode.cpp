@@ -4,7 +4,6 @@
 #include "Clients/AudioEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
-#include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
 namespace BopAudio::Nodes
@@ -18,7 +17,7 @@ namespace BopAudio::Nodes
 
     // TODO: Try and find a way to allow selecting controls located in the ATl. May have to create a
     // new type.
-    void AudioEventNode::ConnectAudioEvent(AZStd::string controlName)
+    void AudioEventNode::ConnectAudioEvent(AZStd::string controlName, AudioTasks tasks)
     {
         m_targetEvent = Audio::AudioStringToID<AudioEventId>(controlName.c_str());
 
@@ -35,7 +34,7 @@ namespace BopAudio::Nodes
     {
     }
 
-    void AudioEventNode::ToggleConnect()
+    void AudioEventNode::ToggleConnection()
     {
         auto const busIsConnected{ AudioEventRequestBus::Handler::BusIsConnected() };
         auto const targetEventIsInvalid{ (m_targetEvent == InvalidAudioEventId) };
@@ -46,14 +45,14 @@ namespace BopAudio::Nodes
             : AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_targetEvent });
     }
 
-    void AudioEventNode::StartEvent(StartEventData startData)
+    void AudioEventNode::StartAudioEvent(StartEventData startData)
     {
-        CallStartEvent(startData);
+        CallStart(startData);
     }
 
-    void AudioEventNode::StopEvent(StopEventData stopData)
+    void AudioEventNode::StopAudioEvent(StopEventData stopData)
     {
-        CallStopEvent(stopData);
+        CallStop(stopData);
     }
 
     void AudioEventNode::SetVolume(double newVolume)
@@ -63,7 +62,7 @@ namespace BopAudio::Nodes
 
     void AudioEventNode::MuteAudioEvent()
     {
-        CallMuteAudioEvent();
+        CallMute();
     }
 
 } // namespace BopAudio::Nodes

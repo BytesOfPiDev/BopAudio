@@ -6,7 +6,6 @@
 
 #include "IAudioInterfacesCommonData.h"
 #include "MiniAudio/SoundAsset.h"
-#include <AudioAllocators.h>
 
 namespace BopAudio
 {
@@ -19,9 +18,10 @@ namespace BopAudio
         return AZ::Name{ AZStd::string::format(IdStringFormat, static_cast<AZ::u32>(id)) };
     }
 
-    struct SATLAudioObjectData_BopAudio : public Audio::IATLAudioObjectData
+    class SATLAudioObjectData_BopAudio : public Audio::IATLAudioObjectData
     {
-        AZ_DISABLE_COPY_MOVE(SATLAudioObjectData_BopAudio);
+    public:
+        AZ_DEFAULT_COPY_MOVE(SATLAudioObjectData_BopAudio);
 
         SATLAudioObjectData_BopAudio(
             Audio::TAudioObjectID atlAudioObjectId,
@@ -64,8 +64,6 @@ namespace BopAudio
 
     struct SATLTriggerImplData_BopAudio : public Audio::IATLTriggerImplData
     {
-        AZ_CLASS_ALLOCATOR(SATLTriggerImplData_BopAudio, Audio::AudioImplAllocator);
-
         SATLTriggerImplData_BopAudio() = default;
         SATLTriggerImplData_BopAudio(AudioEventId audioEventId)
             : m_audioEventId(audioEventId){};
