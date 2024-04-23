@@ -61,7 +61,7 @@ namespace BopAudio
     struct AudioEventRequestBusTraits : public AZ::EBusTraits
     {
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static bool const EnableEventQueue = false;
         using MutexType = AZStd::recursive_mutex;
         using BusIdType = AudioEventBusIdType;
