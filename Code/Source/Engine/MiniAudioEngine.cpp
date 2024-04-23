@@ -248,11 +248,13 @@ namespace BopAudio
 
                 // audioEventAsset->RegisterAudioEvent();
 
-                AZ_Error(
-                    "MiniAudioEngine",
-                    MiniAudioEventRequestBus::HasHandlers(audioEventAsset->GetEventId()),
-                    "Audio event asset [%s] is not connected to its bus.",
-                    filepath.c_str());
+                if (MiniAudioEventRequestBus::HasHandlers(audioEventAsset->GetEventId()))
+                {
+                    AZLOG(
+                        LOG_ASI,
+                        "MiniAudioEvent asset [%s] is not connected to its bus.",
+                        filepath.c_str());
+                }
 
                 AZ_Error(
                     "MiniAudioEngine",
