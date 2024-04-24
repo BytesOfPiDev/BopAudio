@@ -4,6 +4,7 @@
 #include "Clients/AudioEventBus.h"
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
+#include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
 namespace BopAudio::Nodes
@@ -14,16 +15,16 @@ namespace BopAudio::Nodes
         DisconnectAudioEvent();
     }
 
-    void AudioEventNode::ConnectAudioEvent(AZStd::string triggerName)
+    void AudioEventNode::ConnectAudioEvent(AZStd::string const triggerName)
     {
-        m_targetEvent = Audio::AudioStringToID<AudioEventId>(triggerName.c_str());
+        m_eventId = Audio::AudioStringToID<AudioEventId>(triggerName.c_str());
 
-        AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_targetEvent });
+        AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_eventId });
 
         AZLOG(
             LOG_AudioEventNode,
-            "An AudioEventNode with [TriggerId: %u | TriggerName: %s] connected.\n",
-            static_cast<AZ::u32>(m_targetEvent),
+            "An AudioEventNode with [TriggerId: %llu | TriggerName: %s] connected.\n",
+            aznumeric_cast<Audio::TAudioEventID>(m_eventId),
             triggerName.c_str());
     }
 
@@ -38,7 +39,7 @@ namespace BopAudio::Nodes
 
         busIsConnected
             ? AudioEventRequestBus::Handler::BusDisconnect()
-            : AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_targetEvent });
+            : AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_eventId });
     }
 
     void AudioEventNode::StartAudioEvent(StartEventData startData)

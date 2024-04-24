@@ -29,6 +29,6 @@ namespace BopAudio::Nodes
         void StartAudioEvent(StartEventData) override;
 
     private:
-        AudioEventId m_targetEvent{};
+        AudioEventId m_eventId{};
     };
 } // namespace BopAudio::Nodes

@@ -39,15 +39,3 @@ namespace BopAudio
     };
 
 }; // namespace BopAudio
-
-namespace AZStd
-{
-    template<>
-    struct hash<BopAudio::AudioObject>
-    {
-        inline auto operator()(BopAudio::AudioObject const& soundObject) const -> size_t
-        {
-            return static_cast<size_t>(soundObject.GetId());
-        }
-    };
-} // namespace AZStd

@@ -13,7 +13,7 @@
     Uuid="{C2A01796-17F6-418B-8D89-6BFCBB10C4BD}">
 
     <Input Name="Connect Audio Event" OutputName="OnConnect" Description="Entry point into the node">
-      <Parameter Name="Control Name" Type="AZStd::string" Description="" />
+      <Parameter Name="Control Name" Type="AZStd::string const" Description="" />
     </Input>
 
     <Input

@@ -32,7 +32,8 @@ namespace BopAudioTests
     {
         static auto GetAudioObjectId() -> BopAudio::AudioObjectId
         {
-            return BopAudio::AudioObjectId{ AZ_CRC_CE("testValidAudioObject") };
+            return BopAudio::AudioObjectId{ Audio::AudioStringToID<BopAudio::AudioObjectId>(
+                "testValidAudioObject") };
         }
         static auto GetAudioEventId() -> BopAudio::AudioEventId
         {
@@ -41,8 +42,7 @@ namespace BopAudioTests
 
         [[nodiscard]] static auto GetTriggerData() -> BopAudio::SATLTriggerImplData_BopAudio
         {
-            auto implTriggerData{ decltype(GetTriggerData()){} };
-            implTriggerData.SetImplEventId(GetAudioEventId());
+            auto const implTriggerData{ decltype(GetTriggerData()){GetAudioEventId()} };
 
             return implTriggerData;
         }
@@ -152,7 +152,7 @@ namespace BopAudioTests
         auto const validTriggerData{ ValidActivateArgs::GetTriggerData() };
         auto validEventData{ ValidActivateArgs::GetEventData() };
         auto validImplAudioObjData{ BopAudio::SATLAudioObjectData_BopAudio{
-            static_cast<AZ::u32>(ValidActivateArgs::GetAudioObjectId()),
+            static_cast<Audio::TAudioObjectID>(ValidActivateArgs::GetAudioObjectId()),
             ValidActivateArgs::GetAudioObjectId(),
             "testObject" } };
 
@@ -193,46 +193,13 @@ namespace BopAudioTests
         EXPECT_FALSE(activateWithInvalidObjIdResult);
     }
 
-    TEST(AudioEventIdComparisonTests, ValidId_ComparedToSameAtlId_IsEqual)
-    {
-        static constexpr auto theSameName{ "something_something_something_darkside" };
-        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(
-            theSameName) };
-        static auto const atlEventId{ Audio::AudioStringToID<Audio::TAudioEventID>(theSameName) };
-
-        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(atlEventId));
-        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(atlEventId));
-    }
-
-    TEST(AudioEventIdComparisonTests, ValidId_ComparedToNullAtlId_IsNotEqual)
-    {
-        static constexpr auto particularName{ "something_something_something_darkside" };
-        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(
-            particularName) };
-        static auto const nullAtlId{ INVALID_AUDIO_EVENT_ID };
-
-        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(nullAtlId));
-        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(nullAtlId));
-    }
-
     TEST(AudioEventIdComparisonTests, NullId_ComparedToNullAtlId_IsEqual)
     {
         static constexpr auto nullImplEventId{ BopAudio::InvalidAudioEventId };
         static constexpr auto nullAtlId{ INVALID_AUDIO_EVENT_ID };
 
-        EXPECT_TRUE(static_cast<AZ::u32>(nullImplEventId) == static_cast<AZ::u32>(nullAtlId));
-        EXPECT_FALSE(static_cast<AZ::u32>(nullImplEventId) != static_cast<AZ::u32>(nullAtlId));
-    }
-
-    TEST(AudioEventIdComparisonTests, ValidId_ComparedToValidButDifferentAtlId_IsNotEqual)
-    {
-        static constexpr auto someName{ "something_something_something_darkside" };
-        static constexpr auto someOtherName{ "something_something_something_lightside" };
-        static auto const implEventId{ Audio::AudioStringToID<BopAudio::AudioEventId>(someName) };
-        static auto const atlEventId{ Audio::AudioStringToID<Audio::TAudioEventID>(someOtherName) };
-
-        EXPECT_FALSE(static_cast<AZ::u32>(implEventId) == static_cast<AZ::u32>(atlEventId));
-        EXPECT_TRUE(static_cast<AZ::u32>(implEventId) != static_cast<AZ::u32>(atlEventId));
+        EXPECT_TRUE(static_cast<Audio::TATLIDType>(nullImplEventId) == nullAtlId);
+        EXPECT_FALSE(static_cast<Audio::TATLIDType>(nullImplEventId) != nullAtlId);
     }
 
     TEST(ImplAudioObjectDataTests, ContructWithValidIds_CallArgGetters_ReturnsGivenIds)
@@ -247,6 +214,22 @@ namespace BopAudioTests
 
         EXPECT_EQ(obj.GetImplAudioObjectId(), givenImplObjectId);
         EXPECT_EQ(obj.GetAtlAudioObjectId(), givenAtlObjectId);
+    }
+    
+    TEST(AudioEventIdCreationTests, CreateAudioEventId_CompareToAtlCreatedId_CorrectlyCompares)
+    {
+        static constexpr auto someName{ "something_something_something_darkside" };
+        static constexpr auto someOtherName{ "something_something_something_darksid" };
+
+        static auto const someNameAsImplEventId{BopAudio::AudioEventId{someName}};
+        static auto const someOtherNameAsImplEventId{BopAudio::AudioEventId{someOtherName}};
+        static auto const someNameAsAtlEventId{ Audio::AudioStringToID<Audio::TAudioEventID>(someName) };
+
+        EXPECT_TRUE(static_cast<Audio::TAudioEventID>(someNameAsImplEventId) == someNameAsAtlEventId);
+        EXPECT_FALSE(static_cast<Audio::TAudioEventID>(someOtherNameAsImplEventId) == someNameAsAtlEventId);
+
+        EXPECT_FALSE(static_cast<Audio::TAudioEventID>(someNameAsImplEventId) != someNameAsAtlEventId);
+        EXPECT_TRUE(static_cast<Audio::TAudioEventID>(someOtherNameAsImplEventId) != someNameAsAtlEventId);
     }
 
 } // namespace BopAudioTests

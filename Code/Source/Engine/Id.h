@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AudioAllocators.h"
 #include "AzCore/IO/Path/Path.h"
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Name/Name.h"
@@ -8,6 +7,7 @@
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/std/containers/vector.h"
+#include "IAudioSystem.h"
 
 #include "Engine/ConfigurationSettings.h"
 #include "IAudioInterfacesCommonData.h"
@@ -100,8 +100,8 @@ namespace BopAudio
         }
 
     private:
-        AZ::Name m_name{ "test" };
-        AZStd::string m_data;
+        AZ::Name m_name{};
+        AZStd::string m_data{};
     };
 
     template<typename Tag>
@@ -126,17 +126,22 @@ namespace BopAudio
     using BankRef = TaggedResource<SoundBankTag>;
     using BankRefContainer = AZStd::vector<BankRef>;
 
-    struct AudioObjectId
+    class AudioObjectId
     {
+    public:
         AZ_TYPE_INFO(AudioObjectId, "{70AFF12C-5FE9-4295-9FF1-E59F24F2429E}");
 
         AudioObjectId() = default;
+
+        explicit constexpr AudioObjectId(Audio::TAudioObjectID objectId)
+            : m_data(objectId){};
 
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serialize->Class<AudioObjectId>()->Version(1);
+
                 if (AZ::EditContext* editContext = serialize->GetEditContext())
                 {
                     editContext->Class<AudioObjectId>("Audio Object Id", "")
@@ -146,24 +151,22 @@ namespace BopAudio
             }
         }
 
-        constexpr AudioObjectId(AZ::u32 objectId)
-            : m_data(objectId){};
-
-        explicit constexpr operator Audio::TAudioObjectID() const
+        [[nodiscard]] explicit constexpr operator Audio::TAudioObjectID() const
         {
             return m_data;
         }
 
-        constexpr auto operator==(AudioObjectId const& rhs) const -> bool
+        [[nodiscard]] constexpr auto operator==(AudioObjectId const& rhs) const -> bool
         {
             return m_data == rhs.m_data;
         }
 
-        constexpr auto operator!=(AudioObjectId const& rhs) const -> bool
+        [[nodiscard]] constexpr auto operator!=(AudioObjectId const& rhs) const -> bool
         {
             return !((*this) == rhs);
         }
 
+    private:
         Audio::TAudioObjectID m_data;
     };
 
@@ -172,11 +175,14 @@ namespace BopAudio
     static constexpr auto InvalidAudioObjectId = AudioObjectId{ INVALID_AUDIO_OBJECT_ID };
     static constexpr auto GlobalAudioObjectId = AudioObjectId{ 1 };
 
-    struct AudioEventId
+    class AudioEventId
     {
+    public:
         AZ_TYPE_INFO(AudioEventId, "{AE4B6702-02F6-434D-AFD5-0B9995D58C18}");
 
         AudioEventId() = default;
+        explicit AudioEventId(AZStd::string const& eventName)
+            : m_data(Audio::AudioStringToID<Audio::TAudioEventID>(eventName.c_str())){};
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -192,16 +198,8 @@ namespace BopAudio
             }
         }
 
-        explicit constexpr AudioEventId(AZ::Crc32 crc)
+        explicit constexpr AudioEventId(Audio::TAudioEventID crc)
             : m_data(crc){};
-
-        explicit constexpr AudioEventId(AZ::u32 crc)
-            : m_data(crc){};
-
-        explicit constexpr operator Audio::TAudioEventID() const
-        {
-            return m_data;
-        }
 
         constexpr auto operator==(AudioEventId const& rhs) const -> bool
         {
@@ -213,11 +211,15 @@ namespace BopAudio
             return !((*this) == rhs);
         }
 
-        explicit constexpr operator AZ::u32() const
+        explicit constexpr operator Audio::TAudioEventID() const
         {
-            return static_cast<AZ::u32>(m_data);
+            return m_data;
         }
 
+        constexpr auto operator<(AudioEventId const&) const -> bool = delete;
+        constexpr auto operator>(AudioEventId const&) const -> bool = delete;
+
+    private:
         Audio::TAudioEventID m_data;
     };
 
@@ -229,8 +231,33 @@ namespace BopAudio
 
 } // namespace BopAudio
 
+namespace AZStd
+{
+    template<>
+    struct hash<BopAudio::AudioEventId>
+    {
+        [[nodiscard]] auto operator()(BopAudio::AudioEventId const& id) const -> size_t
+        {
+            static constexpr auto hasher{ AZStd::hash<Audio::TAudioEventID>{} };
+            return hasher(static_cast<Audio::TAudioEventID>(id));
+        }
+    };
+
+    template<>
+    struct hash<BopAudio::AudioObjectId>
+    {
+        [[nodiscard]] auto operator()(BopAudio::AudioObjectId const& id) const -> size_t
+        {
+            static constexpr auto hasher{ AZStd::hash<Audio::TAudioObjectID>{} };
+            return hasher(static_cast<Audio::TAudioObjectID>(id));
+        }
+    };
+
+} // namespace AZStd
+
 namespace AZ
 {
+
     AZ_TYPE_INFO_TEMPLATE_WITH_NAME(
         BopAudio::TaggedResource,
         "ResourceTag",

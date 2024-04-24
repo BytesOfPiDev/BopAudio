@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AzCore/EBus/EBus.h"
-#include "AzCore/std/hash.h"
 #include "Engine/Id.h"
+#include "IAudioInterfacesCommonData.h"
 
 namespace BopAudio
 {
@@ -10,8 +10,9 @@ namespace BopAudio
     struct StopEventData;
     class AudioObject;
 
-    struct AudioEventBusIdType
+    class AudioEventBusIdType
     {
+    public:
         AZ_TYPE_INFO_WITH_NAME(
             AudioEventBusIdType,
             "EventNotificationIdType",
@@ -20,16 +21,7 @@ namespace BopAudio
         AudioEventBusIdType() = default;
 
         AudioEventBusIdType(AudioEventId eventId)
-            : m_eventId{ eventId }
-        {
-        }
-
-        [[nodiscard]] explicit constexpr operator size_t() const
-        {
-            constexpr AZStd::hash<AudioEventId> controlHasher;
-
-            return controlHasher(m_eventId);
-        }
+            : m_eventId{ eventId } {};
 
         [[nodiscard]] constexpr auto operator==(AudioEventBusIdType const& rhs) const -> bool
         {
@@ -42,6 +34,15 @@ namespace BopAudio
             return !(*this == rhs);
         }
 
+        [[nodiscard]] explicit constexpr operator Audio::TATLIDType() const
+        {
+            return static_cast<Audio::TATLIDType>(m_eventId);
+        }
+
+        constexpr auto operator<(AudioEventBusIdType const&) const -> bool = delete;
+        constexpr auto operator>(AudioEventBusIdType const&) const -> bool = delete;
+
+    private:
         AudioEventId m_eventId;
     };
 
@@ -69,3 +70,16 @@ namespace BopAudio
 
     using AudioEventRequestBus = AZ::EBus<AudioEventRequests, AudioEventRequestBusTraits>;
 } // namespace BopAudio
+
+namespace AZStd
+{
+    template<>
+    struct hash<BopAudio::AudioEventBusIdType>
+    {
+        [[nodiscard]] auto operator()(BopAudio::AudioEventBusIdType const& busId) const -> size_t
+        {
+            static constexpr auto hasher{ AZStd::hash<Audio::TATLIDType>{} };
+            return hasher(static_cast<Audio::TATLIDType>(busId));
+        }
+    };
+} // namespace AZStd

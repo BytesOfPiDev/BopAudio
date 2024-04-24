@@ -265,7 +265,7 @@ namespace BopAudio
         Audio::IATLEventData* const eventData,
         Audio::SATLSourceData const* const /*pSourceData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_ASI, "Received ActivateTrigger");
+        AZLOG(LOG_ASI, "ASI received ActivateTrigger");
 
         [[maybe_unused]] auto* const implTriggerData{
             static_cast<SATLTriggerImplData_BopAudio const*>(triggerData)
@@ -309,8 +309,8 @@ namespace BopAudio
 
         AZLOG(
             LOG_AudioEventBus,
-            "Sending AudioEventRequests::StartEvent with [ControlId: %u] ",
-            static_cast<AZ::u32>(busId.m_eventId));
+            "Sending AudioEventRequests::StartEvent with [Trigger: %llu] ",
+            static_cast<Audio::TATLIDType>(busId));
 
         AudioEventRequestBus::Event(busId, &AudioEventRequests::StartAudioEvent, startEventData);
 
@@ -550,7 +550,8 @@ namespace BopAudio
     auto AudioSystemImpl_miniaudio::NewAudioTriggerImplData(
         const AZ::rapidxml::xml_node<char>* audioTriggerNode) -> Audio::IATLTriggerImplData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioTriggerImplData.");
+        AZLOG(
+            LOG_ASI, "ASI received request for a new audio trigger implementation data object.\n");
 
         if (!audioTriggerNode ||
             !AZ::StringFunc::Equal(audioTriggerNode->name(), XmlTags::TriggerTag))
@@ -558,7 +559,7 @@ namespace BopAudio
             return nullptr;
         }
 
-        AZ::Name const triggerName = [&audioTriggerNode]() -> decltype(triggerName)
+        AZStd::string const triggerName = [&audioTriggerNode]() -> decltype(triggerName)
         {
             auto const triggerNameAttrib{ audioTriggerNode->first_attribute(
                 XmlTags::NameAttribute) };
@@ -567,10 +568,17 @@ namespace BopAudio
         }();
 
         auto* implAudioTriggerData{ azcreate(
-            SATLTriggerImplData_BopAudio, (), Audio::AudioImplAllocator) };
+            SATLTriggerImplData_BopAudio,
+            (AudioEventId{ triggerName }),
+            Audio::AudioImplAllocator) };
 
-        implAudioTriggerData->SetImplEventId(
-            Audio::AudioStringToID<AudioEventId>(triggerName.GetCStr()));
+        AZLOG(
+            LOG_ASI,
+            "ASI created a new audio trigger implementation data object. [Trigger: %s | "
+            "AudioEventId: %llu. NativeId: %llu\n",
+            triggerName.c_str(),
+            static_cast<AZ::u64>(implAudioTriggerData->GetEventId()),
+            Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.c_str()));
 
         return implAudioTriggerData;
     }

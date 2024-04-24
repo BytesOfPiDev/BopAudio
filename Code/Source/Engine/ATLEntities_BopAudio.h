@@ -73,11 +73,6 @@ namespace BopAudio
             return m_audioEventId;
         }
 
-        void SetImplEventId(AudioEventId resourceId)
-        {
-            m_audioEventId = resourceId;
-        }
-
     private:
         AudioEventId m_audioEventId{};
     };

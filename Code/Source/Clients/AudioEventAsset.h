@@ -28,8 +28,7 @@ namespace BopAudio
         friend class AudioEventAssetHandler;
         friend class MiniAudioEngine;
 
-        static constexpr auto AudioEventNameMaxLength = 32u;
-        using AudioEventName = AZStd::fixed_string<AudioEventNameMaxLength>;
+        using AudioEventName = AZStd::string;
 
     public:
         AZ_CLASS_ALLOCATOR(AudioEventAsset, AZ::SystemAllocator);

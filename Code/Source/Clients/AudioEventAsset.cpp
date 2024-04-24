@@ -85,7 +85,7 @@ namespace BopAudio
                 "AudioEventAsset",
                 false,
                 "Unable to register audio event. Handler already exists [Id: %s | AssetId: %s].\n",
-                m_name.GetCStr(),
+                m_name.c_str(),
                 GetId().ToFixedString().c_str());
 
             return;
