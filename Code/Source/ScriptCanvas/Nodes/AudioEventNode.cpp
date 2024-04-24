@@ -11,27 +11,25 @@ namespace BopAudio::Nodes
     void AudioEventNode::OnDeactivate()
     {
         Nodeable::OnDeactivate();
-
-        AudioEventRequestBus::Handler::BusDisconnect();
+        DisconnectAudioEvent();
     }
 
-    // TODO: Try and find a way to allow selecting controls located in the ATl. May have to create a
-    // new type.
-    void AudioEventNode::ConnectAudioEvent(AZStd::string controlName)
+    void AudioEventNode::ConnectAudioEvent(AZStd::string triggerName)
     {
-        m_targetEvent = Audio::AudioStringToID<AudioEventId>(controlName.c_str());
+        m_targetEvent = Audio::AudioStringToID<AudioEventId>(triggerName.c_str());
 
         AudioEventRequestBus::Handler::BusConnect(AudioEventBusIdType{ m_targetEvent });
 
         AZLOG(
             LOG_AudioEventNode,
-            "An AudioEventNode with [ControlId: %u | ControlName: %s] connected.\n",
+            "An AudioEventNode with [TriggerId: %u | TriggerName: %s] connected.\n",
             static_cast<AZ::u32>(m_targetEvent),
-            controlName.c_str());
+            triggerName.c_str());
     }
 
     void AudioEventNode::DisconnectAudioEvent()
     {
+        AudioEventRequestBus::Handler::BusDisconnect();
     }
 
     void AudioEventNode::ToggleConnection()

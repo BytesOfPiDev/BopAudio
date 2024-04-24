@@ -146,8 +146,8 @@ namespace BopAudio
             }
         }
 
-        constexpr AudioObjectId(AZ::Crc32 crc)
-            : m_data(crc){};
+        constexpr AudioObjectId(AZ::u32 objectId)
+            : m_data(objectId){};
 
         explicit constexpr operator Audio::TAudioObjectID() const
         {
@@ -162,21 +162,6 @@ namespace BopAudio
         constexpr auto operator!=(AudioObjectId const& rhs) const -> bool
         {
             return !((*this) == rhs);
-        }
-
-        explicit constexpr operator size_t() const
-        {
-            return m_data;
-        }
-
-        explicit constexpr operator AZ::Crc32() const
-        {
-            return AZ::Crc32{ static_cast<AZ::u32>(m_data) };
-        }
-
-        explicit constexpr operator AZ::u32() const
-        {
-            return m_data;
         }
 
         Audio::TAudioObjectID m_data;
@@ -207,7 +192,10 @@ namespace BopAudio
             }
         }
 
-        constexpr AudioEventId(AZ::Crc32 crc)
+        explicit constexpr AudioEventId(AZ::Crc32 crc)
+            : m_data(crc){};
+
+        explicit constexpr AudioEventId(AZ::u32 crc)
             : m_data(crc){};
 
         explicit constexpr operator Audio::TAudioEventID() const
@@ -225,19 +213,9 @@ namespace BopAudio
             return !((*this) == rhs);
         }
 
-        explicit constexpr operator size_t() const
-        {
-            return m_data;
-        }
-
-        explicit constexpr operator AZ::Crc32() const
-        {
-            return AZ::Crc32{ static_cast<AZ::u32>(m_data) };
-        }
-
         explicit constexpr operator AZ::u32() const
         {
-            return m_data;
+            return static_cast<AZ::u32>(m_data);
         }
 
         Audio::TAudioEventID m_data;

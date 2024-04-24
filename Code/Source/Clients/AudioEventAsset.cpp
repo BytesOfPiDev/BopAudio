@@ -23,21 +23,14 @@ namespace BopAudio
                 ->Version(4)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("Id", &AudioEventAsset::m_id)
-                ->Field("Name", &AudioEventAsset::m_name)
-
-                ;
+                ->Field("Name", &AudioEventAsset::m_name);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
                 editContext->Class<AudioEventAsset>("Audio Event Asset", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio/Assets")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AudioEventAsset::m_name, "Name", "")
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        AZ::Edit::PropertyRefreshLevels::EntireTree);
+                    ->Attribute(AZ::Edit::Attributes::Category, "BopAudio")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }
@@ -49,7 +42,7 @@ namespace BopAudio
         UnregisterAudioEvent();
     }
 
-    void AudioEventAsset::operator()(AudioObject& audioObject) const
+    void AudioEventAsset::operator()(AudioObject& /*audioObject*/) const
     {
         if (m_eventState != Audio::EAudioEventState::eAES_NONE)
         {

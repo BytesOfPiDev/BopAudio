@@ -366,7 +366,7 @@ namespace BopAudio
         return (iter != AZStd::end(m_audioObjects)) ? iter : nullptr;
     }
 
-    auto MiniAudioEngine::LoadSound(SoundRef const& resourceRef) -> NullOutcome
+    auto MiniAudioEngine::LoadSound(SoundRef const& /*resourceRef*/) -> NullOutcome
     {
         return AZ::Failure("Unimplemented.");
     }

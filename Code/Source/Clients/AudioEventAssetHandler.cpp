@@ -115,7 +115,9 @@ namespace BopAudio
     }
 
     void AudioEventAssetHandler::InitAsset(
-        AZ::Data::Asset<AZ::Data::AssetData> const& asset, bool loadStageSucceeded, bool isReload)
+        AZ::Data::Asset<AZ::Data::AssetData> const& asset,
+        bool /*loadStageSucceeded*/,
+        bool isReload)
     {
         AZStd::string const eventIdName = [&]() -> decltype(eventIdName)
         {

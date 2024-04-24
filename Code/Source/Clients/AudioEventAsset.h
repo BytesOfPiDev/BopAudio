@@ -28,6 +28,9 @@ namespace BopAudio
         friend class AudioEventAssetHandler;
         friend class MiniAudioEngine;
 
+        static constexpr auto AudioEventNameMaxLength = 32u;
+        using AudioEventName = AZStd::fixed_string<AudioEventNameMaxLength>;
+
     public:
         AZ_CLASS_ALLOCATOR(AudioEventAsset, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(AudioEventAsset);
@@ -51,7 +54,7 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] auto GetEventName() const -> AZ::Name
+        [[nodiscard]] auto GetEventName() const -> AudioEventName
         {
             return m_name;
         }
@@ -82,7 +85,7 @@ namespace BopAudio
 
     private:
         AudioEventId m_id{};
-        AZ::Name m_name{};
+        AudioEventName m_name{};
         Audio::EAudioEventState m_eventState{};
     };
 

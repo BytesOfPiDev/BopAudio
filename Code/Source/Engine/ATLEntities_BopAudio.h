@@ -98,7 +98,7 @@ namespace BopAudio
         AZ_DEFAULT_COPY_MOVE(SATLEventData_BopAudio);
 
         explicit SATLEventData_BopAudio(Audio::TAudioEventID const atlEventId)
-            : BopAudio::SATLEventData_BopAudio(AudioEventId{ atlEventId })
+            : BopAudio::SATLEventData_BopAudio(AudioEventId{ static_cast<AZ::u32>(atlEventId) })
         {
         }
 
