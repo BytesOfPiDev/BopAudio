@@ -6,18 +6,12 @@
 #include "IAudioSystemImplementation.h"
 #include "MiniAudio/SoundAsset.h"
 
-#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
-    class MiniAudioEngine;
-
     class AudioSystemImpl_miniaudio : protected Audio::AudioSystemImplementation
     {
-        friend MiniAudioEngine;
-
     public:
         AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_miniaudio);
         AZ_DISABLE_COPY_MOVE(AudioSystemImpl_miniaudio);

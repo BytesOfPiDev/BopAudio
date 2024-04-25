@@ -17,15 +17,12 @@ namespace BopAudio
 {
     class AudioObject;
 
-    AZ_ENUM_CLASS(AudioEventTaskType, None, Play, Stop);
-
     class AudioEventAsset
         : public AZ::Data::AssetData
         , public MiniAudioEventRequestBus::Handler
     {
         friend class AudioEventAssetBuilderWorker;
         friend class AudioEventAssetHandler;
-        friend class MiniAudioEngine;
 
         using AudioEventName = AZStd::string;
 

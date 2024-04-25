@@ -8,7 +8,6 @@
 
 #include "BopAudio/BopAudioBus.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
@@ -49,7 +48,6 @@ namespace BopAudio
 
     private:
         AZStd::unique_ptr<BopAudio::AudioSystemImpl_miniaudio> m_audioSystemImpl;
-        AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
 
         AudioEventAssetHandler m_audioEventAssetHandler;
         SoundBankAssetHandler m_soundBankAssetHandler;

@@ -16,7 +16,6 @@
 #include "Clients/SoundBankAssetHandler.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
-#include "Engine/MiniAudioEngine.h"
 #include "ScriptCanvas/Nodes/AudioControlNode.h"
 
 namespace BopAudio
@@ -139,12 +138,6 @@ namespace BopAudio
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
             AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
-        m_miniAudioEngine.reset();
-        m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
-
-        AZ_Verify(
-            m_miniAudioEngine->Initialize().IsSuccess(), "Failed to initialize MiniAudio engine!");
-
         if (m_audioSystemImpl =
                 AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
             m_audioSystemImpl)
@@ -165,10 +158,6 @@ namespace BopAudio
     void BopAudioSystemComponent::Release()
     {
         m_audioSystemImpl = nullptr;
-
-        AZ_Verify(
-            m_miniAudioEngine->Shutdown().IsSuccess(),
-            "MiniAudioEngine failed to shutdown properly.");
     }
 
 } // namespace BopAudio

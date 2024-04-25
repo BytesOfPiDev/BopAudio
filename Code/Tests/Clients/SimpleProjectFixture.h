@@ -2,7 +2,6 @@
 
 #include "Clients/BootstrapFixture.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudioTests
 {
@@ -10,11 +9,9 @@ namespace BopAudioTests
     {
     public:
         void SetUp() override;
-
         void TearDown() override;
 
     private:
-        AZStd::unique_ptr<BopAudio::MiniAudioEngine> m_soundEngine;
         AZStd::unique_ptr<BopAudio::AudioSystemImpl_miniaudio> m_asiImpl;
     };
 } // namespace BopAudioTests
