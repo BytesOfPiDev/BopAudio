@@ -10,6 +10,8 @@
 #include "AzCore/Memory/SystemAllocator.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/AudioEventBus.h"
+#include "IAudioInterfacesCommonData.h"
+#include "IAudioSystem.h"
 
 namespace BopAudio::Nodes
 {
@@ -17,7 +19,7 @@ namespace BopAudio::Nodes
 
     class AudioEventNode
         : public Nodeable
-        , public AudioEventRequestBus::Handler
+        , public Audio::AudioTriggerNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(AudioEventNode, AZ::SystemAllocator);
@@ -26,9 +28,18 @@ namespace BopAudio::Nodes
     protected:
         void OnDeactivate() override;
 
-        void StartAudioEvent(StartEventData) override;
+        void ReportDurationInfo(
+            Audio::TAudioControlID triggerId,
+            Audio::TAudioEventID eventId,
+            float duration,
+            float estimatedDuration) override;
+
+        void ReportTriggerStarted([[maybe_unused]] Audio::TAudioControlID controlId) override;
+        void ReportTriggerFinished([[maybe_unused]] Audio::TAudioControlID controlId) override;
 
     private:
-        AudioEventId m_eventId{};
+        Audio::TriggerNotificationIdType m_owner{};
+        Audio::TAudioControlID m_controlId{};
+        AZ::Name m_controlName{};
     };
 } // namespace BopAudio::Nodes

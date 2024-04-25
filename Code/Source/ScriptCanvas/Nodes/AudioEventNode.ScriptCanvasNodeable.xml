@@ -13,7 +13,8 @@
     Uuid="{C2A01796-17F6-418B-8D89-6BFCBB10C4BD}">
 
     <Input Name="Connect Audio Event" OutputName="OnConnect" Description="Entry point into the node">
-      <Parameter Name="Control Name" Type="AZStd::string const" Description="" />
+      <Parameter Name="Owning Entity" Type="AZ::EntityId const" Description="The entity that we will listen to for the control." />
+      <Parameter Name="Control Name" Type="AZStd::string const&amp;" Description="The name of the audio control to listen for." />
     </Input>
 
     <Input

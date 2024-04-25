@@ -21,7 +21,6 @@
 #include "Engine/Id.h"
 #include "Engine/MiniAudioEngineBus.h"
 #include "MiniAudio/SoundAsset.h"
-#include <cstdint>
 
 namespace BopAudio
 {
