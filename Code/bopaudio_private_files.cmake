@@ -11,10 +11,6 @@ set(FILES
     Source/Clients/AudioEventAssetHandler.cpp
     Source/Clients/AudioEventAssetHandler.h
     Source/Clients/AudioEventBus.h
-    Source/Clients/SoundBankAsset.cpp
-    Source/Clients/SoundBankAsset.h
-    Source/Clients/SoundBankAssetHandler.cpp
-    Source/Clients/SoundBankAssetHandler.h
 
     Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/AudioEngineEventBus.h
@@ -31,6 +27,4 @@ set(FILES
     Source/Engine/MiniAudioEngineBus.h
     Source/Engine/Rtpc.cpp
     Source/Engine/Rtpc.h
-    Source/Engine/SoundBankUtil.cpp
-    Source/Engine/SoundBankUtil.h
 )

@@ -11,7 +11,6 @@
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
-#include "Clients/SoundBankAsset.h"
 #include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
@@ -29,7 +28,6 @@ namespace BopAudio
                 .Native());
 
         LoadControlsInFolder(EventsAlias);
-        LoadSoundBanks(GetBanksRootPath(), "", false);
     }
 
     void AudioBopAudioLoader::LoadControlsInFolder(AZStd::string_view const folderPath)
@@ -186,60 +184,4 @@ namespace BopAudio
     {
         return m_localizationFolder;
     }
-
-    void AudioBopAudioLoader::LoadSoundBanks(
-        AZ::IO::PathView rootFolder, AZ::IO::PathView subPath, bool isLocalized)
-    {
-        AZ::IO::FixedMaxPath searchPath(rootFolder);
-        searchPath /= subPath;
-
-        auto const foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
-        bool isLocalizedLoaded = isLocalized;
-
-        for (auto const& filePath : foundFiles)
-        {
-            AZ_Assert(
-                AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()),
-                "FindFiles found '%s' but FileIO says it doesn't exist!",
-                filePath.c_str());
-
-            AZ::IO::Path fileName = filePath.Filename();
-
-            if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(filePath.c_str()))
-            {
-                if (fileName != ExternalSourcesPath && !isLocalizedLoaded)
-                {
-                    // each sub-folder represents a different language,
-                    // we load only one as all of them should have the
-                    // same content (in the future we want to have a
-                    // consistency report to highlight if this is not the case)
-                    m_localizationFolder = fileName;
-                    LoadSoundBanks(searchPath, m_localizationFolder, true);
-                    isLocalizedLoaded = true;
-                }
-            }
-            // HACK: Slapped together implementation for testing. Need to improve at some point.
-            else if (
-                (fileName.Extension() == SoundBankAsset::ProductExtension) &&
-                (fileName != InitBankSource))
-            {
-                m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                    AZStd::string{ fileName.Stem().String() },
-                    BopAudioControlType::SoundBank,
-                    isLocalized,
-                    nullptr,
-                    subPath.Native()));
-
-                AZ::IO::Path const absoluteBankPath = [&filePath]() -> decltype(absoluteBankPath)
-                {
-                    auto builtPath =
-                        decltype(absoluteBankPath){ AZ::Utils::GetProjectProductPathForPlatform() };
-                    builtPath /= filePath;
-
-                    return builtPath;
-                }();
-            }
-        }
-    }
-
 } // namespace BopAudio

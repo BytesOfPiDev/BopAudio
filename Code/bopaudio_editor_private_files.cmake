@@ -19,6 +19,4 @@ set(FILES
     Source/Builder/AudioEventAssetBuilderWorker.h
     Source/Builder/BopAudioAssetBuilderComponent.cpp
     Source/Builder/BopAudioAssetBuilderComponent.h
-    Source/Builder/SoundBankAssetBuilderWorker.cpp
-    Source/Builder/SoundBankAssetBuilderWorker.h
 )

@@ -13,13 +13,10 @@
 #include "AzFramework/Render/GameIntersectorComponent.h"
 #include "AzFramework/StreamingInstall/StreamingInstall.h"
 
+#include "AzFramework/Asset/CustomAssetTypeComponent.h"
+#include "AzFramework/Spawnable/SpawnableSystemComponent.h"
 #include "Clients/AudioEventAssetHandler.h"
 #include "Clients/BopAudioSystemComponent.h"
-#include "Clients/SoundBankAsset.h"
-#include "Clients/SoundBankAssetHandler.h"
-#include <AzCore/Slice/SliceSystemComponent.h>
-#include <AzFramework/Asset/CustomAssetTypeComponent.h>
-#include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 
 namespace BopAudioTests
 {
@@ -73,7 +70,6 @@ namespace BopAudioTests
 
         BopAudio::BopAudioSystemComponent::RegisterFileAliases();
         m_eventAssetHandler.Register();
-        m_soundBankAssetHandler.Register();
 
         AZ::UserSettingsComponentRequestBus::Broadcast(
             &AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
@@ -87,16 +83,11 @@ namespace BopAudioTests
     void BaseAudioTestFixture::TearDown()
     {
         m_eventAssetHandler.Unregister();
-        m_soundBankAssetHandler.Unregister();
         m_app.Stop();
     }
 
     void BaseAudioTestFixture::AssertHandlersConnected()
     {
-        bool const soundBankAssetHandlerConnected =
-            AZ::AssetTypeInfoBus::HasHandlers(AZ::AzTypeInfo<BopAudio::SoundBankAsset>::Uuid());
-        AZ_TEST_ASSERT(soundBankAssetHandlerConnected);
-
         bool const audioEventAssetHandlerConnected =
             AZ::AssetTypeInfoBus::HasHandlers(AZ::AzTypeInfo<BopAudio::AudioEventAsset>::Uuid());
         AZ_TEST_ASSERT(audioEventAssetHandlerConnected);

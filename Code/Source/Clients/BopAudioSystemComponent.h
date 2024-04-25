@@ -2,7 +2,6 @@
 
 #include "AzCore/Component/Component.h"
 #include "Clients/AudioEventAssetHandler.h"
-#include "Clients/SoundBankAssetHandler.h"
 
 #include "BopAudio/BopAudioBus.h"
 
@@ -38,7 +37,6 @@ namespace BopAudio
 
     private:
         AudioEventAssetHandler m_audioEventAssetHandler;
-        SoundBankAssetHandler m_soundBankAssetHandler;
     };
 
 } // namespace BopAudio

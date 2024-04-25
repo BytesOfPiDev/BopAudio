@@ -4,7 +4,6 @@
 
 #include "Builder/AudioControlBuilderWorker.h"
 #include "Builder/AudioEventAssetBuilderWorker.h"
-#include "Builder/SoundBankAssetBuilderWorker.h"
 
 namespace BopAudio
 {
@@ -38,7 +37,6 @@ namespace BopAudio
         void ConfigureAudioControlBuilder();
 
     private:
-        SoundBankAssetBuilderWorker m_bankBuilderWorker;
         AudioEventAssetBuilderWorker m_eventBuilder;
         AudioControlBuilderWorker m_audioControlBuilder;
     };

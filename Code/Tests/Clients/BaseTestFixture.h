@@ -5,7 +5,6 @@
 
 #include "AzFramework/Application/Application.h"
 #include "Clients/AudioEventAssetHandler.h"
-#include "Clients/SoundBankAssetHandler.h"
 
 namespace BopAudioTests
 {
@@ -38,6 +37,5 @@ namespace BopAudioTests
         AsiApplication m_app;
         AZStd::string m_configFilePath;
         BopAudio::AudioEventAssetHandler m_eventAssetHandler;
-        BopAudio::SoundBankAssetHandler m_soundBankAssetHandler;
     };
 } // namespace BopAudioTests

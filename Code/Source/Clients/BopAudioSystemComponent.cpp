@@ -8,8 +8,6 @@
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAssetHandler.h"
-#include "Clients/SoundBankAsset.h"
-#include "Clients/SoundBankAssetHandler.h"
 #include "Engine/ConfigurationSettings.h"
 #include "ScriptCanvas/Nodes/AudioControlNode.h"
 
@@ -26,7 +24,6 @@ namespace BopAudio
         StopEventData::Reflect(context);
 
         AudioEventAsset::Reflect(context);
-        SoundBankAsset::Reflect(context);
 
         if (auto* const serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -113,7 +110,6 @@ namespace BopAudio
         RegisterFileAliases();
 
         m_audioEventAssetHandler.Register();
-        m_soundBankAssetHandler.Register();
 
         BopAudioRequestBus::Handler::BusConnect();
     }
@@ -122,7 +118,6 @@ namespace BopAudio
     {
         BopAudioRequestBus::Handler::BusDisconnect();
 
-        m_soundBankAssetHandler.Unregister();
         m_audioEventAssetHandler.Unregister();
     }
 
