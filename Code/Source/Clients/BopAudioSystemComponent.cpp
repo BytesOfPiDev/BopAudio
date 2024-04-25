@@ -1,20 +1,15 @@
 #include "BopAudioSystemComponent.h"
 
-#include "AzCore/Console/ILogger.h"
 #include "AzCore/IO/FileIO.h"
-#include "AzCore/PlatformId/PlatformDefaults.h"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "AzCore/Settings/SettingsRegistry.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "Clients/AudioEventAsset.h"
 #include "Engine/Id.h"
-#include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAssetHandler.h"
 #include "Clients/SoundBankAsset.h"
 #include "Clients/SoundBankAssetHandler.h"
-#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "ScriptCanvas/Nodes/AudioControlNode.h"
 
@@ -120,44 +115,15 @@ namespace BopAudio
         m_audioEventAssetHandler.Register();
         m_soundBankAssetHandler.Register();
 
-        Audio::Gem::EngineRequestBus::Handler::BusConnect();
         BopAudioRequestBus::Handler::BusConnect();
     }
 
     void BopAudioSystemComponent::Deactivate()
     {
         BopAudioRequestBus::Handler::BusDisconnect();
-        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
 
         m_soundBankAssetHandler.Unregister();
         m_audioEventAssetHandler.Unregister();
-    }
-
-    auto BopAudioSystemComponent::Initialize() -> bool
-    {
-        AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
-            AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
-
-        if (m_audioSystemImpl =
-                AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
-            m_audioSystemImpl)
-        {
-            Audio::SystemRequest::Initialize initRequest;
-            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(
-                AZStd::move(initRequest));
-
-            AZLOG_INFO("AudioEngineBopAudio created!");
-            return true;
-        }
-
-        AZLOG_ERROR("Could not create AudioEngineBopAudio!");
-
-        return false;
-    }
-
-    void BopAudioSystemComponent::Release()
-    {
-        m_audioSystemImpl = nullptr;
     }
 
 } // namespace BopAudio

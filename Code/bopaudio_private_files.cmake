@@ -22,8 +22,6 @@ set(FILES
     Source/Engine/AudioEvent.h
     Source/Engine/AudioObject.cpp
     Source/Engine/AudioObject.h
-    Source/Engine/AudioSystemImpl_BopAudio.cpp
-    Source/Engine/AudioSystemImpl_BopAudio.h
     Source/Engine/Common_BopAudio.h
     Source/Engine/ConfigurationSettings.cpp
     Source/Engine/ConfigurationSettings.h

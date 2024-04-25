@@ -4,7 +4,6 @@
 #include "AzCore/UnitTest/UnitTest.h"
 #include "Clients/MockSoundEngine.h"
 #include "Engine/AudioEngineEventBus.h"
-#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/Id.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
@@ -73,15 +72,11 @@ namespace BopAudioTests
 
         EXPECT_FALSE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
         EXPECT_FALSE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
-        BopAudio::AudioSystemImpl_miniaudio asiImpl{ "linux" };
         EXPECT_TRUE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
         EXPECT_TRUE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
 
         EXPECT_CALL(soundEngine, Initialize).Times(1).WillOnce(Return(AZ::Success()));
         EXPECT_CALL(soundEngine, Shutdown).Times(1).WillOnce(Return(AZ::Success()));
-
-        EXPECT_EQ(asiImpl.Initialize(), Audio::EAudioRequestStatus::Success);
-        EXPECT_EQ(asiImpl.ShutDown(), Audio::EAudioRequestStatus::Success);
     }
 
     TEST_F(BootstrapFixture, Bootstrap_Configuration_FileAliasesAreValid)
