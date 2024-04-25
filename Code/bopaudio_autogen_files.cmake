@@ -6,7 +6,7 @@ set(FILES
 
     Source/ScriptCanvas/AutoGen/ScriptCanvasNodeable.xsd
 
-    Source/ScriptCanvas/Nodes/AudioEventNode.cpp
-    Source/ScriptCanvas/Nodes/AudioEventNode.h
-    Source/ScriptCanvas/Nodes/AudioEventNode.ScriptCanvasNodeable.xml
+    Source/ScriptCanvas/Nodes/AudioControlNode.cpp
+    Source/ScriptCanvas/Nodes/AudioControlNode.h
+    Source/ScriptCanvas/Nodes/AudioControlNode.ScriptCanvasNodeable.xml
 )

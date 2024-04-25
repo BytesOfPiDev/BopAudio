@@ -73,8 +73,8 @@ namespace BopAudio
         }
         else
         {
-            AZLOG_ERROR(
-                "Failed to find Bop Audio configuration file: \"%s\".", configFilePath.c_str());
+            AZLOG_INFO(
+                "No BopAudio configuration file found at path: \"%s\".", configFilePath.c_str());
         };
 
         if (AZ::IO::FileIOBase::GetInstance() == nullptr)

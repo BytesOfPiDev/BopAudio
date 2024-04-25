@@ -17,7 +17,7 @@
 #include "Engine/AudioSystemImpl_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Engine/MiniAudioEngine.h"
-#include "ScriptCanvas/Nodes/AudioEventNode.h"
+#include "ScriptCanvas/Nodes/AudioControlNode.h"
 
 namespace BopAudio
 {
@@ -86,7 +86,7 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
-        AZStd::make_unique<Nodes::AudioEventNode>();
+        AZStd::make_unique<Nodes::AudioControlNode>();
     }
 
     void BopAudioSystemComponent::RegisterFileAliases()

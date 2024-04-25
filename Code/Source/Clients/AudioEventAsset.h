@@ -12,7 +12,6 @@
 #include "Clients/AudioEventBus.h"
 #include "Engine/AudioEngineEventBus.h"
 #include "Engine/Id.h"
-#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {

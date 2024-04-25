@@ -5,11 +5,10 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
-#include <Source/ScriptCanvas/Nodes/AudioEventNode.generated.h>
+#include <Clients/AudioEventAsset.h>
+#include <Source/ScriptCanvas/Nodes/AudioControlNode.generated.h>
 
 #include "AzCore/Memory/SystemAllocator.h"
-#include "Clients/AudioEventAsset.h"
-#include "Clients/AudioEventBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
@@ -17,13 +16,13 @@ namespace BopAudio::Nodes
 {
     using namespace ScriptCanvas;
 
-    class AudioEventNode
+    class AudioControlNode
         : public Nodeable
         , public Audio::AudioTriggerNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AudioEventNode, AZ::SystemAllocator);
-        SCRIPTCANVAS_NODE(AudioEventNode);
+        AZ_CLASS_ALLOCATOR(AudioControlNode, AZ::SystemAllocator);
+        SCRIPTCANVAS_NODE(AudioControlNode);
 
     protected:
         void OnDeactivate() override;
@@ -38,7 +37,7 @@ namespace BopAudio::Nodes
         void ReportTriggerFinished([[maybe_unused]] Audio::TAudioControlID controlId) override;
 
     private:
-        Audio::TriggerNotificationIdType m_owner{};
+        Audio::TriggerNotificationIdType m_ownerId{};
         Audio::TAudioControlID m_controlId{};
         AZ::Name m_controlName{};
     };
