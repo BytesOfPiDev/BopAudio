@@ -1,13 +1,11 @@
 
-#include <AzCore/Memory/Memory_fwd.h>
-#include <AzCore/Module/Module.h>
-#include <AzCore/RTTI/RTTIMacros.h>
-#include <AzCore/RTTI/TypeInfoSimple.h>
+#include "AzCore/Memory/Memory_fwd.h"
+#include "AzCore/Module/Module.h"
+#include "AzCore/RTTI/RTTIMacros.h"
 
 namespace BopAudio
 {
-    class BopAudioModuleInterface
-        : public AZ::Module
+    class BopAudioModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(BopAudioModuleInterface)
@@ -19,6 +17,6 @@ namespace BopAudio
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+        [[nodiscard]] auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override;
     };
-}// namespace BopAudio
+} // namespace BopAudio

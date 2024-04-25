@@ -25,5 +25,6 @@
     "repo_uri": "",
     "compatible_engines": [],
     "engine_api_dependencies": [],
-    "restricted": "BopAudio"
+    "restricted": "BopAudio",
+    "external_subdirectories": []
 }

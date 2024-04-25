@@ -11,11 +11,11 @@ namespace BopAudio
         BopAudioControlType,
         AudioControls::TImplControlType,
         (Invalid, 0),
-        (Trigger, AUDIO_BIT(0)),
+        (Event, AUDIO_BIT(0)),
         (Rtpc, AUDIO_BIT(1)),
         (Switch, AUDIO_BIT(2)),
         (AuxBus, AUDIO_BIT(3)),
-        (SoundLibrary, AUDIO_BIT(4)),
+        (SoundBank, AUDIO_BIT(4)),
         (GameState, AUDIO_BIT(5)),
         (SwitchGroup, AUDIO_BIT(6)),
         (GameStateGroup, AUDIO_BIT(7)),
@@ -25,7 +25,8 @@ namespace BopAudio
     {
     public:
         IAudioSystemControl_BopAudio() = default;
-        IAudioSystemControl_BopAudio(const AZStd::string& name, AudioControls::CID id, AudioControls::TImplControlType type);
+        IAudioSystemControl_BopAudio(
+            AZStd::string const& name, AudioControls::CID id, AudioControls::TImplControlType type);
         ~IAudioSystemControl_BopAudio() override = default;
     };
 } // namespace BopAudio

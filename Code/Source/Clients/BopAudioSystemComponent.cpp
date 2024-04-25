@@ -1,50 +1,71 @@
 #include "BopAudioSystemComponent.h"
 
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzCore/PlatformId/PlatformDefaults.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Settings/SettingsRegistry.h"
-#include "AzFramework/Platform/PlatformDefaults.h"
+#include "AzCore/std/smart_ptr/unique_ptr.h"
+#include "Clients/AudioEventAsset.h"
+#include "Engine/Id.h"
+#include "IAudioSystem.h"
 
-#include "Clients/AudioAssetHandler.h"
-#include "Engine/AudioSystemImpl_BopAudio.h"
-#include "BopAudio/AudioAsset.h"
 #include "BopAudio/BopAudioTypeIds.h"
-#include "phonon.h"
+#include "Clients/AudioEventAssetHandler.h"
+#include "Clients/SoundBankAsset.h"
+#include "Clients/SoundBankAssetHandler.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
+#include "Engine/ConfigurationSettings.h"
+#include "Engine/MiniAudioEngine.h"
+#include "ScriptCanvas/Nodes/AudioControlNode.h"
 
 namespace BopAudio
 {
-    AZ_COMPONENT_IMPL(BopAudioSystemComponent, "BopAudioSystemComponent", BopAudioSystemComponentTypeId); // NOLINT
+    AZ_COMPONENT_IMPL(
+        BopAudioSystemComponent, "BopAudioSystemComponent", BopAudioSystemComponentTypeId);
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AudioAsset::Reflect(context);
+        AudioEventId::Reflect(context);
+        AudioObjectId::Reflect(context);
+        StartEventData::Reflect(context);
+        StopEventData::Reflect(context);
 
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        AudioEventAsset::Reflect(context);
+        SoundBankAsset::Reflect(context);
+
+        if (auto* const serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
+            serialize->Class<BopAudioSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
-    void BopAudioSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void BopAudioSystemComponent::GetProvidedServices(
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("BopAudioService"));
         provided.push_back(AZ_CRC_CE("AudioEngineService"));
     }
 
-    void BopAudioSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void BopAudioSystemComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("BopAudioService"));
         incompatible.push_back(AZ_CRC_CE("AudioEngineService"));
     }
 
-    void BopAudioSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void BopAudioSystemComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AudioSystemService"));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("AssetCatalogService"));
+        required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
-    void BopAudioSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void BopAudioSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AudioSystemService"));
+        dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
@@ -65,58 +86,89 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Init()
     {
+        AZStd::make_unique<Nodes::AudioControlNode>();
+    }
+
+    void BopAudioSystemComponent::RegisterFileAliases()
+    {
+        auto const banksPath = []()
+        {
+            static constexpr auto path{ "@products@/sounds/bopaudio/banks" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
+        }();
+
+        auto const eventsPath = []()
+        {
+            static constexpr auto path{ "@products@/sounds/bopaudio/events" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
+        }();
+
+        auto const projectPath = []()
+        {
+            static constexpr auto path{ "@products@/sounds/bopaudio" };
+            return AZ::IO::FileIOBase::GetInstance()->ResolvePath(path).value_or("");
+        }();
+
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(BanksAlias, banksPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(EventsAlias, eventsPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias(ProjectAlias, projectPath.c_str());
     }
 
     void BopAudioSystemComponent::Activate()
     {
-        BopAudioRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        RegisterFileAliases();
+
+        m_audioEventAssetHandler.Register();
+        m_soundBankAssetHandler.Register();
+
         Audio::Gem::EngineRequestBus::Handler::BusConnect();
-
-        /*
-              AZ::Data::AssetCatalogRequestBus::Broadcast(
-                  &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AudioAsset>::Uuid());
-        */
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, AudioAsset::FileExtension);
-
-        m_assetHandlers.emplace_back(aznew BopAudioAssetHandler()); // NOLINT
+        BopAudioRequestBus::Handler::BusConnect();
     }
 
     void BopAudioSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
         BopAudioRequestBus::Handler::BusDisconnect();
-    }
+        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
 
-    void BopAudioSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
+        m_soundBankAssetHandler.Unregister();
+        m_audioEventAssetHandler.Unregister();
     }
 
     auto BopAudioSystemComponent::Initialize() -> bool
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform =
-            AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+            AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
 
-        m_engineBopAudio = AZStd::make_unique<BopAudio::AudioSystemImpl_BopAudio>(assetPlatform.c_str());
-        if (m_engineBopAudio)
+        m_miniAudioEngine.reset();
+        m_miniAudioEngine = AZStd::make_unique<MiniAudioEngine>();
+
+        AZ_Verify(
+            m_miniAudioEngine->Initialize().IsSuccess(), "Failed to initialize MiniAudio engine!");
+
+        if (m_audioSystemImpl =
+                AZStd::make_unique<BopAudio::AudioSystemImpl_miniaudio>(assetPlatform.c_str());
+            m_audioSystemImpl)
         {
             Audio::SystemRequest::Initialize initRequest;
-            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(
+                AZStd::move(initRequest));
 
+            AZLOG_INFO("AudioEngineBopAudio created!");
             return true;
-            AZLOG_INFO("AudioEngineBopAudio created!"); // NOLINT
         }
-        else
-        {
-            AZLOG_ERROR("Could not create AudioEngineBopAudio!"); // NOLINT
-        }
+
+        AZLOG_ERROR("Could not create AudioEngineBopAudio!");
+
         return false;
     }
 
     void BopAudioSystemComponent::Release()
     {
-        m_engineBopAudio = nullptr;
+        m_audioSystemImpl = nullptr;
+
+        AZ_Verify(
+            m_miniAudioEngine->Shutdown().IsSuccess(),
+            "MiniAudioEngine failed to shutdown properly.");
     }
 
 } // namespace BopAudio

@@ -1,0 +1,77 @@
+{
+    "entries": [
+        {
+            "base": "{C50C6B3A-D399-C262-CB6E-C26205FE6B72}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Audio Control",
+                "category": "BopAudio/Nodes"
+            },
+            "slots": [
+                {
+                    "base": "Input_Connect Audio Event_0",
+                    "details": {
+                        "name": "Connect Audio Event",
+                        "tooltip": "Entry point into the node"
+                    }
+                },
+                {
+                    "base": "DataInput_Owning Entity_0",
+                    "details": {
+                        "name": "Owning Entity"
+                    }
+                },
+                {
+                    "base": "DataInput_Control Name_1",
+                    "details": {
+                        "name": "Control Name"
+                    }
+                },
+                {
+                    "base": "Output_OnConnect_0",
+                    "details": {
+                        "name": "OnConnect",
+                        "tooltip": "Entry point into the node"
+                    }
+                },
+                {
+                    "base": "Input_Disconnect Audio Event_1",
+                    "details": {
+                        "name": "Disconnect Audio Event"
+                    }
+                },
+                {
+                    "base": "Output_OnDisconnect_1",
+                    "details": {
+                        "name": "OnDisconnect"
+                    }
+                },
+                {
+                    "base": "Input_Toggle Connection_2",
+                    "details": {
+                        "name": "Toggle Connection"
+                    }
+                },
+                {
+                    "base": "Output_On Connection Toggled_2",
+                    "details": {
+                        "name": "On Connection Toggled"
+                    }
+                },
+                {
+                    "base": "Output_Start_3",
+                    "details": {
+                        "name": "Start"
+                    }
+                },
+                {
+                    "base": "DataOutput_Payload_0",
+                    "details": {
+                        "name": "Payload"
+                    }
+                }
+            ]
+        }
+    ]
+}

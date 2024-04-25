@@ -1,17 +1,15 @@
 
 #include <BopAudio/BopAudioTypeIds.h>
 #include <BopAudioModuleInterface.h>
-#include "BopAudioSystemComponent.h"
 
 namespace BopAudio
 {
-    class BopAudioModule
-        : public BopAudioModuleInterface
+    class BopAudioModule : public BopAudioModuleInterface
     {
     public:
         AZ_RTTI(BopAudioModule, BopAudioModuleTypeId, BopAudioModuleInterface);
         AZ_CLASS_ALLOCATOR(BopAudioModule, AZ::SystemAllocator);
     };
-}// namespace BopAudio
+} // namespace BopAudio
 
 AZ_DECLARE_MODULE_CLASS(Gem_BopAudio, BopAudio::BopAudioModule)

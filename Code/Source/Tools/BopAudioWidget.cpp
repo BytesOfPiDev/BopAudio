@@ -16,8 +16,12 @@ namespace BopAudio
         QLabel* introLabel = new QLabel(QObject::tr("Put your cool stuff here!"), this);
         mainLayout->addWidget(introLabel, 0, Qt::AlignCenter);
 
-        QString helpText = QString(
-            "For help getting started, visit the <a href=\"https://o3de.org/docs/tools-ui/\">UI Development</a> documentation<br/>or come ask a question in the <a href=\"https://discord.gg/R77Wss3kHe\">sig-ui-ux channel</a> on Discord");
+        QString helpText =
+            QString("For help getting started, visit the <a "
+                    "href=\"https://o3de.org/docs/tools-ui/\">UI Development</a> "
+                    "documentation<br/>or come ask a question in the <a "
+                    "href=\"https://discord.gg/R77Wss3kHe\">sig-ui-ux channel</a> on "
+                    "Discord");
 
         QLabel* helpLabel = new QLabel(this);
         helpLabel->setTextFormat(Qt::RichText);
@@ -28,6 +32,6 @@ namespace BopAudio
 
         setLayout(mainLayout);
     }
-}
+} // namespace BopAudio
 
 #include <moc_BopAudioWidget.cpp>

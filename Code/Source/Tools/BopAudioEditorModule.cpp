@@ -1,11 +1,13 @@
+#include "BopAudioModuleInterface.h"
 
-#include "BopAudioEditorSystemComponent.h"
-#include <BopAudio/BopAudioTypeIds.h>
-#include <BopAudioModuleInterface.h>
+#include "BopAudio/BopAudioTypeIds.h"
+#include "Builder/BopAudioAssetBuilderComponent.h"
+#include "Tools/BopAudioEditorSystemComponent.h"
 
 void InitBopAudioResources()
 {
-    // We must register our Qt resources (.qrc file) since this is being loaded from a separate module (gem)
+    // We must register our Qt resources (.qrc file) since this is being loaded
+    // from a separate module (gem)
     Q_INIT_RESOURCE(BopAudio);
 }
 
@@ -21,14 +23,17 @@ namespace BopAudio
         {
             InitBopAudioResources();
 
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
-            // EditContext. This happens through the [MyComponent]::Reflect() function.
+            // Push results of [MyComponent]::CreateDescriptor() into
+            // m_descriptors here. Add ALL components descriptors associated
+            // with this gem to m_descriptors. This will associate the
+            // AzTypeInfo information for the components with the the
+            // SerializeContext, BehaviorContext and EditContext. This happens
+            // through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
                     BopAudioEditorSystemComponent::CreateDescriptor(),
+                    BopAudioAssetBuilderComponent::CreateDescriptor(),
                 });
         }
 
@@ -36,7 +41,7 @@ namespace BopAudio
          * Add required SystemComponents to the SystemEntity.
          * Non-SystemComponents should not be added here
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        [[nodiscard]] auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<BopAudioEditorSystemComponent>(),

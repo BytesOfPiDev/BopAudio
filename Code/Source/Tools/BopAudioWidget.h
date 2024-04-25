@@ -9,11 +9,10 @@
 
 namespace BopAudio
 {
-    class BopAudioWidget
-        : public QWidget
+    class BopAudioWidget : public QWidget
     {
         Q_OBJECT
     public:
         explicit BopAudioWidget(QWidget* parent = nullptr);
     };
-} 
+} // namespace BopAudio

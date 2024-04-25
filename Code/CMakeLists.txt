@@ -17,8 +17,6 @@ if(NOT PAL_TRAIT_BOPAUDIO_SUPPORTED)
   return()
 endif()
 
-include(${gem_path}/3rdParty/FindSteamAudio.cmake)
-
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -32,18 +30,17 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
-           3rdParty::SteamAudio
            Gem::AudioSystem.API
 )
 
-# The ${gem_name}.Private.Object target is an internal target
-# It should not be used outside of this Gems CMakeLists.txt
+
 ly_add_target(
-    NAME ${gem_name}.Private.Object STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         bopaudio_private_files.cmake
         ${pal_dir}/bopaudio_private_files.cmake
+        bopaudio_autogen_files.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -52,9 +49,16 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
+            ${gem_name}.API
             AZ::AzCore
             AZ::AzFramework
-            ${gem_name}.API
+            Gem::MiniAudio
+            Gem::AudioSystem
+            Gem::ScriptCanvas
+            Gem::ScriptCanvas.Extensions
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -72,8 +76,9 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
+            Legacy::CryCommon
         PRIVATE
-            Gem::${gem_name}.Private.Object
+            Gem::${gem_name}.Static
 )
 
 # By default, we will specify that the above target ${gem_name} would be used by
@@ -129,12 +134,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
-                Gem::AudioSystem.Editor.API
-                AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                3rdParty::SteamAudio
+                Gem::${gem_name}.Static
                 Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Gem::MiniAudio.Editor
+                Legacy::CryCommon
     )
 
   ly_add_target(
@@ -171,16 +176,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-################################################################################
+# # # # # # # # # # # # ####################################################################
 # Tests
-################################################################################
+# # # # # # # # # # # # ####################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
   if(PAL_TRAIT_BOPAUDIO_TEST_SUPPORTED)
     # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
     ly_add_target(
-            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+           NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 bopaudio_tests_files.cmake
@@ -193,7 +198,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::${gem_name}.Private.Object
+                    Gem::${gem_name}.Static
+                    Legacy::CryCommon
         )
 
     # Add ${gem_name}.Tests to googletest

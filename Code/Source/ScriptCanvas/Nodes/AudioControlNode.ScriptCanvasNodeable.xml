@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="ScriptCanvas/Nodes/AudioControlNode.h"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../AutoGen/ScriptCanvasNodeable.xsd">
+
+  <Class Name="AudioControlNode"
+    QualifiedName="BopAudio::Nodes::AudioControlNode"
+    PreferredClassName="Audio Control"
+    Category="BopAudio/Nodes"
+    Namespace="BopAudio"
+    Description=""
+    Uuid="{C2A01796-17F6-418B-8D89-6BFCBB10C4BD}">
+
+    <Input Name="Connect Audio Event" OutputName="OnConnect" Description="Entry point into the node">
+      <Parameter Name="Owning Entity" Type="AZ::EntityId const" Description="The entity that we will listen to for events." />
+      <Parameter Name="Control Name" Type="AZStd::string const&amp;" Description="The name of the audio control to listen for." />
+    </Input>
+
+    <Input
+      Name="Disconnect Audio Event" OutputName="OnDisconnect" Description="" />
+
+    <Input
+      Name="Toggle Connection"
+      OutputName="On Connection Toggled" Description="" />
+
+
+    <Output
+      Name="Start" Description="">
+      <Parameter Name="Payload" Type="BopAudio::StartEventData"
+        Description="" />
+
+    </Output>
+  </Class>
+</ScriptCanvas>
