@@ -10,8 +10,6 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
-#include "AzCore/Utils/Utils.h"
-#include "IAudioSystem.h"
 
 #include "Clients/AudioEventAsset.h"
 
@@ -93,7 +91,6 @@ namespace BopAudio
                 AssetBuilderSDK::InfoWindow,
                 "Processing '%s' key.",
                 Internal::BuildAudioEventJobKey);
-            Build(request, response);
         }
         else if (isJobKey(request, Internal::CopyAudioEventJobKey))
         {
@@ -111,91 +108,6 @@ namespace BopAudio
                 false,
                 "Job failed. Unsupported job key: '%s'") return;
         }
-    }
-
-    void AudioEventAssetBuilderWorker::Build(
-        AssetBuilderSDK::ProcessJobRequest const& request,
-        AssetBuilderSDK::ProcessJobResponse& response) const
-    {
-        if (m_isShuttingDown)
-        {
-            AZ_Warning(
-                AssetBuilderSDK::WarningWindow,
-                false,
-                "Cancelling job %s due to shutdown request.",
-                request.m_fullPath.c_str());
-
-            return;
-        }
-
-        AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
-
-        if (jobCancelListener.IsCancelled())
-        {
-            AZ_Error(
-                AssetBuilderSDK::WarningWindow,
-                false,
-                "Cancel was requested for job %s.\n",
-                request.m_fullPath.c_str());
-
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-            return;
-        }
-
-        AZ::IO::Path const absSourcePath = [&request]() -> decltype(absSourcePath)
-        {
-            auto path = decltype(absSourcePath){ AZ::Utils::GetProjectPath() };
-            path /= request.m_sourceFile;
-
-            return path;
-        }();
-
-        AZ::IO::Path const absProductPath = [absSourcePath, &request]() -> decltype(absProductPath)
-        {
-            AZ::IO::Path path{ request.m_tempDirPath };
-            path /= request.m_sourceFile;
-            path.ReplaceExtension(AudioEventAsset::ProductExtensionPattern);
-            return path;
-        }();
-
-        auto const newId = absProductPath.Filename().Stem().String();
-
-        AudioEventAsset event{};
-        event.m_id = Audio::AudioStringToID<AudioEventId>(newId.c_str());
-
-        AZ_Info(
-            AssetBuilderSDK::InfoWindow,
-            "Saving asset. Name: %s | Id: %zu",
-            newId.c_str(),
-            event.m_id);
-        bool const successfullySaved = AZ::Utils::SaveObjectToFile<AudioEventAsset>(
-            absProductPath.c_str(), AZ::DataStream::ST_JSON, &event);
-
-        if (!successfullySaved)
-        {
-            AZ_Error(
-                AssetBuilderSDK::ErrorWindow,
-                false,
-                "Failed to save product asset to builder product path '%s'\n",
-                absProductPath.Native().data());
-
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-            return;
-        }
-
-        AssetBuilderSDK::JobProduct jobProduct{ absProductPath.c_str() };
-        jobProduct.m_productAssetType = AZ::AzTypeInfo<AudioEventAsset>::Uuid();
-        jobProduct.m_productSubID = AudioEventAsset::AssetSubId;
-        jobProduct.m_dependenciesHandled = false;
-
-        response.m_outputProducts.push_back(jobProduct);
-
-        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-
-        AZ_Warning(
-            AssetBuilderSDK::InfoWindow,
-            false,
-            "Building source asset is yet implemented. Output default asset.\n");
     }
 
     void AudioEventAssetBuilderWorker::Copy(

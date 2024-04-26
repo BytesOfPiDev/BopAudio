@@ -117,7 +117,7 @@ namespace BopAudio
     void AudioEventAssetHandler::InitAsset(
         AZ::Data::Asset<AZ::Data::AssetData> const& asset,
         bool /*loadStageSucceeded*/,
-        bool isReload)
+        bool /*isReload*/)
     {
         AZStd::string const eventIdName = [&]() -> decltype(eventIdName)
         {
@@ -127,17 +127,6 @@ namespace BopAudio
 
             return result;
         }();
-
-        auto* audioAssetData{ asset.GetAs<AudioEventAsset>() };
-
-        audioAssetData->m_id = Audio::AudioStringToID<AudioEventId>(eventIdName.c_str());
-
-        if (isReload)
-        {
-            audioAssetData->UnregisterAudioEvent();
-        }
-
-        audioAssetData->RegisterAudioEvent();
 
         AZ::Data::AssetManagerBus::Broadcast(
             &AZ::Data::AssetManagerBus::Events::OnAssetReady, asset);

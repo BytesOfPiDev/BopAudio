@@ -1,17 +1,11 @@
 #include "Clients/AudioEventAsset.h"
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/JSON/pointer.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Script/ScriptContextAttributes.h>
-
-#include "AzCore/Memory/SystemAllocator.h"
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/RTTI/BehaviorContext.h"
+#include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
-#include "BopAudio/Util.h"
-#include "Engine/AudioEngineEventBus.h"
-#include "IAudioInterfacesCommonData.h"
 
-#include "Engine/AudioObject.h"
+#include "BopAudio/Util.h"
 
 namespace BopAudio
 {
@@ -19,11 +13,8 @@ namespace BopAudio
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AudioEventAsset, AZ::Data::AssetData>()
-                ->Version(4)
-                ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
-                ->Field("Id", &AudioEventAsset::m_id)
-                ->Field("Name", &AudioEventAsset::m_name);
+            serialize->Class<AudioEventAsset, AZ::Data::AssetData>()->Version(5)->Attribute(
+                AZ::Edit::Attributes::EnableForAssetEditor, true);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -37,76 +28,7 @@ namespace BopAudio
 
     AudioEventAsset::AudioEventAsset() = default;
 
-    AudioEventAsset::~AudioEventAsset()
-    {
-        UnregisterAudioEvent();
-    }
-
-    void AudioEventAsset::operator()(AudioObject& /*audioObject*/) const
-    {
-        if (m_eventState != Audio::EAudioEventState::eAES_NONE)
-        {
-            return;
-        }
-    }
-
-    auto AudioEventAsset::TryStartEvent(AudioObject& obj) -> bool
-    {
-        if (m_eventState != Audio::EAudioEventState::eAES_NONE)
-        {
-            return false;
-        }
-
-        m_eventState = Audio::EAudioEventState::eAES_NONE;
-        (*this)(obj);
-
-        return true;
-    }
-
-    auto AudioEventAsset::TryStopEvent(AudioObject& obj) -> bool
-    {
-        if (m_eventState != Audio::EAudioEventState::eAES_PLAYING)
-        {
-            return false;
-        }
-
-        m_eventState = Audio::EAudioEventState::eAES_UNLOADING;
-        (*this)(obj);
-        m_eventState = Audio::EAudioEventState::eAES_NONE;
-
-        return true;
-    }
-
-    void AudioEventAsset::RegisterAudioEvent()
-    {
-        if (MiniAudioEventRequestBus::Handler::BusIsConnected())
-        {
-            AZ_Error(
-                "AudioEventAsset",
-                false,
-                "Unable to register audio event. Handler already exists [Id: %s | AssetId: %s].\n",
-                m_name.c_str(),
-                GetId().ToFixedString().c_str());
-
-            return;
-        }
-
-        if (m_id == InvalidAudioEventId)
-        {
-            AZ_Error(
-                "AudioEventAsset", false, "Unable to register audio event. The id is invalid.\n");
-
-            return;
-        }
-
-        MiniAudioEventRequestBus::Handler::BusConnect(m_id);
-    }
-
-    void AudioEventAsset::UnregisterAudioEvent()
-    {
-        MiniAudioEventRequestBus::Handler::BusDisconnect();
-    };
-
+    AudioEventAsset::~AudioEventAsset() = default;
     void StartEventData::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -159,5 +81,4 @@ namespace BopAudio
                 ->Property("AudioEngineObjectId", &StopEventData::GetAudioObjectId, nullptr);
         }
     }
-
 } // namespace BopAudio

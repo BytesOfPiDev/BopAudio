@@ -2,24 +2,18 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Preprocessor/Enum.h>
-#include <IAudioInterfacesCommonData.h>
 
 #include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/Memory/SystemAllocator.h"
+#include "IAudioInterfacesCommonData.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "Clients/AudioEventBus.h"
-#include "Engine/AudioEngineEventBus.h"
-#include "Engine/Id.h"
 
 namespace BopAudio
 {
     class AudioObject;
 
-    class AudioEventAsset
-        : public AZ::Data::AssetData
-        , public MiniAudioEventRequestBus::Handler
+    class AudioEventAsset : public AZ::Data::AssetData
     {
         friend class AudioEventAssetBuilderWorker;
         friend class AudioEventAssetHandler;
@@ -49,39 +43,10 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] auto GetEventName() const -> AudioEventName
-        {
-            return m_name;
-        }
-
-        [[nodiscard]] constexpr auto GetEventId() const -> AudioEventId
-        {
-            return m_id;
-        }
-
         void operator()(AudioObject& audioObject) const;
 
         void RegisterAudioEvent();
         void UnregisterAudioEvent();
-
-    protected:
-        void OverrideEventId(AudioEventId eventId)
-        {
-            m_id = eventId;
-        }
-
-        [[nodiscard]] auto GetEventState() const -> Audio::EAudioEventState override
-        {
-            return m_eventState;
-        }
-
-        [[nodiscard]] auto TryStartEvent(AudioObject& obj) -> bool override;
-        [[nodiscard]] auto TryStopEvent(AudioObject& obj) -> bool override;
-
-    private:
-        AudioEventId m_id{};
-        AudioEventName m_name{};
-        Audio::EAudioEventState m_eventState{};
     };
 
     using AudioEventAssetDataPtr = AZ::Data::Asset<AudioEventAsset>;
@@ -93,19 +58,19 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] auto GetAudioEventId() const -> AudioEventId
+        [[nodiscard]] auto GetAudioEventId() const -> Audio::TAudioEventID
         {
             return m_audioEventId;
         }
 
-        [[nodiscard]] auto GetAudioObjectId() const -> AudioObjectId
+        [[nodiscard]] auto GetAudioObjectId() const -> Audio::TAudioObjectID
         {
             return m_audioObjectId;
         }
 
         void* m_owner;
-        AudioEventId m_audioEventId;
-        AudioObjectId m_audioObjectId;
+        Audio::TAudioEventID m_audioEventId;
+        Audio::TAudioObjectID m_audioObjectId;
     };
 
     struct StopEventData
@@ -114,19 +79,19 @@ namespace BopAudio
 
         static void Reflect(AZ::ReflectContext* context);
 
-        [[nodiscard]] auto GetAudioEventId() const -> AudioEventId
+        [[nodiscard]] auto GetAudioEventId() const -> Audio::TAudioEventID
         {
             return m_audioEventId;
         }
 
-        [[nodiscard]] auto GetAudioObjectId() const -> AudioObjectId
+        [[nodiscard]] auto GetAudioObjectId() const -> Audio::TAudioObjectID
         {
             return m_audioObjectId;
         }
 
         void* m_owner;
-        AudioEventId m_audioEventId;
-        AudioObjectId m_audioObjectId;
+        Audio::TAudioEventID m_audioEventId;
+        Audio::TAudioObjectID m_audioObjectId;
     };
 
     static_assert(AZStd::is_pod_v<StartEventData>);

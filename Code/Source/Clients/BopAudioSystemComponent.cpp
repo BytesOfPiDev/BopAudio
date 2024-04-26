@@ -4,7 +4,6 @@
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
 #include "Clients/AudioEventAsset.h"
-#include "Engine/Id.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
 #include "Clients/AudioEventAssetHandler.h"
@@ -18,8 +17,6 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AudioEventId::Reflect(context);
-        AudioObjectId::Reflect(context);
         StartEventData::Reflect(context);
         StopEventData::Reflect(context);
 

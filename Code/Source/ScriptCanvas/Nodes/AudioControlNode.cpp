@@ -2,7 +2,6 @@
 
 #include "AzCore/Console/ILogger.h"
 #include "Clients/AudioEventAsset.h"
-#include "Clients/AudioEventBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
@@ -100,7 +99,8 @@ namespace BopAudio::Nodes
 
         AZLOG(
             LOG_AudioControlNode,
-            "AudioControlNode [Name: %s | Owner: %lu | Id: %llu] received a trigger notification for "
+            "AudioControlNode [Name: %s | Owner: %lu | Id: %llu] received a trigger notification "
+            "for "
             "control %llu and skipped sending the Start event since it is for a different control.",
             m_controlName.GetCStr(),
             m_ownerId.m_owner,

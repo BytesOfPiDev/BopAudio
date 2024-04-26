@@ -28,9 +28,6 @@ namespace BopAudio
         void Copy(
             AssetBuilderSDK::ProcessJobRequest const& request,
             AssetBuilderSDK::ProcessJobResponse& response) const;
-        void Build(
-            AssetBuilderSDK::ProcessJobRequest const& request,
-            AssetBuilderSDK::ProcessJobResponse& response) const;
 
     private:
         AZStd::atomic_bool m_isShuttingDown{};
