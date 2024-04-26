@@ -11,7 +11,6 @@ set(FILES
     Source/Clients/AudioEventAssetHandler.cpp
     Source/Clients/AudioEventAssetHandler.h
 
-    Source/Engine/ATLEntities_BopAudio.h
     Source/Engine/Common_BopAudio.h
     Source/Engine/ConfigurationSettings.cpp
     Source/Engine/ConfigurationSettings.h
