@@ -3,7 +3,6 @@
 #include "AzCore/Console/ILogger.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/AudioEventBus.h"
-#include "Engine/MiniAudioEngineBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 

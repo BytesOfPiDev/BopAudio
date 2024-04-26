@@ -24,7 +24,6 @@ set(FILES
     Source/Engine/DocumentReader.h
     Source/Engine/Id.cpp
     Source/Engine/Id.h
-    Source/Engine/MiniAudioEngineBus.h
     Source/Engine/Rtpc.cpp
     Source/Engine/Rtpc.h
 )

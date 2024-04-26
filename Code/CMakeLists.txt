@@ -179,6 +179,10 @@ endif()
 # # # # # # # # # # # # ####################################################################
 # Tests
 # # # # # # # # # # # # ####################################################################
+
+
+get_property(audiosystem_gem_root GLOBAL PROPERTY "@GEMROOT:AudioSystem@")
+
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
@@ -194,11 +198,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Tests
                     Source
                     Include
+                        ${audiosystem_gem_root}/Code/Tests/Mocks
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
                     Gem::${gem_name}.Static
+                    Gem::AudioSystem.Tests
                     Legacy::CryCommon
         )
 

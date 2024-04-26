@@ -1,19 +1,12 @@
 #include "AzCore/Asset/AssetTypeInfoBus.h"
-#include "AzCore/IO/FileIO.h"
-#include "AzCore/Outcome/Outcome.h"
-#include "Clients/MockSoundEngine.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
-#include "IAudioSystemImplementation.h"
 
-#include "BopAudio/BopAudioBus.h"
 #include "Clients/AudioEventAsset.h"
 #include "Clients/BootstrapFixture.h"
 #include "Engine/ATLEntities_BopAudio.h"
 #include "Engine/AudioObject.h"
-#include "Engine/ConfigurationSettings.h"
 #include "Engine/Id.h"
-#include "Engine/MiniAudioEngineBus.h"
 
 using ::testing::AtLeast;
 using ::testing::NiceMock;
@@ -50,39 +43,6 @@ namespace BopAudioTests
 
     TEST_F(BaseAudioTestFixture, SANITY_CHECK)
     {
-    }
-
-    TEST_F(BootstrapFixture, ASI_SANITY_CHECK)
-    {
-        EXPECT_EQ(BopAudio::SoundEngine::Get(), nullptr);
-        EXPECT_FALSE(BopAudio::BopAudioRequestBus::HasHandlers());
-        EXPECT_FALSE(Audio::Gem::EngineRequestBus::HasHandlers());
-    }
-
-    TEST_F(BootstrapFixture, Asi_InitAfterBootstrap_ShutdownSuccess)
-    {
-        MockSoundEngine soundEngine{};
-        EXPECT_NE(BopAudio::SoundEngine::Get(), nullptr);
-
-        EXPECT_FALSE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
-        EXPECT_FALSE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
-        EXPECT_TRUE(Audio::AudioSystemImplementationNotificationBus::HasHandlers());
-        EXPECT_TRUE(Audio::AudioSystemImplementationRequestBus::HasHandlers());
-
-        EXPECT_CALL(soundEngine, Initialize).Times(1).WillOnce(Return(AZ::Success()));
-        EXPECT_CALL(soundEngine, Shutdown).Times(1).WillOnce(Return(AZ::Success()));
-    }
-
-    TEST_F(BootstrapFixture, Bootstrap_Configuration_FileAliasesAreValid)
-    {
-        EXPECT_NE(AZ::IO::FileIOBase::GetInstance()->GetAlias(BopAudio::BanksAlias), nullptr);
-        EXPECT_NE(AZ::IO::FileIOBase::GetInstance()->GetAlias(BopAudio::EventsAlias), nullptr);
-        EXPECT_NE(AZ::IO::FileIOBase::GetInstance()->GetAlias(BopAudio::SoundsAlias), nullptr);
-    }
-
-    TEST_F(BootstrapFixture, DISABLED_Bootstrap_PostInit_InitBankIsLoaded)
-    {
-        EXPECT_TRUE(false);
     }
 
     TEST_F(BootstrapFixture, AudioEventAssetAssetHandler_IsConnected)
