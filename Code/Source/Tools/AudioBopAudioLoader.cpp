@@ -6,27 +6,18 @@
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
 #include "AzCore/Serialization/Utils.h"
-#include "AzCore/Utils/Utils.h"
-
-#include "IAudioSystemControl.h"
+#include "AzCore/StringFunc/StringFunc.h"
+#include "Engine/Common_BopAudio.h"
 #include "IAudioSystemEditor.h"
 
-#include "Engine/Common_BopAudio.h"
 #include "Engine/ConfigurationSettings.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 #include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
-    void AudioBopAudioLoader::Load(AudioSystemEditor_BopAudio* audioSystemImpl)
+    void AudioBopAudioLoader::Load(AudioSystemEditor_BopAudio* /*audioSystemImpl*/)
     {
-        m_audioSystemEditor = audioSystemImpl;
-        AZ::IO::FixedMaxPath audioProjectFullPath{ m_audioSystemEditor->GetDataPath() };
-
-        LoadControlsInFolder(
-            AZ::IO::FixedMaxPath{ audioProjectFullPath / AudioStrings::GameParametersFolder }
-                .Native());
-
         LoadControlsInFolder(EventsAlias);
     }
 
@@ -97,57 +88,6 @@ namespace BopAudio
             BopAudioControlType::Event,
             AudioStrings::EventTag,
             AudioStrings::NameAttribute);
-        ExtractControlsFromXML(
-            xmlNode,
-            BopAudioControlType::Rtpc,
-            AudioStrings::GameParametersFolder,
-            AudioStrings::NameAttribute);
-        ExtractControlsFromXML(
-            xmlNode,
-            BopAudioControlType::AuxBus,
-            AudioStrings::AuxBusTag,
-            AudioStrings::NameAttribute);
-
-        AZStd::string_view const xmlTag(xmlNode->name());
-        bool const isSwitchTag{ xmlTag == AudioStrings::SwitchGroupTag };
-        bool const isStateTag{ xmlTag == AudioStrings::StateGroupTag };
-
-        if (isSwitchTag || isStateTag)
-        {
-            if (auto const nameAttr = xmlNode->first_attribute(AudioStrings::NameAttribute))
-            {
-                AZStd::string const parentName{ nameAttr->value() };
-                AudioControls::IAudioSystemControl* group =
-                    m_audioSystemEditor->GetControlByName(parentName);
-                if (!group)
-                {
-                    group = m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                        parentName,
-                        isSwitchTag ? BopAudioControlType::SwitchGroup
-                                    : BopAudioControlType::GameStateGroup));
-                }
-
-                auto const childrenNode = xmlNode->first_node(AudioStrings::ChildrenListTag);
-                if (childrenNode)
-                {
-                    auto childNode = childrenNode->first_node();
-                    while (childNode)
-                    {
-                        if (auto childNameAttr =
-                                childNode->first_attribute(AudioStrings::NameAttribute))
-                        {
-                            m_audioSystemEditor->CreateControl(AudioControls::SControlDef(
-                                childNameAttr->value(),
-                                isSwitchTag ? BopAudioControlType::Switch
-                                            : BopAudioControlType::GameState,
-                                false,
-                                group));
-                        }
-                        childNode = childNode->next_sibling();
-                    }
-                }
-            }
-        }
 
         auto childNode = xmlNode->first_node();
         while (childNode)
