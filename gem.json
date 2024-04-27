@@ -1,7 +1,7 @@
 {
     "gem_name": "BopAudio",
     "version": "1.0.0",
-    "display_name": "O3DE Steam Audio",
+    "display_name": "Bop Audio",
     "license": "TBD",
     "license_url": "",
     "origin": "Andre Mitchell",
@@ -15,8 +15,8 @@
         "BopAudio"
     ],
     "platforms": [
-        "Windows",
-        "Linux"
+        "Linux",
+        "Windows"
     ],
     "icon_path": "",
     "requirements": "",
