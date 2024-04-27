@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
-#include "Clients/AudioEventAssetHandler.h"
 
 #include "BopAudio/BopAudioBus.h"
 
@@ -25,8 +24,6 @@ namespace BopAudio
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        static void RegisterFileAliases();
-
     protected:
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -34,9 +31,6 @@ namespace BopAudio
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-    private:
-        AudioEventAssetHandler m_audioEventAssetHandler;
     };
 
 } // namespace BopAudio

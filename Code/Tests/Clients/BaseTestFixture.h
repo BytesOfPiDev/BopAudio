@@ -4,7 +4,6 @@
 #include <AzTest/AzTest.h>
 
 #include "AzFramework/Application/Application.h"
-#include "Clients/AudioEventAssetHandler.h"
 
 namespace BopAudioTests
 {
@@ -30,12 +29,7 @@ namespace BopAudioTests
         void SetUp() override;
         void TearDown() override;
 
-    protected:
-        virtual void AssertHandlersConnected() final;
-
     private:
         AsiApplication m_app;
-        AZStd::string m_configFilePath;
-        BopAudio::AudioEventAssetHandler m_eventAssetHandler;
     };
 } // namespace BopAudioTests

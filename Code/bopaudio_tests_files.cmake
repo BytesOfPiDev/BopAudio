@@ -7,5 +7,4 @@ set(FILES
     Tests/Clients/BaseTestFixture.h
     Tests/Clients/BootstrapFixture.cpp
     Tests/Clients/BootstrapFixture.h
-    Tests/Clients/MockAudioEventAsset.h
 )

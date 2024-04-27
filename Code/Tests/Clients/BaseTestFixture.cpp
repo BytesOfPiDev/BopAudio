@@ -15,7 +15,6 @@
 
 #include "AzFramework/Asset/CustomAssetTypeComponent.h"
 #include "AzFramework/Spawnable/SpawnableSystemComponent.h"
-#include "Clients/AudioEventAssetHandler.h"
 #include "Clients/BopAudioSystemComponent.h"
 
 namespace BopAudioTests
@@ -68,9 +67,6 @@ namespace BopAudioTests
 
         m_app.Start(appDesc, startupParams);
 
-        BopAudio::BopAudioSystemComponent::RegisterFileAliases();
-        m_eventAssetHandler.Register();
-
         AZ::UserSettingsComponentRequestBus::Broadcast(
             &AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -82,15 +78,6 @@ namespace BopAudioTests
 
     void BaseAudioTestFixture::TearDown()
     {
-        m_eventAssetHandler.Unregister();
         m_app.Stop();
     }
-
-    void BaseAudioTestFixture::AssertHandlersConnected()
-    {
-        bool const audioEventAssetHandlerConnected =
-            AZ::AssetTypeInfoBus::HasHandlers(AZ::AzTypeInfo<BopAudio::AudioEventAsset>::Uuid());
-        AZ_TEST_ASSERT(audioEventAssetHandlerConnected);
-    }
-
 } // namespace BopAudioTests

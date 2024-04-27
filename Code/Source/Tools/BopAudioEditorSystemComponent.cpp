@@ -1,11 +1,8 @@
 #include "BopAudioEditorSystemComponent.h"
 
 #include "AzCore/Serialization/SerializeContext.h"
-#include "AzToolsFramework/API/ViewPaneOptions.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "BopAudioWidget.h"
-#include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
@@ -62,41 +59,12 @@ namespace BopAudio
     {
         BopAudioSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
     }
 
     void BopAudioEditorSystemComponent::Deactivate()
     {
         BopAudioSystemComponent::Deactivate();
-        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-    }
-
-    void BopAudioEditorSystemComponent::NotifyRegisterViews()
-    {
-        AzToolsFramework::ViewPaneOptions options;
-        options.paneRect = QRect(100, 100, 500, 400);
-        options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/BopAudio/toolbar_icon.svg";
-
-        // Register our custom widget as a dockable tool with the Editor under
-        // an Examples sub-menu
-        AzToolsFramework::RegisterViewPane<BopAudioWidget>("BopAudio", "Examples", options);
-    }
-
-    void BopAudioEditorSystemComponent::InitializeEditorImplPlugin()
-    {
-        m_editorImplPlugin = AZStd::make_unique<AudioSystemEditor_BopAudio>();
-    }
-
-    void BopAudioEditorSystemComponent::ReleaseEditorImplPlugin()
-    {
-        m_editorImplPlugin.reset();
-    }
-
-    auto BopAudioEditorSystemComponent::GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor*
-    {
-        return m_editorImplPlugin.get();
     }
 
 } // namespace BopAudio

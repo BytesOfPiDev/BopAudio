@@ -1,7 +1,6 @@
 #include "AudioControlNode.h"
 
 #include "AzCore/Console/ILogger.h"
-#include "Clients/AudioEventAsset.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
