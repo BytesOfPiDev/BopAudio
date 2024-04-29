@@ -4,6 +4,7 @@
 #include <AzTest/AzTest.h>
 
 #include "AzFramework/Application/Application.h"
+#include "IAudioSystem.h"
 
 namespace BopAudioTests
 {
@@ -28,6 +29,16 @@ namespace BopAudioTests
     public:
         void SetUp() override;
         void TearDown() override;
+
+        auto GetAudioSystem() -> Audio::IAudioSystem*
+        {
+            return AZ::Interface<Audio::IAudioSystem>::Get();
+        }
+
+        auto GetApp() -> AsiApplication&
+        {
+            return m_app;
+        }
 
     private:
         AsiApplication m_app;

@@ -1,15 +1,24 @@
 #include "BopAudioSystemComponent.h"
 
+#include "AzCore/Console/IConsole.h"
+#include "AzCore/Console/IConsoleTypes.h"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "AzCore/std/smart_ptr/unique_ptr.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
-#include "ScriptCanvas/Nodes/AudioControlNode.h"
+#include "IAudioSystem.h"
 
 namespace BopAudio
 {
     AZ_COMPONENT_IMPL(
         BopAudioSystemComponent, "BopAudioSystemComponent", BopAudioSystemComponentTypeId);
+
+    AZ_CVAR(
+        bool,
+        cl_enable_script_audiosystemimplementation,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::ReadOnly,
+        "Enable the Script AudioSystemImplementation. Takes effect only during startup.");
 
     void BopAudioSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -41,7 +50,7 @@ namespace BopAudio
     void BopAudioSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("MiniAudioService"));
+        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
@@ -49,6 +58,18 @@ namespace BopAudio
         if (BopAudioInterface::Get() == nullptr)
         {
             BopAudioInterface::Register(this);
+        }
+
+        if (cl_enable_script_audiosystemimplementation)
+        {
+            Audio::Gem::EngineRequestBus::Handler::BusConnect();
+        }
+        else
+        {
+            AZ_Warning(
+                "BopAudioSystemComponent",
+                false,
+                "Script AudioSystemImplementation will not due to CVAR.");
         }
     }
 
@@ -59,10 +80,10 @@ namespace BopAudio
             BopAudioInterface::Unregister(this);
         }
     }
-
+    
     void BopAudioSystemComponent::Init()
     {
-        AZStd::make_unique<Nodes::AudioControlNode>();
+
     }
 
     void BopAudioSystemComponent::Activate()
@@ -72,7 +93,29 @@ namespace BopAudio
 
     void BopAudioSystemComponent::Deactivate()
     {
+//        m_audioSystemImpl.reset();
+
         BopAudioRequestBus::Handler::BusDisconnect();
     }
 
+    auto BopAudioSystemComponent::Initialize() -> bool
+    {
+        if (m_audioSystemImpl.has_value())
+        {
+            AZ_Error("BopAudioSystemComponent", false, "AudioSystemImpl already initialized.");
+
+            return false;
+        }
+
+        m_audioSystemImpl.emplace();
+
+        Audio::SystemRequest::Initialize initRequest;
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
+
+        return true;
+    }
+
+    void BopAudioSystemComponent::Release()
+    {
+    }
 } // namespace BopAudio

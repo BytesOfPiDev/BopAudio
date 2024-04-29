@@ -34,6 +34,8 @@ namespace BopAudioTests
     auto AsiApplication::GetRequiredSystemComponents() const -> AZ::ComponentTypeList
     {
         auto required = AzFramework::Application::GetRequiredSystemComponents();
+        required.push_back(azrtti_typeid<BopAudio::BopAudioSystemComponent>());
+        
         AZStd::erase(required, azrtti_typeid<AZ::ScriptSystemComponent>());
 
         AZStd::erase(required, azrtti_typeid<AzFramework::FileTag::ExcludeFileComponent>());
