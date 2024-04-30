@@ -6,6 +6,8 @@ if (NOT gem_name)
     set(gem_name "BopAudio")
 endif()
 
+set(BOPAUDIO_USEMINIAUDIO "ON" CACHE BOOL "Lets BopAudio control MiniAudio when appropriate")
+
 # Fallback to using the current source CMakeLists.txt directory as the gem root path
 if (NOT gem_path)
     set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})

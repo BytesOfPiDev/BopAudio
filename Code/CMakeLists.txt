@@ -17,6 +17,7 @@ if(NOT PAL_TRAIT_BOPAUDIO_SUPPORTED)
   return()
 endif()
 
+
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -33,6 +34,13 @@ ly_add_target(
            Gem::AudioSystem.API
 )
 
+if("${BOPAUDIO_USEMINIAUDIO}")
+    ly_target_link_libraries(${gem_name}.API INTERFACE Gem::MiniAudio.API)
+    target_compile_definitions(${gem_name}.API INTERFACE USE_MINIAUDIO) 
+    message("-- BOPAUDIO_USEMINIAUDIO is set to ON. BopAudio will manage MiniAudio components as appropriate.")
+else ()
+    message("-- BOPAUDIO_USEMINIAUDIO is set to OFF. BopAudio will not manage MiniAudio components.")
+endif()
 
 ly_add_target(
     NAME ${gem_name}.Static STATIC
@@ -40,9 +48,7 @@ ly_add_target(
     FILES_CMAKE
         bopaudio_private_files.cmake
         ${pal_dir}/bopaudio_private_files.cmake
-        bopaudio_autogen_files.cmake
-    TARGET_PROPERTIES
-        O3DE_PRIVATE_TARGET TRUE
+        bopaudio_autogen_files.cmake 
     INCLUDE_DIRECTORIES
         PRIVATE
             Include
@@ -52,7 +58,6 @@ ly_add_target(
             ${gem_name}.API
             AZ::AzCore
             AZ::AzFramework
-            Gem::MiniAudio
             Gem::AudioSystem
             Gem::ScriptCanvas
             Gem::ScriptCanvas.Extensions
@@ -119,14 +124,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
   # which is only to be used by this gems CMakeLists.txt and any subdirectories
   # Other gems should not use this target
   ly_add_target(
-        NAME ${gem_name}.Editor.Private.Object STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
         FILES_CMAKE
             bopaudio_editor_private_files.cmake
-        TARGET_PROPERTIES
-            O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include
@@ -157,7 +160,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Gem::${gem_name}.Editor.API
             PRIVATE
-                Gem::${gem_name}.Editor.Private.Object
+                Gem::${gem_name}.Editor.Static
     )
 
   # By default, we will specify that the above target ${gem_name} would be used by
@@ -233,7 +236,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::${gem_name}.Editor.Private.Object
+                        Gem::${gem_name}.Editor.Static
             )
 
       # Add ${gem_name}.Editor.Tests to googletest

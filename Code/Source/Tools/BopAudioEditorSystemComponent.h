@@ -11,6 +11,7 @@ namespace BopAudio
     class BopAudioEditorSystemComponent
         : public BopAudioSystemComponent
         , protected AzToolsFramework::EditorEvents::Bus::Handler
+        , protected AudioControlsEditor::EditorImplPluginEventBus::Handler
     {
         using BaseSystemComponent = BopAudioSystemComponent;
 
@@ -34,6 +35,14 @@ namespace BopAudio
         void Activate() override;
         void Deactivate() override;
 
+    protected:
+        ////////////////////////////////////////////////////////////////////////
+        // AudioControlsEditor::EditorImplPluginEventBus interface
+        // implementation
+        void InitializeEditorImplPlugin() override;
+        void ReleaseEditorImplPlugin() override;
+        auto GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor* override;
+        ////////////////////////////////////////////////////////////////////////
     private:
         AZStd::unique_ptr<AudioControls::IAudioSystemEditor> m_editorImplPlugin;
     };

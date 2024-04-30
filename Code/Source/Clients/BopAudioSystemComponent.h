@@ -3,7 +3,7 @@
 #include "AzCore/Component/Component.h"
 
 #include "BopAudio/BopAudioBus.h"
-#include "Engine/AudioSystemImpl_script.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 #include "IAudioSystem.h"
 
 namespace BopAudio
@@ -37,8 +37,10 @@ namespace BopAudio
         auto Initialize() -> bool override;
         void Release() override;
 
+        static void RegisterFileAliases();
+
     private:
-        AZStd::optional<AudioSystemImpl_script> m_audioSystemImpl{};
+        AZStd::optional<AudioSystemImpl_bopaudio> m_audioSystemImpl{};
     };
 
 } // namespace BopAudio

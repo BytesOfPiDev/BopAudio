@@ -25,7 +25,6 @@ namespace BopAudio::XmlTags
 namespace AudioStrings
 {
     // Project Folders
-    static constexpr auto GameParametersFolder = "GameParameters";
     static constexpr auto EventsFolder = "events";
 
     // Xml Tags

@@ -9,9 +9,9 @@
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
-#include <Source/ScriptCanvas/Nodes/AudioControlNode.generated.h>
+#include <Clients/ParameterTypes.h>
 
-#include "Clients/ParameterTypes.h"
+#include <Source/ScriptCanvas/Nodes/AudioControlNode.generated.h>
 
 namespace BopAudio::Nodes
 {

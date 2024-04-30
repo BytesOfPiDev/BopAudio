@@ -3,6 +3,8 @@
 #include "AzCore/Serialization/SerializeContext.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Clients/BopAudioSystemComponent.h"
+#include "Tools/AudioSystemEditor_BopAudio.h"
 
 namespace BopAudio
 {
@@ -53,18 +55,36 @@ namespace BopAudio
 
     void BopAudioEditorSystemComponent::Init()
     {
+        BopAudioSystemComponent::Init();
     }
 
     void BopAudioEditorSystemComponent::Activate()
     {
         BopAudioSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
     }
 
     void BopAudioEditorSystemComponent::Deactivate()
     {
         BopAudioSystemComponent::Deactivate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
+    }
+
+    void BopAudioEditorSystemComponent::InitializeEditorImplPlugin()
+    {
+        m_editorImplPlugin = AZStd::make_unique<AudioSystemEditor_script>();
+    }
+
+    void BopAudioEditorSystemComponent::ReleaseEditorImplPlugin()
+    {
+        m_editorImplPlugin.reset();
+    }
+
+    auto BopAudioEditorSystemComponent::GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor*
+    {
+        return m_editorImplPlugin.get();
     }
 
 } // namespace BopAudio

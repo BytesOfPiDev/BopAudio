@@ -39,7 +39,4 @@ namespace BopAudio
 
     using BopAudioRequestBus = AZ::EBus<BopAudioRequests, BopAudioBusTraits>;
     using BopAudioInterface = AZ::Interface<BopAudioRequests>;
-
-    using AsiInterface = AZ::Interface<Audio::AudioSystemImplementationRequests>;
-
 } // namespace BopAudio

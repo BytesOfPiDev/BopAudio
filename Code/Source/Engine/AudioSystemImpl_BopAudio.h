@@ -9,16 +9,17 @@
 
 namespace BopAudio
 {
-    class AudioSystemImpl_script : protected Audio::AudioSystemImplementation
+    class AudioSystemImpl_bopaudio : public Audio::AudioSystemImplementation
     {
     public:
-        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_script);
-        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_script);
+        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_bopaudio);
+        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_bopaudio);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioSystemImpl_bopaudio);
 
-        static constexpr auto ImplName{ "Script Audio" };
+        static constexpr auto ImplName{ "BopAudio" };
 
-        explicit AudioSystemImpl_script();
-        ~AudioSystemImpl_script() override;
+        explicit AudioSystemImpl_bopaudio();
+        ~AudioSystemImpl_bopaudio() override;
 
         void SetPaths();
 
@@ -169,12 +170,13 @@ namespace BopAudio
         //////////////////////////////////////////////////////////////////////////
 
     private:
-        static char const* const ScriptAudioImplSubPath;
+        static char const* const BopAudioImplSubPath;
         AZStd::string m_language{};
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZ::IO::Path m_soundBankFolder{};
         AZ::IO::Path m_localizedSoundBankFolder{};
+        AZStd::unordered_set<Audio::IATLAudioObjectData*> m_registeredObjects{};
     };
 } // namespace BopAudio

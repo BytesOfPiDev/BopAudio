@@ -1,6 +1,7 @@
 #include "BopAudioModuleInterface.h"
 
 #include "BopAudio/BopAudioTypeIds.h"
+#include "Builder/BopAudioAssetBuilderComponent.h"
 #include "Tools/BopAudioEditorSystemComponent.h"
 
 namespace BopAudio
@@ -23,6 +24,7 @@ namespace BopAudio
                 m_descriptors.end(),
                 {
                     BopAudioEditorSystemComponent::CreateDescriptor(),
+                    BopAudioAssetBuilderComponent::CreateDescriptor(),
                 });
         }
 
@@ -34,6 +36,7 @@ namespace BopAudio
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<BopAudioEditorSystemComponent>(),
+                azrtti_typeid<BopAudioAssetBuilderComponent>(),
             };
         }
     };
