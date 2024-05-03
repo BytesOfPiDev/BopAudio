@@ -1,5 +1,6 @@
 #pragma once
 
+#include <AzCore/Component/Entity.h>
 #include <AzCore/IO/Path/Path.h>
 
 #include "ATLEntityData.h"
@@ -40,8 +41,8 @@ namespace BopAudio
         auto StopAllSounds() -> Audio::EAudioRequestStatus override;
 
         auto RegisterAudioObject(
-            Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
-            -> Audio::EAudioRequestStatus override;
+            Audio::IATLAudioObjectData* const audioObjectData,
+            char const* const objectName) -> Audio::EAudioRequestStatus override;
         auto UnregisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
             -> Audio::EAudioRequestStatus override;
         auto ResetAudioObject(Audio::IATLAudioObjectData* const audioObjectData)

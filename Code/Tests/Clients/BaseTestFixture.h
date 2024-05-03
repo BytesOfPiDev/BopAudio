@@ -3,44 +3,28 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzTest/AzTest.h>
 
-#include "AzFramework/Application/Application.h"
-#include "IAudioSystem.h"
+#include "AzCore/Name/NameDictionary.h"
+#include "Engine/AudioSystemImpl_BopAudio.h"
 
-namespace BopAudioTests
+class BaseAudioTestFixture
+    : public UnitTest::TraceBusRedirector
+    , public testing::Test
 {
-    class AsiApplication : public AzFramework::Application
+public:
+    void SetUp() override;
+    void TearDown() override;
+
+    auto GetAudioSystemImpl() -> BopAudio::AudioSystemImpl_bopaudio&
     {
-    public:
-        AZ_DISABLE_COPY_MOVE(AsiApplication);
+        return m_impl;
+    }
 
-        AsiApplication() = default;
-        ~AsiApplication() override = default;
-
-        void StartCommon(AZ::Entity* systemEntity) override;
-
-        void RegisterCoreComponents() override;
-        auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override;
-    };
-
-    class BaseAudioTestFixture
-        : public UnitTest::TraceBusRedirector
-        , public testing::Test
+    auto GetAudioSystemImpl() const -> BopAudio::AudioSystemImpl_bopaudio const&
     {
-    public:
-        void SetUp() override;
-        void TearDown() override;
+        return m_impl;
+    }
 
-        auto GetAudioSystem() -> Audio::IAudioSystem*
-        {
-            return AZ::Interface<Audio::IAudioSystem>::Get();
-        }
-
-        auto GetApp() -> AsiApplication&
-        {
-            return m_app;
-        }
-
-    private:
-        AsiApplication m_app;
-    };
-} // namespace BopAudioTests
+private:
+    BopAudio::AudioSystemImpl_bopaudio m_impl{};
+    AZ::NameDictionary m_dictionary{};
+};

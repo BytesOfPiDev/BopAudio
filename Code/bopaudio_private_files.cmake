@@ -9,6 +9,7 @@ set(FILES
     Source/Clients/ParameterTypes.h
 
     Source/Engine/ATLEntities_BopAudio.h
+    Source/Engine/ATLEntities_BopAudio_impl.h
     Source/Engine/AudioSystemImpl_BopAudio.cpp
     Source/Engine/AudioSystemImpl_BopAudio.h
     Source/Engine/Common_BopAudio.h

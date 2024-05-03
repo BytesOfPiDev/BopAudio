@@ -10,6 +10,7 @@
 #include "IAudioSystem.h"
 
 #include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/ATLEntities_BopAudio_impl.h"
 #include "Engine/Common_BopAudio.h"
 
 namespace BopAudio
@@ -43,15 +44,15 @@ namespace BopAudio
     {
     }
 
-    void AudioSystemImpl_bopaudio::OnAudioSystemLoseFocus(){};
+    void AudioSystemImpl_bopaudio::OnAudioSystemLoseFocus() {};
 
-    void AudioSystemImpl_bopaudio::OnAudioSystemGetFocus(){};
+    void AudioSystemImpl_bopaudio::OnAudioSystemGetFocus() {};
 
-    void AudioSystemImpl_bopaudio::OnAudioSystemMuteAll(){};
+    void AudioSystemImpl_bopaudio::OnAudioSystemMuteAll() {};
 
-    void AudioSystemImpl_bopaudio::OnAudioSystemUnmuteAll(){};
+    void AudioSystemImpl_bopaudio::OnAudioSystemUnmuteAll() {};
 
-    void AudioSystemImpl_bopaudio::OnAudioSystemRefresh(){};
+    void AudioSystemImpl_bopaudio::OnAudioSystemRefresh() {};
 
     void AudioSystemImpl_bopaudio::Update(float const updateIntervalMS)
     {
@@ -84,22 +85,30 @@ namespace BopAudio
     }
 
     auto AudioSystemImpl_bopaudio::RegisterAudioObject(
-        Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
-        -> Audio::EAudioRequestStatus
+        Audio::IATLAudioObjectData* const audioObjectData,
+        char const* const objectName) -> Audio::EAudioRequestStatus
     {
         AZLOG(
-            LOG_asi_script,
+            LOG_asi_bopaudio,
             "Attempting to register an audio object: [objectName: %s.].\n",
             objectName);
 
         if (audioObjectData == nullptr)
         {
-            AZ_Error(
-                "AudioSystemImpl_script", false, "Unable to register audio object with nullptr.\n");
+            AZ_Error(TYPEINFO_Name(), false, "Unable to register audio object with nullptr.\n");
             return Audio::EAudioRequestStatus::Failure;
         }
 
+        auto* bopAudioObject{ static_cast<IATLAudioObjectData_bopaudio*>(audioObjectData) };
+        bopAudioObject->ChangeName(objectName);
+
         m_registeredObjects.insert(audioObjectData);
+
+        AZ_Error(
+            TYPEINFO_Name(),
+            m_registeredObjects.contains(audioObjectData),
+            "Something went wrong while inserting the object.\n");
+
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -108,24 +117,28 @@ namespace BopAudio
     {
         if (!audioObjectData)
         {
-            m_registeredObjects.erase(audioObjectData);
-            return Audio::EAudioRequestStatus::Failure;
+            return Audio::EAudioRequestStatus::FailureInvalidRequest;
         }
 
-        return Audio::EAudioRequestStatus::Success;
+        auto const numErased{ m_registeredObjects.erase(audioObjectData) };
+
+        AZ_Error(TYPEINFO_Name(), numErased, "Something went wrong while erasing the object.\n");
+
+        return numErased > 0 ? Audio::EAudioRequestStatus::Success
+                             : Audio::EAudioRequestStatus::FailureInvalidRequest;
     }
 
     auto AudioSystemImpl_bopaudio::ResetAudioObject(
         Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Resetting audio object.\n");
+        AZLOG(LOG_asi_bopaudio, "Resetting audio object.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
     auto AudioSystemImpl_bopaudio::UpdateAudioObject(
         Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Updating audio object\n");
+        AZLOG(LOG_asi_bopaudio, "Updating audio object\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -133,14 +146,14 @@ namespace BopAudio
         Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::IATLTriggerImplData const* const /*triggerData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Preparing trigger sync.\n");
+        AZLOG(LOG_asi_bopaudio, "Preparing trigger sync.\n");
         return Audio::EAudioRequestStatus::Success;
     }
     auto AudioSystemImpl_bopaudio::UnprepareTriggerSync(
         Audio::IATLAudioObjectData* const audioObjectData,
         Audio::IATLTriggerImplData const* const triggerData) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Unpreparing trigger sync.\n");
+        AZLOG(LOG_asi_bopaudio, "Unpreparing trigger sync.\n");
         AZ_UNUSED(audioObjectData, triggerData);
         return Audio::EAudioRequestStatus::Success;
     }
@@ -150,7 +163,7 @@ namespace BopAudio
         Audio::IATLTriggerImplData const* const /*triggerData*/,
         Audio::IATLEventData* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Preparing trigger async.\n");
+        AZLOG(LOG_asi_bopaudio, "Preparing trigger async.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -159,7 +172,7 @@ namespace BopAudio
         Audio::IATLTriggerImplData const* const /*triggerData*/,
         Audio::IATLEventData* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Unpreparing trigger async.\n");
+        AZLOG(LOG_asi_bopaudio, "Unpreparing trigger async.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -169,16 +182,16 @@ namespace BopAudio
         Audio::IATLEventData* const eventData,
         Audio::SATLSourceData const* const /*pSourceData*/) -> Audio::EAudioRequestStatus
     {
-        AZ_Error(TYPEINFO_Name(), false, "Activating audio trigger.\n");
+        AZLOG(LOG_asi_bopaudio, "Activating audio trigger.\n");
 
         [[maybe_unused]] auto* const implTriggerData{
-            static_cast<SATLTriggerImplData_script const*>(triggerData)
+            static_cast<SATLTriggerImplData_bopaudio const*>(triggerData)
         };
 
-        auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_script*>(
+        auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_bopaudio*>(
             audioObjectData) };
 
-        auto* const implEventData{ static_cast<SATLEventData_script*>(eventData) };
+        auto* const implEventData{ static_cast<SATLEventData_bopaudio*>(eventData) };
 
         if (!implAudioObjectData)
         {
@@ -217,7 +230,7 @@ namespace BopAudio
         Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::IATLEventData const* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZ_Error(TYPEINFO_Name(), false, "Stopping audio event.");
+        AZLOG(LOG_asi_bopaudio, "Stopping audio event.");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -269,7 +282,7 @@ namespace BopAudio
         Audio::IATLSwitchStateImplData const* const /*switchStateData*/)
         -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Setting audio switch state.\n");
+        AZLOG(LOG_asi_bopaudio, "Setting audio switch state.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -284,8 +297,8 @@ namespace BopAudio
     }
 
     auto AudioSystemImpl_bopaudio::SetListenerPosition(
-        Audio::IATLListenerData* const listenerData, Audio::SATLWorldPosition const& newPosition)
-        -> Audio::EAudioRequestStatus
+        Audio::IATLListenerData* const listenerData,
+        Audio::SATLWorldPosition const& newPosition) -> Audio::EAudioRequestStatus
     {
         AZ_UNUSED(listenerData, newPosition);
         return Audio::EAudioRequestStatus::Success;
@@ -323,7 +336,7 @@ namespace BopAudio
     auto AudioSystemImpl_bopaudio::UnregisterInMemoryFile(
         Audio::SATLAudioFileEntryInfo* const /*audioFileEntry*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_script, "Unregistering in-memory audio file.");
+        AZLOG(LOG_asi_bopaudio, "Unregistering in-memory audio file.");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -341,7 +354,7 @@ namespace BopAudio
     void AudioSystemImpl_bopaudio::DeleteAudioFileEntryData(
         Audio::IATLAudioFileEntryData* const oldAudioFileEntryData)
     {
-        AZLOG(LOG_asi_script, "Deleting audio file entry data.\n");
+        AZLOG(LOG_asi_bopaudio, "Deleting audio file entry data.\n");
         azdestroy(oldAudioFileEntryData, Audio::AudioImplAllocator, SATLAudioFileEntryData_script);
     }
 
@@ -375,19 +388,25 @@ namespace BopAudio
 
         AZStd::string const triggerName = [&audioTriggerNode]() -> decltype(triggerName)
         {
-            auto const triggerNameAttrib{ audioTriggerNode->first_attribute(
+            auto* const triggerNameAttrib{ audioTriggerNode->first_attribute(
                 XmlTags::NameAttribute) };
-            return decltype(triggerName){ triggerNameAttrib ? triggerNameAttrib->value()
-                                                            : nullptr };
+
+            return decltype(triggerName){ triggerNameAttrib ? triggerNameAttrib->value() : "" };
         }();
 
+        if (triggerName.empty())
+        {
+            AZ_Error(TYPEINFO_Name(), false, "Failed to find the audio trigger's name.\n");
+            return nullptr;
+        }
+
         auto* implAudioTriggerData{ azcreate(
-            SATLTriggerImplData_script,
+            SATLTriggerImplData_bopaudio,
             (Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.c_str())),
             Audio::AudioImplAllocator) };
 
         AZLOG(
-            LOG_asi_script,
+            LOG_asi_bopaudio,
             "ASI created a new audio trigger implementation data object. [Trigger: %s | "
             "AudioEventId: %llu. NativeId: %llu\n",
             triggerName.c_str(),
@@ -400,8 +419,8 @@ namespace BopAudio
     void AudioSystemImpl_bopaudio::DeleteAudioTriggerImplData(
         Audio::IATLTriggerImplData* const oldTriggerImplData)
     {
-        AZLOG(LOG_asi_script, "Deleting audio trigger data.\n");
-        azdestroy(oldTriggerImplData, Audio::AudioImplAllocator, SATLTriggerImplData_script);
+        AZLOG(LOG_asi_bopaudio, "Deleting audio trigger data.\n");
+        azdestroy(oldTriggerImplData, Audio::AudioImplAllocator, SATLTriggerImplData_bopaudio);
     }
 
     auto AudioSystemImpl_bopaudio::NewAudioRtpcImplData(
@@ -454,28 +473,28 @@ namespace BopAudio
     {
         AZLOG_INFO("ASI: NewGlobalAudioObjectData. [objectId: %llu].", atlObjectId);
 
-        return azcreate(SATLAudioObjectData_script, (atlObjectId), Audio::AudioImplAllocator);
+        return azcreate(SATLAudioObjectData_bopaudio, (atlObjectId), Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_bopaudio::NewAudioObjectData(Audio::TAudioObjectID const atlObjectId)
         -> Audio::IATLAudioObjectData*
     {
-        return azcreate(SATLAudioObjectData_script, (atlObjectId), Audio::AudioImplAllocator);
+        return azcreate(SATLAudioObjectData_bopaudio, (atlObjectId), Audio::AudioImplAllocator);
     }
 
     void AudioSystemImpl_bopaudio::DeleteAudioObjectData(
         Audio::IATLAudioObjectData* const oldObjectData)
     {
-        azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_script);
+        azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_bopaudio);
     }
 
     auto AudioSystemImpl_bopaudio::NewDefaultAudioListenerObjectData(
         [[maybe_unused]] Audio::TATLIDType const objectId) -> Audio::IATLListenerData*
     {
-        AZLOG(LOG_asi_script, "Creating new default audio listener object data.");
+        AZLOG(LOG_asi_bopaudio, "Creating new default audio listener object data.");
 #if USE_MINIAUDIO
         auto* newListenerObject{ azcreate(
-            SATLListenerData_script, (objectId), Audio::AudioImplAllocator) };
+            SATLListenerData_bopaudio, (objectId), Audio::AudioImplAllocator) };
         return newListenerObject;
 #else
         return {};
@@ -487,7 +506,7 @@ namespace BopAudio
     {
 #if USE_MINIAUDIO
         auto* newListenerObject{ azcreate(
-            SATLListenerData_script, (objectId), Audio::AudioImplAllocator) };
+            SATLListenerData_bopaudio, (objectId), Audio::AudioImplAllocator) };
         return newListenerObject;
 #else
         return {};
@@ -497,15 +516,15 @@ namespace BopAudio
     void AudioSystemImpl_bopaudio::DeleteAudioListenerObjectData(
         [[maybe_unused]] Audio::IATLListenerData* const oldListenerData)
     {
-        AZLOG(LOG_asi_script, "Deleting audio listener object data.\n");
+        AZLOG(LOG_asi_bopaudio, "Deleting audio listener object data.\n");
         azdestroy(oldListenerData, Audio::AudioImplAllocator);
     }
 
     auto AudioSystemImpl_bopaudio::NewAudioEventData(Audio::TAudioEventID const eventId)
         -> Audio::IATLEventData*
     {
-        AZLOG(LOG_asi_script, "Creating new audio event data.\n");
-        return azcreate(SATLEventData_script, (eventId), Audio::AudioImplAllocator);
+        AZLOG(LOG_asi_bopaudio, "Creating new audio event data.\n");
+        return azcreate(SATLEventData_bopaudio, (eventId), Audio::AudioImplAllocator);
     }
 
     void AudioSystemImpl_bopaudio::DeleteAudioEventData(Audio::IATLEventData* const oldEventData)
@@ -516,7 +535,7 @@ namespace BopAudio
 
     void AudioSystemImpl_bopaudio::ResetAudioEventData(Audio::IATLEventData* const eventData)
     {
-        AZLOG(LOG_asi_script, "BopAudio: ResetAudioEventData.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: ResetAudioEventData.");
 
         if (!eventData)
         {
@@ -543,14 +562,14 @@ namespace BopAudio
 
     void AudioSystemImpl_bopaudio::GetMemoryInfo(Audio::SAudioImplMemoryInfo& memoryInfo) const
     {
-        AZLOG(LOG_asi_script, "BopAudio: GetMemoryInfo.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: GetMemoryInfo.");
         AZ_UNUSED(memoryInfo);
     }
 
     auto AudioSystemImpl_bopaudio::GetMemoryPoolInfo()
         -> AZStd::vector<Audio::AudioImplMemoryPoolInfo>
     {
-        AZLOG(LOG_asi_script, "BopAudio: GetMemoryInfo.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: GetMemoryInfo.");
         return {};
     }
 

@@ -50,8 +50,7 @@ namespace BopAudio
         }
 
         auto const resolvedPath = fileIo->ResolvePath(folderPath);
-        AZStd::string const neededForAbsolutelyNoReason{resolvedPath->String()};
-        auto const foundFiles = Audio::FindFilesInPath(neededForAbsolutelyNoReason.c_str(), "*");
+        auto const foundFiles = Audio::FindFilesInPath(resolvedPath->c_str(), "*");
         for (auto const& filePath : foundFiles)
         {
             AZ_Assert( // NOLINT

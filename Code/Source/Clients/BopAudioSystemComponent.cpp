@@ -42,12 +42,12 @@ namespace BopAudio
     {
         required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         required.push_back(AZ_CRC_CE("AssetCatalogService"));
-        required.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     void BopAudioSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     BopAudioSystemComponent::BopAudioSystemComponent()
