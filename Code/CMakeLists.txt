@@ -17,7 +17,6 @@ if(NOT PAL_TRAIT_BOPAUDIO_SUPPORTED)
   return()
 endif()
 
-
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -179,9 +178,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# # # # # # # # # # # # ####################################################################
+################################################################################
 # Tests
-# # # # # # # # # # # # ####################################################################
+################################################################################
 
 
 get_property(audiosystem_gem_root GLOBAL PROPERTY "@GEMROOT:AudioSystem@")

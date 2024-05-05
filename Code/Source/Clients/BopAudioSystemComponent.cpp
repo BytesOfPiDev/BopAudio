@@ -76,8 +76,9 @@ namespace BopAudio
     {
         RegisterFileAliases();
 
-        // HACK: Nodeable registration is confusing. Just hacking it until the O3DE documentation
-        // makes it clear how to reliably register a node.
+        // HACK: Nodeable registration is confusing.  Just hacking it until the O3DE documentation
+        // makes it clear how to reliably register a node. Ensuring compiler doesn't remove the type
+        // for being unused.
         {
             auto node{ AZStd::make_unique<Nodes::AudioControlNode>() };
             if (node->RTTI_IsTypeOf(AZ::TypeId{}))

@@ -6,7 +6,6 @@
 
 namespace BopAudio
 {
-
     class BopAudioAssetBuilderComponent : public AZ::Component
     {
     public:
@@ -27,7 +26,6 @@ namespace BopAudio
             AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-
 
     protected:
         void CreateFactories();
