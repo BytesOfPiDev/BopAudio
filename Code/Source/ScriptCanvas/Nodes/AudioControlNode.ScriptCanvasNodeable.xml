@@ -24,12 +24,8 @@
       Name="Toggle Connection"
       OutputName="On Connection Toggled" Description="" />
 
-
     <Output
       Name="Start" Description="">
-      <Parameter Name="Payload" Type="BopAudio::StartEventData"
-        Description="" />
-
     </Output>
   </Class>
 </ScriptCanvas>

@@ -19,6 +19,11 @@ namespace BopAudio::Nodes
         m_controlName = controlName;
         m_ownerId = owner;
 
+        AZ_Error(
+            TYPEINFO_Name(),
+            m_controlName.GetCStr(),
+            "Control name is empty. The node cannot connect with an empty control name.\n");
+
         Audio::AudioTriggerNotificationBus::Handler::BusConnect(m_ownerId);
 
         AZLOG(
@@ -83,7 +88,7 @@ namespace BopAudio::Nodes
                 m_ownerId.m_owner,
                 m_controlId);
 
-            CallStart(StartEventData{});
+            CallStart();
 
             AZLOG(
                 LOG_AudioControlNode,

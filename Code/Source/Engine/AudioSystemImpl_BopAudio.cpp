@@ -6,6 +6,7 @@
 #include "AzCore/Component/ComponentApplicationBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "AzCore/Time/ITime.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
@@ -138,7 +139,12 @@ namespace BopAudio
     auto AudioSystemImpl_bopaudio::UpdateAudioObject(
         Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_bopaudio, "Updating audio object\n");
+        static AZStd::atomic<AZ::TimeUs> lastLogTime{};
+        if (AZ::GetSimulationTickDeltaTimeUs() - lastLogTime > AZ::TimeUs{ AZ::SecondsToTimeUs(5) })
+        {
+            lastLogTime = AZ::GetSimulationTickDeltaTimeUs();
+            AZLOG(LOG_asi_bopaudio, "[5SecInt] Updating audio object\n");
+        }
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -230,7 +236,6 @@ namespace BopAudio
         Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::IATLEventData const* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_asi_bopaudio, "Stopping audio event.");
         return Audio::EAudioRequestStatus::Success;
     }
 
@@ -246,7 +251,6 @@ namespace BopAudio
         Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::SATLWorldPosition const& /*worldPosition*/) -> Audio::EAudioRequestStatus
     {
-        AZ_Info(TYPEINFO_Name(), "Setting audio object position.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 

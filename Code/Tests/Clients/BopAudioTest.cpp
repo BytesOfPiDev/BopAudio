@@ -7,6 +7,7 @@
 #include "AzCore/XML/rapidxml.h"
 #include "Clients/Mocks/MockEventData.h"
 #include "Clients/Mocks/MockTriggerImplData.h"
+#include "Clients/ParameterTypes.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
 
@@ -22,6 +23,33 @@ using ::testing::Return;
 
 static constexpr auto ValidObjectName{ "roger_smith" };
 static constexpr auto ValidObjectId1{ Audio::TAudioObjectID{ 1 } };
+static constexpr auto ValidEventId1{ Audio::TAudioObjectID{ 1 } };
+
+TEST(StartAudioEventDataTests, Constructed_GetAudioEventId_ReturnsInvalidId)
+{
+    BopAudio::StartEventData constructedStartEventData{};
+
+    EXPECT_EQ(constructedStartEventData.GetAudioEventId(), INVALID_AUDIO_EVENT_ID);
+    EXPECT_NE(constructedStartEventData.GetAudioEventId(), Audio::TAudioEventID{ ValidEventId1 });
+}
+
+TEST(StartAudioEventDataTests, HasValidEventId_GetAudioEventId_ReturnsTheValidId)
+{
+    BopAudio::StartEventData constructedStartEventData{ nullptr,
+                                                        ValidEventId1,
+                                                        INVALID_AUDIO_OBJECT_ID };
+
+    EXPECT_EQ(constructedStartEventData.GetAudioEventId(), ValidEventId1);
+    EXPECT_NE(constructedStartEventData.GetAudioEventId(), INVALID_AUDIO_EVENT_ID);
+}
+
+TEST(StopAudioEventDataTests, Constructed_GetAudioEventId_ReturnsInvalidId)
+{
+    BopAudio::StopEventData constructedStopEventData{};
+
+    EXPECT_EQ(constructedStopEventData.GetAudioEventId(), INVALID_AUDIO_EVENT_ID);
+    EXPECT_NE(constructedStopEventData.GetAudioEventId(), Audio::TAudioEventID{ ValidEventId1 });
+}
 
 TEST_F(BaseAudioTestFixture, SANITY_CHECK)
 {
@@ -63,7 +91,7 @@ struct InitializedAudioSystemImplFixture : public BaseAudioTestFixture
     AZ_DISABLE_COPY_MOVE(InitializedAudioSystemImplFixture);
 
     InitializedAudioSystemImplFixture() = default;
-    ~InitializedAudioSystemImplFixture() = default;
+    ~InitializedAudioSystemImplFixture() override = default;
 
     void SetUp() override
     {
