@@ -4,17 +4,14 @@
 
 namespace BopAudio
 {
-    static constexpr auto BanksAlias = "@soundbanks@";
-    static constexpr auto SoundsAlias = "@soundbanks@";
-    static constexpr auto EventsAlias = "@audioevents@";
-    static constexpr auto ProjectAlias = "@audioproject@";
+    static constexpr auto BanksAlias{ "@scriptsoundbanks" };
+    static constexpr auto EventsAlias = "@scriptaudioevents@";
+    static constexpr auto ProjectAlias = "@scriptaudioproject@";
 
     static constexpr auto ExternalSourcesPath = "external";
     static constexpr auto ConfigFile = "bopaudio_config.json";
-    static constexpr auto SoundbankExtension = ".soundbank";
-    static constexpr auto SoundbankDependencyFileExtension{ ".soundbankdeps" };
-    static constexpr auto InitBank = "init.soundbank";
-    static constexpr auto InitBankSource = "init.soundbankdata";
+
+    static constexpr auto SoundbankDependencyFileExtension{ ".nopeavi" };
 
     auto GetBanksRootPath() -> AZ::IO::PathView;
     void SetBanksRootPath(AZ::IO::PathView banksRootPath);

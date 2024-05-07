@@ -3,401 +3,294 @@
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
+#include "AzCore/Component/ComponentApplicationBus.h"
 #include "AzCore/Console/ILogger.h"
-#include "AzCore/IO/FileIO.h"
-#include "AzCore/RTTI/TypeInfoSimple.h"
 #include "AzCore/StringFunc/StringFunc.h"
+#include "AzCore/Time/ITime.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
-#include "IAudioSystemImplementation.h"
 
-#include "BopAudio/BopAudioBus.h"
-#include "Clients/AudioEventBus.h"
 #include "Engine/ATLEntities_BopAudio.h"
+#include "Engine/ATLEntities_BopAudio_impl.h"
 #include "Engine/Common_BopAudio.h"
-#include "Engine/ConfigurationSettings.h"
-#include "Engine/Id.h"
-#include "Engine/MiniAudioEngineBus.h"
-#include "MiniAudio/SoundAsset.h"
 
 namespace BopAudio
 {
-    char const* const AudioSystemImpl_miniaudio::BopAudioImplSubPath = "bopaudio/";
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        AudioSystemImpl_bopaudio,
+        "AudioSystemImpl_bopaudio",
+        "{4BDD8703-0408-4196-AF77-8E22803D3974}");
 
-    AudioSystemImpl_miniaudio::AudioSystemImpl_miniaudio(AZStd::string_view assetsPlatformName)
+    char const* const AudioSystemImpl_bopaudio::BopAudioImplSubPath = "bopaudio/";
+
+    AudioSystemImpl_bopaudio::AudioSystemImpl_bopaudio()
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(
             serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
-        if (!assetsPlatformName.empty())
-        {
-            m_assetsPlatform = assetsPlatformName;
-        }
-
         SetPaths();
 
         Audio::AudioSystemImplementationRequestBus::Handler::BusConnect();
         Audio::AudioSystemImplementationNotificationBus::Handler::BusConnect();
-
-        AsiInterface::Register(this);
     }
 
-    AudioSystemImpl_miniaudio::~AudioSystemImpl_miniaudio()
+    AudioSystemImpl_bopaudio::~AudioSystemImpl_bopaudio()
     {
-        AsiInterface::Unregister(this);
-
         Audio::AudioSystemImplementationRequestBus::Handler::BusDisconnect();
         Audio::AudioSystemImplementationNotificationBus::Handler::BusDisconnect();
     }
 
-    void AudioSystemImpl_miniaudio::SetPaths()
+    void AudioSystemImpl_bopaudio::SetPaths()
     {
-        // "sounds/bopaudio/"
-
-        // "sounds/bopaudio/bopaudio_config.json"
-        auto const configFilePath = AZ::IO::Path{ ProjectAlias } / ConfigFile;
-
-        if (AZ::IO::FileIOBase::GetInstance() &&
-            AZ::IO::FileIOBase::GetInstance()->Exists(configFilePath.c_str()))
-        {
-            ConfigurationSettings configSettings{};
-            if (configSettings.Load(configFilePath))
-            {
-                m_localizedSoundBankFolder = {
-                    m_soundBankFolder / LanguageNamespace::ToString(configSettings.GetLanguage())
-                };
-            }
-        }
-        else
-        {
-            AZLOG_INFO(
-                "No BopAudio configuration file found at path: \"%s\".", configFilePath.c_str());
-        };
-
-        if (AZ::IO::FileIOBase::GetInstance() == nullptr)
-        {
-            AZLOG_ERROR(
-                "ASI is unable to set the soundbank folder because due to no FileIO instance.");
-
-            return;
-        }
-
-        m_soundBankFolder = BanksAlias;
-        SetBanksRootPath(m_soundBankFolder);
     }
 
-    void AudioSystemImpl_miniaudio::OnAudioSystemLoseFocus()
-    {
-        AZLOG_INFO("Bop Audio lost focus. Unimplemented."); // NOLINT
-    }
+    void AudioSystemImpl_bopaudio::OnAudioSystemLoseFocus() {};
 
-    void AudioSystemImpl_miniaudio::OnAudioSystemGetFocus()
-    {
-        AZLOG_INFO("Bop Audio has focus. Unimplemented."); // NOLINT
-    }
+    void AudioSystemImpl_bopaudio::OnAudioSystemGetFocus() {};
 
-    void AudioSystemImpl_miniaudio::OnAudioSystemMuteAll()
-    {
-        AZLOG_INFO("Bop Audio received MuteAll. Unimplemented."); // NOLINT
-    }
+    void AudioSystemImpl_bopaudio::OnAudioSystemMuteAll() {};
 
-    void AudioSystemImpl_miniaudio::OnAudioSystemUnmuteAll()
-    {
-        AZLOG_INFO("Bop Audio received UnmuteAll. Unimplemented."); // NOLINT
-    }
+    void AudioSystemImpl_bopaudio::OnAudioSystemUnmuteAll() {};
 
-    void AudioSystemImpl_miniaudio::OnAudioSystemRefresh()
-    {
-        AZLOG_INFO("Bop Audio received Refresh. Unimplemented.\n");
-    }
+    void AudioSystemImpl_bopaudio::OnAudioSystemRefresh() {};
 
-    void AudioSystemImpl_miniaudio::Update(float const updateIntervalMS)
+    void AudioSystemImpl_bopaudio::Update(float const updateIntervalMS)
     {
         AZ_UNUSED(updateIntervalMS);
     }
 
-    auto AudioSystemImpl_miniaudio::Initialize() -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::Initialize() -> Audio::EAudioRequestStatus
     {
-        if (!SoundEngine::Get())
-        {
-            AZ_Error("ASI", false, "No MiniAudio AudioEngineInterface found!");
-            return Audio::EAudioRequestStatus::Failure;
-        }
+        AZ_Info(TYPEINFO_Name(), "AudioSystemImplementation nitialized.\n");
+        return Audio::EAudioRequestStatus::Success;
+    }
 
-        auto const initializeOutcome{ SoundEngine::Get() != nullptr
-                                          ? SoundEngine::Get()->Initialize()
-                                          : AZ::Failure("SoundEngine does not exist!") };
+    auto AudioSystemImpl_bopaudio::ShutDown() -> Audio::EAudioRequestStatus
+    {
+        AZ_Info(TYPEINFO_Name(), "AudioSystemImplementation shutting down.\n");
+        return Audio::EAudioRequestStatus::Success;
+    }
 
-        if (!initializeOutcome.IsSuccess())
-        {
-            AZ_Error(
-                "AudioSystemImpl_MiniAudio",
-                false,
-                "Failed to initialize MiniAudioEngine! Reason: [%s]",
-                initializeOutcome.GetError().c_str());
+    auto AudioSystemImpl_bopaudio::Release() -> Audio::EAudioRequestStatus
+    {
+        AZ_Info(TYPEINFO_Name(), "AudioSystemImplementation releasing.\n");
+        return Audio::EAudioRequestStatus::Success;
+    }
 
-            return Audio::EAudioRequestStatus::Failure;
-        }
+    auto AudioSystemImpl_bopaudio::StopAllSounds() -> Audio::EAudioRequestStatus
+    {
+        AZ_Info(TYPEINFO_Name(), "Stopping all sounds.\n");
 
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::ShutDown() -> Audio::EAudioRequestStatus
-    {
-        return SoundEngine::Get()->Shutdown() ? Audio::EAudioRequestStatus::Success
-                                              : Audio::EAudioRequestStatus::Failure;
-    }
-
-    auto AudioSystemImpl_miniaudio::Release() -> Audio::EAudioRequestStatus
-    {
-        AZLOG_INFO("Bop Audio received Release.");
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::StopAllSounds() -> Audio::EAudioRequestStatus
-    {
-        AZLOG_INFO("Bop Audio received StopAllSounds.\n");
-
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::RegisterAudioObject(
-        Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
-        -> Audio::EAudioRequestStatus
-    {
-        AZLOG_INFO("BopAudio: RegisterAudioObject. [objectName: %s.].", objectName);
-
-        if (!audioObjectData)
-        {
-            AZ_Error(
-                "AudioSystemImpl_BopAudio",
-                false,
-                "Failed to register audio object. Received nullptr.");
-
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        auto* const implAudioObjectData =
-            static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
-
-        implAudioObjectData->ChangeName(objectName);
-        implAudioObjectData->SetImplAudioObjectId(SoundEngine::Get()->CreateAudioObject());
-
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::UnregisterAudioObject(
-        Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus
-    {
-        AZLOG_INFO("BopAudio: UnRegisterAudioObject");
-
-        if (!audioObjectData)
-        {
-            AZLOG_ERROR("BopAudio: UnRegisterAudioObject failed.");
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        auto* const implOldObjectData = static_cast<SATLAudioObjectData_BopAudio*>(audioObjectData);
-
-        SoundEngine::Get()->RemoveAudioObject(implOldObjectData->GetImplAudioObjectId());
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::ResetAudioObject(
-        Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: ResetAudioObject.\n");
-        AZ_UNUSED(audioObjectData);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::UpdateAudioObject(
-        Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus
-    {
-        AZ_UNUSED(audioObjectData);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::PrepareTriggerSync(
+    auto AudioSystemImpl_bopaudio::RegisterAudioObject(
         Audio::IATLAudioObjectData* const audioObjectData,
+        char const* const objectName) -> Audio::EAudioRequestStatus
+    {
+        AZLOG(
+            LOG_asi_bopaudio,
+            "Attempting to register an audio object: [objectName: %s.].\n",
+            objectName);
+
+        if (audioObjectData == nullptr)
+        {
+            AZ_Error(TYPEINFO_Name(), false, "Unable to register audio object with nullptr.\n");
+            return Audio::EAudioRequestStatus::Failure;
+        }
+
+        auto* bopAudioObject{ static_cast<IATLAudioObjectData_bopaudio*>(audioObjectData) };
+        bopAudioObject->ChangeName(objectName);
+
+        m_registeredObjects.insert(audioObjectData);
+
+        AZ_Error(
+            TYPEINFO_Name(),
+            m_registeredObjects.contains(audioObjectData),
+            "Something went wrong while inserting the object.\n");
+
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::UnregisterAudioObject(
+        Audio::IATLAudioObjectData* const audioObjectData) -> Audio::EAudioRequestStatus
+    {
+        if (!audioObjectData)
+        {
+            return Audio::EAudioRequestStatus::FailureInvalidRequest;
+        }
+
+        auto const numErased{ m_registeredObjects.erase(audioObjectData) };
+
+        AZ_Error(TYPEINFO_Name(), numErased, "Something went wrong while erasing the object.\n");
+
+        return numErased > 0 ? Audio::EAudioRequestStatus::Success
+                             : Audio::EAudioRequestStatus::FailureInvalidRequest;
+    }
+
+    auto AudioSystemImpl_bopaudio::ResetAudioObject(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
+    {
+        AZLOG(LOG_asi_bopaudio, "Resetting audio object.\n");
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::UpdateAudioObject(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
+    {
+        static AZStd::atomic<AZ::TimeUs> lastLogTime{};
+        if (AZ::GetSimulationTickDeltaTimeUs() - lastLogTime > AZ::TimeUs{ AZ::SecondsToTimeUs(5) })
+        {
+            lastLogTime = AZ::GetSimulationTickDeltaTimeUs();
+            AZLOG(LOG_asi_bopaudio, "[5SecInt] Updating audio object\n");
+        }
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::PrepareTriggerSync(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
         Audio::IATLTriggerImplData const* const /*triggerData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: PrepareTriggerSync.\n");
-        AZ_UNUSED(audioObjectData);
+        AZLOG(LOG_asi_bopaudio, "Preparing trigger sync.\n");
         return Audio::EAudioRequestStatus::Success;
     }
-    auto AudioSystemImpl_miniaudio::UnprepareTriggerSync(
+    auto AudioSystemImpl_bopaudio::UnprepareTriggerSync(
         Audio::IATLAudioObjectData* const audioObjectData,
         Audio::IATLTriggerImplData const* const triggerData) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: UnprepareTriggerSync.\n");
+        AZLOG(LOG_asi_bopaudio, "Unpreparing trigger sync.\n");
         AZ_UNUSED(audioObjectData, triggerData);
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::PrepareTriggerAsync(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::IATLTriggerImplData const* const triggerData,
-        Audio::IATLEventData* const eventData) -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::PrepareTriggerAsync(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::IATLTriggerImplData const* const /*triggerData*/,
+        Audio::IATLEventData* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: PrepareTriggerAsync.\n");
-        AZ_UNUSED(audioObjectData, triggerData, eventData);
+        AZLOG(LOG_asi_bopaudio, "Preparing trigger async.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::UnprepareTriggerAsync(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::IATLTriggerImplData const* const triggerData,
-        Audio::IATLEventData* const eventData) -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::UnprepareTriggerAsync(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::IATLTriggerImplData const* const /*triggerData*/,
+        Audio::IATLEventData* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: UnprepareTriggerAsync.\n");
-        AZ_UNUSED(audioObjectData, triggerData, eventData);
+        AZLOG(LOG_asi_bopaudio, "Unpreparing trigger async.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::ActivateTrigger(
+    auto AudioSystemImpl_bopaudio::ActivateTrigger(
         Audio::IATLAudioObjectData* const audioObjectData,
         Audio::IATLTriggerImplData const* const triggerData,
         Audio::IATLEventData* const eventData,
         Audio::SATLSourceData const* const /*pSourceData*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(LOG_ASI, "ASI received ActivateTrigger");
+        AZLOG(LOG_asi_bopaudio, "Activating audio trigger.\n");
 
         [[maybe_unused]] auto* const implTriggerData{
-            static_cast<SATLTriggerImplData_BopAudio const*>(triggerData)
+            static_cast<SATLTriggerImplData_bopaudio const*>(triggerData)
         };
-        auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(
+
+        auto* const implAudioObjectData{ static_cast<SATLAudioObjectData_bopaudio*>(
             audioObjectData) };
-        auto* const implEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
+
+        auto* const implEventData{ static_cast<SATLEventData_bopaudio*>(eventData) };
 
         if (!implAudioObjectData)
         {
-            AZ_Error("ASI", false, "Received nullptr for the object data!");
+            AZ_Error(
+                TYPEINFO_Name(),
+                false,
+                "Unable to activate trigger because the object data is null.\n");
+
             return Audio::EAudioRequestStatus::FailureInvalidRequest;
         }
 
         if (!implEventData)
         {
-            AZ_Error("ASI", false, "Received nullptr for the event data!");
-            return Audio::EAudioRequestStatus::Failure;
-        }
+            AZ_Error(
+                TYPEINFO_Name(),
+                false,
+                "Unable to activate trigger because the event data is null.\n");
 
-        if (implAudioObjectData->GetImplAudioObjectId() == InvalidAudioObjectId)
-        {
-            AZ_Error("ASI", false, "Invalid impl object id.");
-            return Audio::EAudioRequestStatus::FailureInvalidObjectId;
+            return Audio::EAudioRequestStatus::Failure;
         }
 
         if (implAudioObjectData->GetAtlAudioObjectId() == INVALID_AUDIO_OBJECT_ID)
         {
-            AZ_Error("ASI", false, "Invalid control id.");
+            AZ_Error(
+                TYPEINFO_Name(),
+                false,
+                "Unable to activate trigger because the object id is not valid.\n");
+
             return Audio::EAudioRequestStatus::FailureInvalidControlId;
         }
 
-        StartEventData startEventData{};
-        startEventData.m_owner = eventData->m_owner;
-        startEventData.m_audioObjectId = implAudioObjectData->GetImplAudioObjectId();
-        startEventData.m_audioEventId = implTriggerData->GetEventId();
-
-        auto engineStartEventOutcome{ SoundEngine::Get()->StartEvent(startEventData) };
-
-        auto const busId = AudioEventBusIdType(implTriggerData->GetEventId());
-
-        AZLOG(
-            LOG_AudioEventBus,
-            "Sending AudioEventRequests::StartEvent with [Trigger: %llu] ",
-            static_cast<Audio::TATLIDType>(busId));
-
-        AudioEventRequestBus::Event(busId, &AudioEventRequests::StartAudioEvent, startEventData);
-
-        if (!engineStartEventOutcome.IsSuccess())
-        {
-            AZ_Error(
-                "ASI",
-                false,
-                "Failed to activate audio event: [%s]\n",
-                engineStartEventOutcome.GetError().c_str());
-        }
-
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::StopEvent(
+    auto AudioSystemImpl_bopaudio::StopEvent(
         Audio::IATLAudioObjectData* const /*audioObjectData*/,
-        Audio::IATLEventData const* const eventData) -> Audio::EAudioRequestStatus
+        Audio::IATLEventData const* const /*eventData*/) -> Audio::EAudioRequestStatus
     {
-        [[maybe_unused]] auto const* const implEventData{
-            static_cast<SATLEventData_BopAudio const*>(eventData)
-        };
-
-        auto const isStopped{ SoundEngine::Get()->StopEvent({}) };
-
-        return isStopped ? Audio::EAudioRequestStatus::Success
-                         : Audio::EAudioRequestStatus::Failure;
+        return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::StopAllEvents(Audio::IATLAudioObjectData* const audioObjectData)
+    auto AudioSystemImpl_bopaudio::StopAllEvents(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/) -> Audio::EAudioRequestStatus
+    {
+        AZ_Error(TYPEINFO_Name(), false, "StopAllEvents is not yet implemented.\n");
+
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::SetPosition(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::SATLWorldPosition const& /*worldPosition*/) -> Audio::EAudioRequestStatus
+    {
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::SetMultiplePositions(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::MultiPositionParams const& /*multiPositionParams*/) -> Audio::EAudioRequestStatus
+    {
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::SetEnvironment(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::IATLEnvironmentImplData const* const /*environmentData*/,
+        float const /*amount*/) -> Audio::EAudioRequestStatus
+    {
+        AZ_Error(TYPEINFO_Name(), false, "Setting audio environment.\n");
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::SetRtpc(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::IATLRtpcImplData const* const /*rtpcData*/,
+        float const /*value*/) -> Audio::EAudioRequestStatus
+    {
+        AZ_Warning(
+            TYPEINFO_Name(), false, "Unable to set Rtpc because it is not yet implemented.\n");
+
+        return Audio::EAudioRequestStatus::Success;
+    }
+
+    auto AudioSystemImpl_bopaudio::SetSwitchState(
+        Audio::IATLAudioObjectData* const /*audioObjectData*/,
+        Audio::IATLSwitchStateImplData const* const /*switchStateData*/)
         -> Audio::EAudioRequestStatus
     {
-        AZ_Error("ASI", false, "StopAllEvents is not yet implemented.");
-        AZ_UNUSED(audioObjectData);
-        return Audio::EAudioRequestStatus::Failure;
-    }
-
-    auto AudioSystemImpl_miniaudio::SetPosition(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        [[maybe_unused]] Audio::SATLWorldPosition const& worldPosition)
-        -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: SetPosition.\n");
-        [[maybe_unused]] auto bopAudioObjectData{ static_cast<SATLAudioObjectData_BopAudio*>(
-            audioObjectData) };
-
+        AZLOG(LOG_asi_bopaudio, "Setting audio switch state.\n");
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::SetMultiplePositions(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::MultiPositionParams const& multiPositionParams) -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: SetMultiplePositions.\n");
-        AZ_UNUSED(audioObjectData, multiPositionParams);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::SetEnvironment(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::IATLEnvironmentImplData const* const environmentData,
-        float const amount) -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: SetEnvironment.\n");
-        AZ_UNUSED(audioObjectData, environmentData, amount);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::SetRtpc(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::IATLRtpcImplData const* const rtpcData,
-        float const value) -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: SetRtpc.\n");
-        AZ_UNUSED(audioObjectData, rtpcData, value);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::SetSwitchState(
-        Audio::IATLAudioObjectData* const audioObjectData,
-        Audio::IATLSwitchStateImplData const* const switchStateData) -> Audio::EAudioRequestStatus
-    {
-        AZLOG(ASI_BopAudio, "BopAudio: SetSwitchState.\n");
-        AZ_UNUSED(audioObjectData, switchStateData);
-        return Audio::EAudioRequestStatus::Success;
-    }
-
-    auto AudioSystemImpl_miniaudio::SetObstructionOcclusion(
+    auto AudioSystemImpl_bopaudio::SetObstructionOcclusion(
         Audio::IATLAudioObjectData* const audioObjectData,
         float const obstruction,
         float const occlusion) -> Audio::EAudioRequestStatus
@@ -407,15 +300,15 @@ namespace BopAudio
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::SetListenerPosition(
-        Audio::IATLListenerData* const listenerData, Audio::SATLWorldPosition const& newPosition)
-        -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::SetListenerPosition(
+        Audio::IATLListenerData* const listenerData,
+        Audio::SATLWorldPosition const& newPosition) -> Audio::EAudioRequestStatus
     {
         AZ_UNUSED(listenerData, newPosition);
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::ResetRtpc(
+    auto AudioSystemImpl_bopaudio::ResetRtpc(
         Audio::IATLAudioObjectData* const audioObjectData,
         Audio::IATLRtpcImplData const* const rtpcData) -> Audio::EAudioRequestStatus
     {
@@ -424,115 +317,52 @@ namespace BopAudio
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::RegisterInMemoryFile(
+    auto AudioSystemImpl_bopaudio::RegisterInMemoryFile(
         Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: RegisterInMemoryFile.\n");
+        AZ_Error(TYPEINFO_Name(), false, "Registering in-memory audio file.\n");
 
         if (!audioFileEntry)
         {
-            AZ_Error("AudioSystemImpl_MiniAudio", false, "Given audio file entry is nullptr");
-            return Audio::EAudioRequestStatus::Failure;
-        }
-
-        auto const loadBankOutcome = [&audioFileEntry]()
-        {
-            auto fileBuffer{ AZStd::span<char const>(
-                static_cast<char*>(audioFileEntry->pFileData), audioFileEntry->nSize) };
-
-            return SoundEngine::Get()->RegisterFile({ fileBuffer, audioFileEntry->sFileName });
-        }();
-
-        if (!loadBankOutcome.IsSuccess())
-        {
             AZ_Error(
-                "AudioSystemImpl_MiniAudio",
+                TYPEINFO_Name(),
                 false,
-                "Failed to register in-memory file. Reason: [%s]",
-                loadBankOutcome.GetError().c_str());
+                "Unable to register an in-memory file with null file entry.\n");
 
             return Audio::EAudioRequestStatus::Failure;
         }
 
-        return Audio::EAudioRequestStatus::Success;
+        AZ_Error(TYPEINFO_Name(), false, "Registering an in-memory file is not implemented.\n");
+
+        return Audio::EAudioRequestStatus::Failure;
     }
 
-    auto AudioSystemImpl_miniaudio::UnregisterInMemoryFile(
-        Audio::SATLAudioFileEntryInfo* const audioFileEntry) -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::UnregisterInMemoryFile(
+        Audio::SATLAudioFileEntryInfo* const /*audioFileEntry*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: UnregisterInMemoryFile.");
-        AZ_UNUSED(audioFileEntry);
+        AZLOG(LOG_asi_bopaudio, "Unregistering in-memory audio file.");
         return Audio::EAudioRequestStatus::Success;
     }
 
-    auto AudioSystemImpl_miniaudio::ParseAudioFileEntry(
-        const AZ::rapidxml::xml_node<char>* audioFileEntryNode,
-        Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> Audio::EAudioRequestStatus
+    auto AudioSystemImpl_bopaudio::ParseAudioFileEntry(
+        const AZ::rapidxml::xml_node<char>* /*audioFileEntryNode*/,
+        Audio::SATLAudioFileEntryInfo* const /*fileEntryInfo*/) -> Audio::EAudioRequestStatus
     {
-        AZLOG(ASI_BopAudio, "BopAudio: ParseAudioFileEntry.");
-
-        static constexpr auto defaultFileEntry =
-            [](Audio::SATLAudioFileEntryInfo* const entry) -> void
-        {
-            entry->sFileName = nullptr;
-            entry->pFileData = nullptr;
-            entry->pImplData = nullptr;
-            entry->bLocalized = false;
-            entry->nMemoryBlockAlignment = 0;
-            entry->nSize = 0;
-        };
-
-        if (!audioFileEntryNode ||
-            !AZ::StringFunc::Equal(audioFileEntryNode->name(), XmlTags::BopFileTag))
-        {
-            AZ_Error(
-                "AudioSystemImpl_BopAudio",
-                false,
-                "Wrong node name. Expected %s, but got %s.",
-                XmlTags::BopFileTag,
-                audioFileEntryNode->name());
-
-            defaultFileEntry(fileEntryInfo);
-
-            return Audio::EAudioRequestStatus::FailureInvalidRequest;
-        }
-
-        auto const* const bopAudioFileNameAttrib =
-            audioFileEntryNode->first_attribute(XmlTags::NameAttribute);
-
-        if (!bopAudioFileNameAttrib)
-        {
-            AZ_Error(
-                "AudioSystemImpl_BopAudio",
-                false,
-                "Missing attribute. Expected %s.",
-                XmlTags::NameAttribute);
-            defaultFileEntry(fileEntryInfo);
-            return Audio::EAudioRequestStatus::FailureInvalidRequest;
-        }
-
-        auto* const soundBankFileName{ bopAudioFileNameAttrib->value() };
-        auto* const implAudioFile{ azcreate(
-            SATLAudioFileEntryData_BopAudio, (), Audio::AudioImplAllocator) };
-        implAudioFile->m_bankId = ResourceRef{ soundBankFileName };
-
-        fileEntryInfo->sFileName = soundBankFileName;
-        fileEntryInfo->pImplData = implAudioFile;
-        fileEntryInfo->nMemoryBlockAlignment = 1;
-        fileEntryInfo->bLocalized = false;
-
-        return Audio::EAudioRequestStatus::Success;
+        AZ_Error(
+            TYPEINFO_Name(),
+            false,
+            "Unable to parse audio file entry because it is not implemented.\n");
+        return Audio::EAudioRequestStatus::Failure;
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioFileEntryData(
+    void AudioSystemImpl_bopaudio::DeleteAudioFileEntryData(
         Audio::IATLAudioFileEntryData* const oldAudioFileEntryData)
     {
-        AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioFileEntryData.");
-        azdestroy(
-            oldAudioFileEntryData, Audio::AudioImplAllocator, SATLAudioFileEntryData_BopAudio);
+        AZLOG(LOG_asi_bopaudio, "Deleting audio file entry data.\n");
+        azdestroy(oldAudioFileEntryData, Audio::AudioImplAllocator, SATLAudioFileEntryData_script);
     }
 
-    auto AudioSystemImpl_miniaudio::GetAudioFileLocation(
+    auto AudioSystemImpl_bopaudio::GetAudioFileLocation(
         Audio::SATLAudioFileEntryInfo* const fileEntryInfo) -> char const* const
     {
         AZLOG(ASI_BopAudio, "BopAudio: GetAudioFileLocation.");
@@ -546,33 +376,41 @@ namespace BopAudio
                                          : m_soundBankFolder.c_str();
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioTriggerImplData(
+    auto AudioSystemImpl_bopaudio::NewAudioTriggerImplData(
         const AZ::rapidxml::xml_node<char>* audioTriggerNode) -> Audio::IATLTriggerImplData*
     {
-        AZLOG(
-            LOG_ASI, "ASI received request for a new audio trigger implementation data object.\n");
-
         if (!audioTriggerNode ||
             !AZ::StringFunc::Equal(audioTriggerNode->name(), XmlTags::TriggerTag))
         {
+            AZ_Error(
+                TYPEINFO_Name(),
+                false,
+                "Unable to create a new trigger. The XML node is not valid.");
+
             return nullptr;
         }
 
         AZStd::string const triggerName = [&audioTriggerNode]() -> decltype(triggerName)
         {
-            auto const triggerNameAttrib{ audioTriggerNode->first_attribute(
+            auto* const triggerNameAttrib{ audioTriggerNode->first_attribute(
                 XmlTags::NameAttribute) };
-            return decltype(triggerName){ triggerNameAttrib ? triggerNameAttrib->value()
-                                                            : nullptr };
+
+            return decltype(triggerName){ triggerNameAttrib ? triggerNameAttrib->value() : "" };
         }();
 
+        if (triggerName.empty())
+        {
+            AZ_Error(TYPEINFO_Name(), false, "Failed to find the audio trigger's name.\n");
+            return nullptr;
+        }
+
         auto* implAudioTriggerData{ azcreate(
-            SATLTriggerImplData_BopAudio,
-            (AudioEventId{ triggerName }),
+            SATLTriggerImplData_bopaudio,
+            (Audio::AudioStringToID<Audio::TAudioEventID>(triggerName.c_str())),
             Audio::AudioImplAllocator) };
 
         AZLOG(
-            LOG_ASI,
+            LOG_asi_bopaudio,
             "ASI created a new audio trigger implementation data object. [Trigger: %s | "
             "AudioEventId: %llu. NativeId: %llu\n",
             triggerName.c_str(),
@@ -582,45 +420,42 @@ namespace BopAudio
         return implAudioTriggerData;
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioTriggerImplData(
+    void AudioSystemImpl_bopaudio::DeleteAudioTriggerImplData(
         Audio::IATLTriggerImplData* const oldTriggerImplData)
     {
-        AZLOG(LOG_ASI, "ASI: DeleteAudioTriggerImplData called");
-        azdestroy(oldTriggerImplData, Audio::AudioImplAllocator, SATLTriggerImplData_BopAudio);
+        AZLOG(LOG_asi_bopaudio, "Deleting audio trigger data.\n");
+        azdestroy(oldTriggerImplData, Audio::AudioImplAllocator, SATLTriggerImplData_bopaudio);
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioRtpcImplData(
+    auto AudioSystemImpl_bopaudio::NewAudioRtpcImplData(
         const AZ::rapidxml::xml_node<char>* /*audioRtpcNode*/) -> Audio::IATLRtpcImplData*
     {
-        AZ_Error("ASI", false, "NewAudioRtpcImplData is not yet implemented");
+        AZ_Error(TYPEINFO_Name(), false, "NewAudioRtpcImplData is not yet implemented.\n");
         return nullptr;
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioRtpcImplData(
+    void AudioSystemImpl_bopaudio::DeleteAudioRtpcImplData(
         Audio::IATLRtpcImplData* const /*oldRtpcImplData*/)
     {
-        AZ_Error("ASI", false, "DeleteAudioRtpcImplData is not yet implemented");
+        AZ_Error(TYPEINFO_Name(), false, "DeleteAudioRtpcImplData is not yet implemented.\n");
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioSwitchStateImplData(
+    auto AudioSystemImpl_bopaudio::NewAudioSwitchStateImplData(
         const AZ::rapidxml::xml_node<char>* /*audioSwitchStateNode*/)
         -> Audio::IATLSwitchStateImplData*
     {
-        AZ_Error(
-            "AudioSystemImpl_MiniAudio",
-            false,
-            "NewAudioSwitchStateImplData is not yet implemented.");
+        AZ_Error(TYPEINFO_Name(), false, "NewAudioSwitchStateImplData is not yet implemented.");
         return nullptr;
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioSwitchStateImplData(
+    void AudioSystemImpl_bopaudio::DeleteAudioSwitchStateImplData(
         Audio::IATLSwitchStateImplData* const oldSwitchStateImplData)
     {
         AZLOG_INFO("ASI: DeleteAudioSwitchStateImplData.");
         azdestroy(oldSwitchStateImplData, Audio::AudioImplAllocator);
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioEnvironmentImplData(
+    auto AudioSystemImpl_bopaudio::NewAudioEnvironmentImplData(
         const AZ::rapidxml::xml_node<char>* audioEnvironmentNode) -> Audio::IATLEnvironmentImplData*
     {
         AZLOG(
@@ -631,181 +466,129 @@ namespace BopAudio
         return nullptr;
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioEnvironmentImplData(
+    void AudioSystemImpl_bopaudio::DeleteAudioEnvironmentImplData(
         Audio::IATLEnvironmentImplData* const oldEnvironmentImplData)
     {
         azdestroy(oldEnvironmentImplData, Audio::AudioImplAllocator);
     }
 
-    auto AudioSystemImpl_miniaudio::NewGlobalAudioObjectData(
-        Audio::TAudioObjectID const atlObjectId) -> Audio::IATLAudioObjectData*
-    {
-        AZLOG_INFO("ASI: NewGlobalAudioObjectData. [objectId: %llu].", atlObjectId);
-        return azcreate(
-            SATLAudioObjectData_BopAudio,
-            (atlObjectId, GlobalAudioObjectId),
-            Audio::AudioImplAllocator);
-    }
-
-    auto AudioSystemImpl_miniaudio::NewAudioObjectData(Audio::TAudioObjectID const atlObjectId)
+    auto AudioSystemImpl_bopaudio::NewGlobalAudioObjectData(Audio::TAudioObjectID const atlObjectId)
         -> Audio::IATLAudioObjectData*
     {
-        return azcreate(
-            SATLAudioObjectData_BopAudio,
-            (atlObjectId, AudioObjectId{ static_cast<AZ::u32>(atlObjectId) }),
-            Audio::AudioImplAllocator);
+        AZLOG_INFO("ASI: NewGlobalAudioObjectData. [objectId: %llu].", atlObjectId);
+
+        return azcreate(SATLAudioObjectData_bopaudio, (atlObjectId), Audio::AudioImplAllocator);
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioObjectData(
+    auto AudioSystemImpl_bopaudio::NewAudioObjectData(Audio::TAudioObjectID const atlObjectId)
+        -> Audio::IATLAudioObjectData*
+    {
+        return azcreate(SATLAudioObjectData_bopaudio, (atlObjectId), Audio::AudioImplAllocator);
+    }
+
+    void AudioSystemImpl_bopaudio::DeleteAudioObjectData(
         Audio::IATLAudioObjectData* const oldObjectData)
     {
-        azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_BopAudio);
+        azdestroy(oldObjectData, Audio::AudioImplAllocator, SATLAudioObjectData_bopaudio);
     }
 
-    auto AudioSystemImpl_miniaudio::NewDefaultAudioListenerObjectData(
-        Audio::TATLIDType const objectId) -> SATLListenerData_BopAudio*
+    auto AudioSystemImpl_bopaudio::NewDefaultAudioListenerObjectData(
+        [[maybe_unused]] Audio::TATLIDType const objectId) -> Audio::IATLListenerData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewDefaultAudioListenerObjectData.");
-        AZ_UNUSED(objectId);
+        AZLOG(LOG_asi_bopaudio, "Creating new default audio listener object data.");
+#if USE_MINIAUDIO
+        auto* newListenerObject{ azcreate(
+            SATLListenerData_bopaudio, (objectId), Audio::AudioImplAllocator) };
+        return newListenerObject;
+#else
         return {};
+#endif
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioListenerObjectData(Audio::TATLIDType const objectId)
-        -> SATLListenerData_BopAudio*
+    auto AudioSystemImpl_bopaudio::NewAudioListenerObjectData(
+        [[maybe_unused]] Audio::TATLIDType const objectId) -> Audio::IATLListenerData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioListenerObjectData.");
-        AZ_UNUSED(objectId);
+#if USE_MINIAUDIO
+        auto* newListenerObject{ azcreate(
+            SATLListenerData_bopaudio, (objectId), Audio::AudioImplAllocator) };
+        return newListenerObject;
+#else
         return {};
+#endif
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioListenerObjectData(
-        Audio::IATLListenerData* const oldListenerData)
+    void AudioSystemImpl_bopaudio::DeleteAudioListenerObjectData(
+        [[maybe_unused]] Audio::IATLListenerData* const oldListenerData)
     {
-        AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioListenerObjectData.");
-        AZ_UNUSED(oldListenerData);
+        AZLOG(LOG_asi_bopaudio, "Deleting audio listener object data.\n");
+        azdestroy(oldListenerData, Audio::AudioImplAllocator);
     }
 
-    auto AudioSystemImpl_miniaudio::NewAudioEventData(Audio::TAudioEventID const eventId)
-        -> SATLEventData_BopAudio*
+    auto AudioSystemImpl_bopaudio::NewAudioEventData(Audio::TAudioEventID const eventId)
+        -> Audio::IATLEventData*
     {
-        AZLOG(ASI_BopAudio, "BopAudio: NewAudioEventData");
-        return azcreate(SATLEventData_BopAudio, (eventId), Audio::AudioImplAllocator);
+        AZLOG(LOG_asi_bopaudio, "Creating new audio event data.\n");
+        return azcreate(SATLEventData_bopaudio, (eventId), Audio::AudioImplAllocator);
     }
 
-    void AudioSystemImpl_miniaudio::DeleteAudioEventData(Audio::IATLEventData* const oldEventData)
+    void AudioSystemImpl_bopaudio::DeleteAudioEventData(Audio::IATLEventData* const oldEventData)
     {
         AZLOG(ASI_BopAudio, "BopAudio: DeleteAudioEventData.");
         azdestroy(oldEventData, Audio::AudioImplAllocator);
     }
 
-    void AudioSystemImpl_miniaudio::ResetAudioEventData(Audio::IATLEventData* const eventData)
+    void AudioSystemImpl_bopaudio::ResetAudioEventData(Audio::IATLEventData* const eventData)
     {
-        AZLOG(ASI_BopAudio, "BopAudio: ResetAudioEventData.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: ResetAudioEventData.");
 
         if (!eventData)
         {
-            AZ_Error(
-                "AudioSystemImpl_BopAudio", false, "Received nullptr. Valid address required.");
+            AZ_Error(TYPEINFO_Name(), false, "Received nullptr. Valid address required.");
+
             return;
         }
-
-        auto* const bopEventData{ static_cast<SATLEventData_BopAudio*>(eventData) };
-
-        // eventData->m_owner = nullptr;
-        // eventData->m_triggerId = INVALID_AUDIO_CONTROL_ID;
-        // bopEventData->SetEventState(Audio::EAudioEventState::eAES_NONE);
-        bopEventData->SetSourceId(INVALID_AUDIO_SOURCE_ID);
     }
 
-    auto AudioSystemImpl_miniaudio::GetImplSubPath() const -> char const* const
+    auto AudioSystemImpl_bopaudio::GetImplSubPath() const -> char const* const
     {
         return BopAudioImplSubPath;
     }
 
-    void AudioSystemImpl_miniaudio::SetLanguage(char const* const language)
+    void AudioSystemImpl_bopaudio::SetLanguage(char const* const language)
     {
         m_language = language;
     }
 
-    // Functions below are only used when RELEASE is not defined
-    auto AudioSystemImpl_miniaudio::GetImplementationNameString() const -> char const* const
+    auto AudioSystemImpl_bopaudio::GetImplementationNameString() const -> char const* const
     {
-        return "BopAudio-Dev";
+        return ImplName;
     }
 
-    void AudioSystemImpl_miniaudio::GetMemoryInfo(Audio::SAudioImplMemoryInfo& memoryInfo) const
+    void AudioSystemImpl_bopaudio::GetMemoryInfo(Audio::SAudioImplMemoryInfo& memoryInfo) const
     {
-        AZLOG(ASI_BopAudio, "BopAudio: GetMemoryInfo.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: GetMemoryInfo.");
         AZ_UNUSED(memoryInfo);
     }
 
-    auto AudioSystemImpl_miniaudio::GetMemoryPoolInfo()
+    auto AudioSystemImpl_bopaudio::GetMemoryPoolInfo()
         -> AZStd::vector<Audio::AudioImplMemoryPoolInfo>
     {
-        AZLOG(ASI_BopAudio, "BopAudio: GetMemoryInfo.");
+        AZLOG(LOG_asi_bopaudio, "BopAudio: GetMemoryInfo.");
         return {};
     }
 
-    auto AudioSystemImpl_miniaudio::CreateAudioSource(Audio::SAudioInputConfig const& sourceConfig)
-        -> bool
+    auto AudioSystemImpl_bopaudio::CreateAudioSource(
+        Audio::SAudioInputConfig const& /*sourceConfig*/) -> bool
     {
-        AZ::Data::AssetId const assetId = [&sourceConfig]() -> decltype(assetId)
-        {
-            auto foundAssetId{ decltype(assetId){} };
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                foundAssetId,
-                &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-                sourceConfig.m_sourceFilename.c_str(),
-                AZ::AzTypeInfo<MiniAudio::SoundAsset>::Uuid(),
-                false);
-
-            return foundAssetId;
-        }();
-
-        auto soundAsset{ AZ::Data::AssetManager::Instance().GetAsset<MiniAudio::SoundAsset>(
-            assetId, AZ::Data::AssetLoadBehavior::PreLoad) };
-
-        if (soundAsset.QueueLoad())
-        {
-            AZLOG_ERROR(
-                "Failed to queue loading for audio input config with source filename '%s'",
-                sourceConfig.m_sourceFilename.c_str());
-
-            return false;
-        }
-
-        if (soundAsset.IsError())
-        {
-            AZLOG_ERROR(
-                "An error occurred while loading audio input config with source filename '%s'",
-                sourceConfig.m_sourceFilename.c_str());
-
-            return false;
-        }
-
-        soundAsset.BlockUntilLoadComplete();
-
-        m_sourceAssetMap[sourceConfig.m_sourceId] = soundAsset;
-
-        auto* const engine = SoundEngine::Get()->GetSoundEngine();
-
-        if (!engine)
-        {
-            AZLOG_ERROR("ASI failed to obtain ma_engine while creating an audio source");
-            return false;
-        }
-
-        AZLOG_ERROR("ASI failed to register sound with miniaudio resource manager");
-
+        AZ_Error(TYPEINFO_Name(), false, "Creating an audio source is not supported\n");
         return true;
     }
 
-    void AudioSystemImpl_miniaudio::DestroyAudioSource(Audio::TAudioSourceId sourceId)
+    void AudioSystemImpl_bopaudio::DestroyAudioSource(Audio::TAudioSourceId /*sourceId*/)
     {
-        m_sourceAssetMap.erase(sourceId);
     }
 
-    void AudioSystemImpl_miniaudio::SetPanningMode(Audio::PanningMode mode)
+    void AudioSystemImpl_bopaudio::SetPanningMode(Audio::PanningMode mode)
     {
         m_panningMode = mode;
     }

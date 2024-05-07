@@ -1,9 +1,6 @@
 #include "AudioControlNode.h"
 
 #include "AzCore/Console/ILogger.h"
-#include "Clients/AudioEventAsset.h"
-#include "Clients/AudioEventBus.h"
-#include "Engine/MiniAudioEngineBus.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
 
@@ -21,6 +18,11 @@ namespace BopAudio::Nodes
         m_controlId = Audio::AudioStringToID<Audio::TAudioControlID>(controlName.c_str());
         m_controlName = controlName;
         m_ownerId = owner;
+
+        AZ_Error(
+            TYPEINFO_Name(),
+            m_controlName.GetCStr(),
+            "Control name is empty. The node cannot connect with an empty control name.\n");
 
         Audio::AudioTriggerNotificationBus::Handler::BusConnect(m_ownerId);
 
@@ -86,7 +88,7 @@ namespace BopAudio::Nodes
                 m_ownerId.m_owner,
                 m_controlId);
 
-            CallStart(StartEventData{});
+            CallStart();
 
             AZLOG(
                 LOG_AudioControlNode,
@@ -101,7 +103,8 @@ namespace BopAudio::Nodes
 
         AZLOG(
             LOG_AudioControlNode,
-            "AudioControlNode [Name: %s | Owner: %lu | Id: %llu] received a trigger notification for "
+            "AudioControlNode [Name: %s | Owner: %lu | Id: %llu] received a trigger notification "
+            "for "
             "control %llu and skipped sending the Start event since it is for a different control.",
             m_controlName.GetCStr(),
             m_ownerId.m_owner,

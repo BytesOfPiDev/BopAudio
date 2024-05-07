@@ -1,14 +1,10 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
-#include "AzCore/std/smart_ptr/unique_ptr.h"
-#include "Clients/AudioEventAssetHandler.h"
-#include "Clients/SoundBankAssetHandler.h"
-#include "IAudioSystem.h"
 
 #include "BopAudio/BopAudioBus.h"
 #include "Engine/AudioSystemImpl_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
+#include "IAudioSystem.h"
 
 namespace BopAudio
 {
@@ -31,9 +27,6 @@ namespace BopAudio
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        static void RegisterFileAliases();
-
-    protected:
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
@@ -41,18 +34,13 @@ namespace BopAudio
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
-        // Audio::Gem::EngineRequestBus interface implementation
         auto Initialize() -> bool override;
         void Release() override;
-        ////////////////////////////////////////////////////////////////////////
+
+        static void RegisterFileAliases();
 
     private:
-        AZStd::unique_ptr<BopAudio::AudioSystemImpl_miniaudio> m_audioSystemImpl;
-        AZStd::unique_ptr<MiniAudioEngine> m_miniAudioEngine;
-
-        AudioEventAssetHandler m_audioEventAssetHandler;
-        SoundBankAssetHandler m_soundBankAssetHandler;
+        AZStd::optional<AudioSystemImpl_bopaudio> m_audioSystemImpl{};
     };
 
 } // namespace BopAudio

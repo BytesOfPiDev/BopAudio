@@ -1,29 +1,26 @@
 #pragma once
 
+#include <AzCore/Component/Entity.h>
+#include <AzCore/IO/Path/Path.h>
+
 #include "ATLEntityData.h"
 #include "AudioAllocators.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystemImplementation.h"
-#include "MiniAudio/SoundAsset.h"
-
-#include "AzCore/RTTI/TypeInfoSimple.h"
-#include "Engine/ATLEntities_BopAudio.h"
-#include "Engine/MiniAudioEngine.h"
 
 namespace BopAudio
 {
-    class MiniAudioEngine;
-
-    class AudioSystemImpl_miniaudio : protected Audio::AudioSystemImplementation
+    class AudioSystemImpl_bopaudio : public Audio::AudioSystemImplementation
     {
-        friend MiniAudioEngine;
-
     public:
-        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_miniaudio);
-        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_miniaudio);
+        AUDIO_IMPL_CLASS_ALLOCATOR(AudioSystemImpl_bopaudio);
+        AZ_DISABLE_COPY_MOVE(AudioSystemImpl_bopaudio);
+        AZ_TYPE_INFO_WITH_NAME_DECL(AudioSystemImpl_bopaudio);
 
-        explicit AudioSystemImpl_miniaudio(AZStd::string_view assetsPlatformName);
-        ~AudioSystemImpl_miniaudio() override;
+        static constexpr auto ImplName{ "BopAudio" };
+
+        explicit AudioSystemImpl_bopaudio();
+        ~AudioSystemImpl_bopaudio() override;
 
         void SetPaths();
 
@@ -44,8 +41,8 @@ namespace BopAudio
         auto StopAllSounds() -> Audio::EAudioRequestStatus override;
 
         auto RegisterAudioObject(
-            Audio::IATLAudioObjectData* const audioObjectData, char const* const objectName)
-            -> Audio::EAudioRequestStatus override;
+            Audio::IATLAudioObjectData* const audioObjectData,
+            char const* const objectName) -> Audio::EAudioRequestStatus override;
         auto UnregisterAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
             -> Audio::EAudioRequestStatus override;
         auto ResetAudioObject(Audio::IATLAudioObjectData* const audioObjectData)
@@ -149,13 +146,13 @@ namespace BopAudio
         void DeleteAudioObjectData(Audio::IATLAudioObjectData* const oldObjectData) override;
 
         auto NewDefaultAudioListenerObjectData(Audio::TATLIDType const objectId)
-            -> SATLListenerData_BopAudio* override;
+            -> Audio::IATLListenerData* override;
         auto NewAudioListenerObjectData(Audio::TATLIDType const objectId)
-            -> SATLListenerData_BopAudio* override;
+            -> Audio::IATLListenerData* override;
         void DeleteAudioListenerObjectData(Audio::IATLListenerData* const oldListenerData) override;
 
         auto NewAudioEventData(Audio::TAudioEventID const eventId)
-            -> SATLEventData_BopAudio* override;
+            -> Audio::IATLEventData* override;
         void DeleteAudioEventData(Audio::IATLEventData* const oldEventData) override;
         void ResetAudioEventData(Audio::IATLEventData* const eventData) override;
 
@@ -175,14 +172,12 @@ namespace BopAudio
 
     private:
         static char const* const BopAudioImplSubPath;
-        AZStd::string m_assetsPlatform;
         AZStd::string m_language{};
 
         Audio::PanningMode m_panningMode{ Audio::PanningMode::Speakers };
 
         AZ::IO::Path m_soundBankFolder{};
         AZ::IO::Path m_localizedSoundBankFolder{};
-
-        AZStd::unordered_map<Audio::TAudioSourceId, MiniAudio::SoundDataAsset> m_sourceAssetMap{};
+        AZStd::unordered_set<Audio::IATLAudioObjectData*> m_registeredObjects{};
     };
 } // namespace BopAudio

@@ -3,12 +3,9 @@
 #include "AzCore/Component/Component.h"
 
 #include "Builder/AudioControlBuilderWorker.h"
-#include "Builder/AudioEventAssetBuilderWorker.h"
-#include "Builder/SoundBankAssetBuilderWorker.h"
 
 namespace BopAudio
 {
-
     class BopAudioAssetBuilderComponent : public AZ::Component
     {
     public:
@@ -38,8 +35,6 @@ namespace BopAudio
         void ConfigureAudioControlBuilder();
 
     private:
-        SoundBankAssetBuilderWorker m_bankBuilderWorker;
-        AudioEventAssetBuilderWorker m_eventBuilder;
         AudioControlBuilderWorker m_audioControlBuilder;
     };
 } // namespace BopAudio

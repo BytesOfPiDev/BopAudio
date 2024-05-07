@@ -36,9 +36,6 @@ namespace BopAudio
         void Deactivate() override;
 
     protected:
-        // AzToolsFramework::EditorEventsBus overrides ...
-        void NotifyRegisterViews() override;
-
         ////////////////////////////////////////////////////////////////////////
         // AudioControlsEditor::EditorImplPluginEventBus interface
         // implementation
@@ -46,7 +43,6 @@ namespace BopAudio
         void ReleaseEditorImplPlugin() override;
         auto GetEditorImplPlugin() -> AudioControls::IAudioSystemEditor* override;
         ////////////////////////////////////////////////////////////////////////
-
     private:
         AZStd::unique_ptr<AudioControls::IAudioSystemEditor> m_editorImplPlugin;
     };

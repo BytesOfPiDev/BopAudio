@@ -50,11 +50,11 @@ namespace BopAudio
 
     using StateConnectionPtr = AZStd::shared_ptr<StateToRtpcConnection>;
 
-    class AudioSystemEditor_BopAudio : public AudioControls::IAudioSystemEditor // NOLINT
+    class AudioSystemEditor_script : public AudioControls::IAudioSystemEditor // NOLINT
     {
     public:
-        AudioSystemEditor_BopAudio();
-        ~AudioSystemEditor_BopAudio() override = default;
+        AudioSystemEditor_script();
+        ~AudioSystemEditor_script() override = default;
 
         //////////////////////////////////////////////////////////
         // IAudioSystemEditor implementation

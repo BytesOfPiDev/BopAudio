@@ -25,7 +25,6 @@ namespace BopAudio::XmlTags
 namespace AudioStrings
 {
     // Project Folders
-    static constexpr auto GameParametersFolder = "GameParameters";
     static constexpr auto EventsFolder = "events";
 
     // Xml Tags
@@ -56,75 +55,3 @@ namespace JsonKeys
     static constexpr AZ::IO::PathView PlayResourceName = "/Resource";
     static constexpr AZ::IO::PathView StopEventResourceName{ "/Resource" };
 } // namespace JsonKeys
-
-namespace BopAudio
-{
-    static constexpr auto DocumentJsonSchema =
-        R"({
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "BopAudioDocument": {
-            "type": "object",
-            "properties": {
-              "Sounds": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "object"
-                }
-              },
-              "Events": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "object",
-                  "properties": {
-                    "Tasks": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "Play": {
-                            "type": "object",
-                            "properties": {
-                              "Resource": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "Resource"
-                            ],
-                            "additionalProperties": false
-                          },
-                          "Stop": {
-                            "type": "object",
-                            "properties": {
-                              "Resource": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "Resource"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "Tasks"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "required": [
-          "BopAudioDocument"
-        ],
-        "additionalProperties": false
-      })";
-}

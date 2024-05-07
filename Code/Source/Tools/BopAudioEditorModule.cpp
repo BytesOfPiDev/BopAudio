@@ -4,13 +4,6 @@
 #include "Builder/BopAudioAssetBuilderComponent.h"
 #include "Tools/BopAudioEditorSystemComponent.h"
 
-void InitBopAudioResources()
-{
-    // We must register our Qt resources (.qrc file) since this is being loaded
-    // from a separate module (gem)
-    Q_INIT_RESOURCE(BopAudio);
-}
-
 namespace BopAudio
 {
     class BopAudioEditorModule : public BopAudioModuleInterface
@@ -21,8 +14,6 @@ namespace BopAudio
 
         BopAudioEditorModule()
         {
-            InitBopAudioResources();
-
             // Push results of [MyComponent]::CreateDescriptor() into
             // m_descriptors here. Add ALL components descriptors associated
             // with this gem to m_descriptors. This will associate the
@@ -45,6 +36,7 @@ namespace BopAudio
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<BopAudioEditorSystemComponent>(),
+                azrtti_typeid<BopAudioAssetBuilderComponent>(),
             };
         }
     };

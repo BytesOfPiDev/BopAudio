@@ -19,7 +19,11 @@ namespace BopAudio
         // components with the the SerializeContext, BehaviorContext and
         // EditContext. This happens through the [MyComponent]::Reflect()
         // function.
-        m_descriptors.insert(m_descriptors.end(), { BopAudioSystemComponent::CreateDescriptor() });
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                BopAudioSystemComponent::CreateDescriptor(),
+            });
     }
 
     auto BopAudioModuleInterface::GetRequiredSystemComponents() const -> AZ::ComponentTypeList

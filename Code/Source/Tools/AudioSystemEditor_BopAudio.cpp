@@ -2,16 +2,15 @@
 
 #include "ACETypes.h"
 #include "AzCore/StringFunc/StringFunc.h"
-#include "AzCore/Utils/Utils.h"
 #include "AzCore/std/smart_ptr/make_shared.h"
 #include "AzCore/std/string/conversions.h"
-#include "Engine/ConfigurationSettings.h"
 #include "IAudioConnection.h"
 #include "IAudioSystem.h"
 #include "IAudioSystemControl.h"
 #include "IAudioSystemEditor.h"
 
 #include "Engine/Common_BopAudio.h"
+#include "Engine/ConfigurationSettings.h"
 #include "Tools/AudioSystemControl_BopAudio.h"
 
 namespace BopAudio
@@ -72,9 +71,9 @@ namespace BopAudio
         return "";
     }
 
-    AudioSystemEditor_BopAudio::AudioSystemEditor_BopAudio() = default;
+    AudioSystemEditor_script::AudioSystemEditor_script() = default;
 
-    void AudioSystemEditor_BopAudio::Reload()
+    void AudioSystemEditor_script::Reload()
     {
         AZStd::ranges::for_each(
             m_controls,
@@ -95,7 +94,7 @@ namespace BopAudio
         UpdateConnectedStatus();
     }
 
-    auto AudioSystemEditor_BopAudio::CreateControl(
+    auto AudioSystemEditor_script::CreateControl(
         AudioControls::SControlDef const& controlDefinition) -> AudioControls::IAudioSystemControl*
     {
         AZStd::string fullName = controlDefinition.m_name;
@@ -130,7 +129,7 @@ namespace BopAudio
         }
         else
         {
-            TControlPtr newControl = AZStd::make_shared<IAudioSystemControl_BopAudio>(
+            TControlPtr newControl = AZStd::make_shared<IAudioSystemControl_bopaudio>(
                 controlDefinition.m_name, id, controlDefinition.m_type);
             if (!parent)
             {
@@ -146,7 +145,7 @@ namespace BopAudio
         }
     }
 
-    auto AudioSystemEditor_BopAudio::GetControl(AudioControls::CID id) const
+    auto AudioSystemEditor_script::GetControl(AudioControls::CID id) const
         -> AudioControls::IAudioSystemControl*
     {
         if (id != AudioControls::ACE_INVALID_CID)
@@ -161,7 +160,7 @@ namespace BopAudio
         return nullptr;
     }
 
-    auto AudioSystemEditor_BopAudio::ImplTypeToATLType(AudioControls::TImplControlType type) const
+    auto AudioSystemEditor_script::ImplTypeToATLType(AudioControls::TImplControlType type) const
         -> AudioControls::EACEControlType
     {
         switch (type)
@@ -185,7 +184,7 @@ namespace BopAudio
         return AudioControls::eACET_NUM_TYPES;
     }
 
-    auto AudioSystemEditor_BopAudio::GetCompatibleTypes(
+    auto AudioSystemEditor_script::GetCompatibleTypes(
         AudioControls::EACEControlType atlControlType) const -> AudioControls::TImplControlTypeMask
     {
         switch (atlControlType)
@@ -208,7 +207,7 @@ namespace BopAudio
         return AudioControls::AUDIO_IMPL_INVALID_TYPE;
     }
 
-    auto AudioSystemEditor_BopAudio::CreateConnectionToControl(
+    auto AudioSystemEditor_script::CreateConnectionToControl(
         AudioControls::EACEControlType atlControlType,
         AudioControls::IAudioSystemControl* middlewareControl) -> AudioControls::TConnectionPtr
     {
@@ -237,7 +236,7 @@ namespace BopAudio
         return {};
     }
 
-    auto AudioSystemEditor_BopAudio::CreateConnectionFromXMLNode(
+    auto AudioSystemEditor_script::CreateConnectionFromXMLNode(
         AZ::rapidxml::xml_node<char>* node, AudioControls::EACEControlType atlControlType)
         -> AudioControls::TConnectionPtr
     {
@@ -379,7 +378,7 @@ namespace BopAudio
         return {};
     }
 
-    auto AudioSystemEditor_BopAudio::CreateXMLNodeFromConnection(
+    auto AudioSystemEditor_script::CreateXMLNodeFromConnection(
         AudioControls::TConnectionPtr const connection,
         AudioControls::EACEControlType const atlControlType) -> AZ::rapidxml::xml_node<char>*
     {
@@ -521,7 +520,7 @@ namespace BopAudio
         return nullptr;
     }
 
-    auto AudioSystemEditor_BopAudio::GetTypeIcon(AudioControls::TImplControlType type) const
+    auto AudioSystemEditor_script::GetTypeIcon(AudioControls::TImplControlType type) const
         -> AZStd::string_view const
     {
         switch (type)
@@ -533,22 +532,22 @@ namespace BopAudio
         };
     }
 
-    auto AudioSystemEditor_BopAudio::GetTypeIconSelected(
+    auto AudioSystemEditor_script::GetTypeIconSelected(
         AudioControls::TImplControlType /*type*/) const -> AZStd::string_view const
     {
         return {};
     }
 
-    auto AudioSystemEditor_BopAudio::GetName() const -> AZStd::string
+    auto AudioSystemEditor_script::GetName() const -> AZStd::string
     {
         return "O3DE-BopAudio";
     }
-    auto AudioSystemEditor_BopAudio::GetDataPath() const -> AZ::IO::FixedMaxPath
+    auto AudioSystemEditor_script::GetDataPath() const -> AZ::IO::FixedMaxPath
     {
         return { ProjectAlias };
     }
 
-    void AudioSystemEditor_BopAudio::ConnectionRemoved(AudioControls::IAudioSystemControl* control)
+    void AudioSystemEditor_script::ConnectionRemoved(AudioControls::IAudioSystemControl* control)
     {
         int connectionCount = m_connectionsByID[control->GetId()] - 1;
         if (connectionCount <= 0)
@@ -559,7 +558,7 @@ namespace BopAudio
         m_connectionsByID[control->GetId()] = connectionCount;
     }
 
-    auto AudioSystemEditor_BopAudio::GetControlByName(
+    auto AudioSystemEditor_script::GetControlByName(
         AZStd::string name, bool isLocalized, AudioControls::IAudioSystemControl* parent) const
         -> AudioControls::IAudioSystemControl*
     {
@@ -578,13 +577,12 @@ namespace BopAudio
         return GetControl(GetID(name));
     }
 
-    auto AudioSystemEditor_BopAudio::GetID(AZStd::string_view const name) const
-        -> AudioControls::CID
+    auto AudioSystemEditor_script::GetID(AZStd::string_view const name) const -> AudioControls::CID
     {
         return Audio::AudioStringToID<AudioControls::CID>(name.data());
     }
 
-    void AudioSystemEditor_BopAudio::UpdateConnectedStatus()
+    void AudioSystemEditor_script::UpdateConnectedStatus()
     {
         for (auto const& idCountPair : m_connectionsByID)
         {

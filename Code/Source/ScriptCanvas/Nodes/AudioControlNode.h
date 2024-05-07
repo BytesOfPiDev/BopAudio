@@ -5,12 +5,13 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
-#include <Clients/AudioEventAsset.h>
-#include <Source/ScriptCanvas/Nodes/AudioControlNode.generated.h>
-
 #include "AzCore/Memory/SystemAllocator.h"
 #include "IAudioInterfacesCommonData.h"
 #include "IAudioSystem.h"
+
+#include <Clients/ParameterTypes.h>
+
+#include <Source/ScriptCanvas/Nodes/AudioControlNode.generated.h>
 
 namespace BopAudio::Nodes
 {
